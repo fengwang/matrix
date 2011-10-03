@@ -11,8 +11,6 @@
 #include <numeric>
 #include <cstring>
 
-#include <iostream>
-
 namespace dynamic
 {
 
@@ -40,21 +38,14 @@ struct gauss_jordan_elimination
         const size_type n = b.row();
         const size_type m = b.col();
 
-        //std::cerr << "\na = " << a << "\n";
-
         for ( size_type i = 0; i<n; ++i )
         {
-            //std::cerr << "\nstep " << i;
             //find max element
             const size_type 
-            p = std::distance( a.col_begin(i), 
-                               std::max_element( a.col_begin(i)+i, a.col_end(i), 
-                                                 [](value_type x, value_type y ){ return std::abs(x) < std::abs(y);} ));
-            //std::cerr << "\nmax element pos is " << p;
+            p = std::distance( a.col_begin(i), std::max_element( a.col_begin(i)+i, a.col_end(i), [](value_type x, value_type y ){ return std::abs(x) < std::abs(y);} ));
             //swap row i and row p
             if ( p != i )
                 std::swap_ranges( a.row_begin(i)+i, a.row_end(i), a.row_begin(p)+i ); 
-            //std::cerr << "\nafter swapping a = \n" << a;
             const value_type factor = a[i][i];
             assert( factor != value_type() );
             //eliminate
@@ -63,10 +54,8 @@ struct gauss_jordan_elimination
             {
                 if ( i == j ) continue;
                 const value_type ratio = a[j][i];
-                std::transform( a.row_rbegin(j), a.row_rend(j)-i, a.row_rbegin(i), a.row_rbegin(j), 
-                                [ratio](value_type x, value_type y){ return x - y * ratio; } );
+                std::transform( a.row_rbegin(j), a.row_rend(j)-i, a.row_rbegin(i), a.row_rbegin(j), [ratio](value_type x, value_type y){ return x - y * ratio; } );
             }
-            //std::cerr << "\nafter elimination a = \n" << a;
         }
         
         return Matrix_Type( a, range_type( 0, n ), range_type( n, m+n ) );
