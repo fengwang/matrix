@@ -25,7 +25,7 @@ namespace dynamic
 //    auto x = gaussian_elimination()(A,b);    
 //  
 
-struct gaussian_elimination
+struct gauss_jordan_elimination
 {
     template<typename Matrix_Type>
     const Matrix_Type

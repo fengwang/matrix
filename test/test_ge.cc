@@ -25,7 +25,7 @@ int main()
     cout << "\nb= \n" << b;
     cout << "\nx= \n" << x;
 
-    matrix<double> x_ = gaussian_elimination()( A, b );
+    matrix<double> x_ = gauss_jordan_elimination()( A, b );
     cout << "\nx_= \n" << x_;
 
     return 0;
