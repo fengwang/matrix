@@ -11,6 +11,7 @@
 #include <matrix/impl/matrix_buffer_0.hpp>
 #include <matrix/impl/matrix_stride_iterator.hpp>
 #include <matrix/impl/matrix_range_iterator.hpp>
+#include <matrix/impl/misc.hpp>
 
 #include <cstddef> //for size_t and ptrdiff_t
 #include <memory>
@@ -21,19 +22,23 @@
 #include <iterator>
 #include <iosfwd>
 #include <utility>
+#include <vector>
+#include <valarray>
 
-namespace dynamic
+namespace feng
 {
 
 template<   typename Type, 
             std::size_t Default = 256,
-            class Allocator = std::allocator<Type> 
+//            class Allocator = std::allocator<Type> 
+            class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
         >
 class matrix
 {
 
 public:
-    typedef Type                                                        value_type;
+    typedef typename remove_reference<Type>::result_type                  value_type1;
+    typedef typename remove_const<value_type1>::result_type             value_type;
     typedef matrix                                                      self_type;
     typedef value_type*                                                 iterator;
     typedef const value_type*                                           const_iterator;
@@ -87,11 +92,15 @@ public:
 
 public:
     explicit matrix(    const size_type r = 0, 
-                        const size_type c = 0 ) 
+                        const size_type c = 0,
+                        const value_type v = value_type() 
+                   ) 
     :   row_(r), 
         col_(c), 
         data_(storage_type(r*c)) 
-    { }
+    { 
+        std::fill( begin(), end(), v ); 
+    }
 
     ~matrix() { }
     
@@ -1591,6 +1600,23 @@ public:
         return ans;
     }
 
+public:
+    const std::vector<value_type, Allocator>
+    to_vector() const 
+    {
+        std::vector<value_type, Allocator> ans( row() * col() );
+        std::copy( begin(), end(), ans.begin() );
+        return ans;
+    }
+
+    const std::valarray<value_type>
+    to_valarray() const 
+    {
+        std::valarray<value_type> ans( row() * col() );
+        std::copy( begin(), end(), &ans[0] );
+        return ans;
+    }
+
 
 private:
 
@@ -1617,7 +1643,7 @@ operator <<(std::ostream& lhs, const matrix<T, D, A>& rhs)
     return lhs;
 } 
 
-}//namespace dynamic
+}//namespace feng
 
 #endif  /* _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED*/
 

@@ -9,7 +9,7 @@
 #include <valarray>
 #include <vector>
 
-namespace dynamic
+namespace feng
 {
 
     // A = U W V^{T}

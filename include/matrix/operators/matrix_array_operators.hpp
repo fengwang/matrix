@@ -9,7 +9,7 @@
 #include <valarray>
 #include <numeric>
 
-namespace dynamic
+namespace feng
 {
 
     //matrix -- vector
@@ -28,9 +28,9 @@ namespace dynamic
     const matrix<T,D,A>
     operator * ( const matrix<T,D,A>& lhs,  const T_* const rhs )
     {   //TODO: in case of optimization, parallel here
-        matrix<T,D,A> ans(lhs.row());
+        matrix<T,D,A> ans(lhs.row(), 1);
         for ( std::size_t i = 0; i < lhs.row(); ++i )
-            ans[i] = std::inner_product( lhs.row_begin(i), lhs.row_end(i), rhs, T() );
+            ans[i][0] = std::inner_product( lhs.row_begin(i), lhs.row_end(i), rhs, T() );
         return ans;
     }
     
@@ -39,7 +39,10 @@ namespace dynamic
     operator * ( const matrix<T,D,A>& lhs,  const std::valarray<T_>& rhs )
     {
         assert( lhs.col() == rhs.size() );
-        return lhs * (&rhs[0]); 
+        matrix<T,D,A> ans(lhs.row(), 1);
+        for ( std::size_t i = 0; i < lhs.row(); ++i )
+            ans[i][0] = std::inner_product( lhs.row_begin(i), lhs.row_end(i), std::begin(rhs), T() );
+        return ans;
     }
     
     template<typename T, std::size_t D, typename A, typename T_>
@@ -47,10 +50,13 @@ namespace dynamic
     operator * ( const matrix<T,D,A>& lhs,  const std::vector<T_>& rhs )
     {
         assert( lhs.col() == rhs.size() );
-        return lhs * (&rhs[0]); 
+        matrix<T,D,A> ans(lhs.row(), 1);
+        for ( std::size_t i = 0; i < lhs.row(); ++i )
+            ans[i][0] = std::inner_product( lhs.row_begin(i), lhs.row_end(i), rhs.begin(), T() );
+        return ans;
     }
 
-}//namespace dynamic
+}//namespace feng
 
 #endif//_MATRIX_ARRAY_OPERATORS_HPP_INCLUDED_DSFOIU4989RW8OISFDOIFSLKSFDJLKJVCXLKSLKJFSDLFSKOIEWEURSIDFUSLKJFEOIUFSDLIJDD
 

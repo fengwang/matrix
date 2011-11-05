@@ -13,7 +13,7 @@
 #include <algorithm>    //for copy
 #include <cstring>      //form memset memcpy
 
-namespace dynamic{
+namespace feng{
 
 
 /*
@@ -359,7 +359,7 @@ private:
 
 };
 
-}//namespace dynamic
+}//namespace feng
 
 
 #endif  /* _DYNAMIC_MATRIX_BUFFER_HPP_INCLUDED */

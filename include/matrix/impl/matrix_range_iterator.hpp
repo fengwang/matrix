@@ -11,7 +11,7 @@
 #include <cassert>
 #include <iterator>
 
-namespace dynamic{
+namespace feng{
 
 
 template<typename Iterator_Type>
@@ -290,7 +290,7 @@ struct matrix_range_iterator
 };//matrix_range_iterator
 
 
-}//namespace dynamic
+}//namespace feng
 
 #endif  /* _DYNAMIC_MATRIX_RAGNE_ITERATOR_HPP_INCLUDED */
 

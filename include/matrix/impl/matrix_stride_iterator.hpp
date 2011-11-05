@@ -12,8 +12,8 @@
 #include <cassert>
 #include <algorithm>
 
-
-namespace dynamic{
+namespace feng
+{
 
 /*
  *		Stride iterator is an iterator adaptor that takes a random access iterator range and provides
@@ -232,7 +232,7 @@ private:
 }; //matrix_stride_iterator
 
 
-}//namespace dynamic
+}//namespace feng
 
 #endif	/* _DYNAMIC_MATRIX_STRIDE_ITERATOR_HPP_INCLUDED */
 

@@ -7,7 +7,7 @@
 #include <cassert>
 #include <algorithm>
 
-namespace dynamic
+namespace feng
 {
 
     // Example:

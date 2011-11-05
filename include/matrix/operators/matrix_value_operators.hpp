@@ -30,7 +30,7 @@
  *
  */
 
-namespace dynamic{
+namespace feng{
 
 template< typename T1, std::size_t D, typename A, typename T2 >
 const matrix<T1,D,A>
@@ -152,7 +152,7 @@ operator && ( const T& lhs, const matrix<T,D,A>& rhs )
 	return ans;
 }
 
-}//namespace dynamic
+}//namespace feng
 
 #endif//_MATRIX_VALUE_OPERATORS_HPP_INCLUDED
 

@@ -11,7 +11,7 @@
 #include <numeric>
 #include <cstring>
 
-namespace dynamic
+namespace feng
 {
 
 //
@@ -63,7 +63,7 @@ struct gauss_jordan_elimination
 
 };
 
-}//namespace dynamic
+}//namespace feng
 
 #endif
 

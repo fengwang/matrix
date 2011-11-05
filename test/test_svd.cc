@@ -6,7 +6,7 @@
 
 int main()
 {
-    using namespace dynamic;
+    using namespace feng;
     using namespace std;
     using namespace vg;
 

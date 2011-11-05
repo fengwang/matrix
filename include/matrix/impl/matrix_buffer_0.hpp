@@ -9,7 +9,8 @@
 #include <algorithm> 	//for copy
 #include <cstring> 		//form memset memcpy
 
-namespace dynamic{
+namespace feng
+{
 
 template<
         	typename Type,
@@ -208,7 +209,7 @@ private:
 
 };
 
-}//namespace
+}//namespace feng
 
 #endif	/* _DYNAMIC_MATRIX_BUFFER_0_HPP_INCLUDED */
 
