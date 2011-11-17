@@ -8,7 +8,6 @@
 #define _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED
 
 #include <matrix/impl/matrix_buffer.hpp>
-#include <matrix/impl/matrix_buffer_0.hpp>
 #include <matrix/impl/matrix_stride_iterator.hpp>
 #include <matrix/impl/matrix_range_iterator.hpp>
 #include <matrix/impl/misc.hpp>

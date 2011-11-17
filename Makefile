@@ -1,19 +1,18 @@
 ####### Compiler, tools and options
+#CC            = icc
 CC            = gcc
-#CC            = gcc-4.6
 #CXX           = icpc
-#CXX           = g++-4.6
 CXX           = g++
-#DEFINES       = -Wall
-DEFINES       = -Wall -std=c++0x -g
+DEFINES       = -Wall -std=c++0x 
+#CFLAGS        = -gcc-460 -fast $(DEFINES)
 CFLAGS        = -O2 $(DEFINES)
+#CXXFLAGS        = -gcc-460 -fast $(DEFINES)
 CXXFLAGS        = -O2 $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include
 #LINK          = icpc
 LINK          = g++
-#LINK          = g++-4.6
-LFLAGS        = -g
-#LFLAGS        = -Wl,--as-needed -Wl,-O1
+#LFLAGS        = -g
+LFLAGS        = -Wl,--as-needed -Wl,-O1
 DEL_FILE      = rm -f
 DEL_DIR       = rmdir
 MOVE          = mv -f
