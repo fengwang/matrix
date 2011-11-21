@@ -31,12 +31,9 @@ namespace feng
      *          f_      begin position of function array f[m]
      *          _f      end position of funciton array f[m]
      *          a_      begin positon of the fitted parameters array a[m]
-     * Output:
-     *          valarray<T>     
-     *          the variances (squared uncertainties) of the fitted parameters a[m]
      */
     template< typename T, typename II1, typename II2, typename II3, typename II4, typename OI >
-    const std::valarray<T>
+    OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
                              II3 w_,         // w[n]
@@ -54,12 +51,9 @@ namespace feng
      *          f_      begin position of function array f[m]
      *          _f      end position of funciton array f[m]
      *          a_      begin positon of the fitted parameters array a[m]
-     * Output:
-     *          valarray<T>     
-     *          the variances (squared uncertainties) of the fitted parameters a[m]
      */
     template< typename T, typename II1, typename II2, typename II3, typename OI >
-    const std::valarray<T> 
+    OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
                              II3 f_, II3 _f, // f[m]
@@ -70,7 +64,7 @@ namespace feng
     ///////////////////////////////////////////////////////////////////////////////
 
     template< typename T, typename II1, typename II2, typename II3, typename II4, typename OI >
-    const std::valarray<T>
+    OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                             II2 y_,          // y[n]
                             II3 w_,          // w[n]
@@ -100,19 +94,22 @@ namespace feng
             for ( auto j = 0; j < n; ++j )
                 beta[i] += w_[j] * w_[j] * y_[j] * fx[i][j];
 
-        // a = \beta * \alpha^{-1}
-        auto const i_alpha = alpha.inverse();
-        auto const ans_b = i_alpha*beta;
-        //auto const ans_b = gauss_jordan_elimination()( alpha, beta );
+        //TODO: approximation algorithms here needed
+        //const std::size_t threshold = 10000;
+        //if ( alpha.size() < threshold )
+        {
+            // a = \beta * \alpha^{-1}
+            auto const i_alpha = alpha.inverse();
+            auto const ans_b = i_alpha*beta;
+            //auto const ans_b = gauss_jordan_elimination()( alpha, beta );
+            return std::copy( ans_b.begin(), ans_b.end(), a_ );
+        }
 
-        std::copy( ans_b.begin(), ans_b.end(), a_ );
-        std::valarray<value_type> as(m);
-        std::copy( i_alpha.diag_begin(), i_alpha.diag_end(), &as[0] );
-        return as;
+        //return gauss_jordan_elimination( alpha, std::begin(beta), std::end(beta), a_ );
     }
             
     template< typename T, typename II1, typename II2, typename II3, typename OI >
-    const std::valarray<T> 
+    OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
                              II3 f_, II3 _f, // f[m]
@@ -140,17 +137,17 @@ namespace feng
         for ( auto i = 0; i < m; ++i )
             beta[i] = std::inner_product( fx.row_begin(i), fx.row_end(i), y_, value_type() );
 
-        // a = \beta * \alpha^{-1}
-        auto const i_alpha = alpha.inverse();
-        auto const ans_b = i_alpha*beta;
-        //auto const ans_b = gauss_jordan_elimination()( alpha, beta );
+        //TODO: approximation algorithms here needed
+        //const std::size_t threshold = 10000;
+        //if ( alpha.size() < threshold )
+        {
+            // a = \beta * \alpha^{-1}
+            auto const i_alpha = alpha.inverse();
+            auto const ans_b = i_alpha*beta;
+            return std::copy( ans_b.begin(), ans_b.end(), a_ );
+        }
 
-        std::copy( ans_b.begin(), ans_b.end(), a_ );
-
-        std::valarray<value_type> as(m);
-        std::copy( i_alpha.diag_begin(), i_alpha.diag_end(), &as[0] );
-
-        return as;
+        //return gauss_jordan_elimination( alpha, std::begin(beta), std::end(beta), a_ );
     }
 
 

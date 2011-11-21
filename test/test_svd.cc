@@ -1,8 +1,8 @@
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
 #include <matrix.hpp>
 #include <vg.hpp> //variate generator
-#include <valarray>
-#include <iostream>
-#include <algorithm>
 
 int main()
 {
@@ -11,24 +11,27 @@ int main()
     using namespace vg;
 
 
-    const unsigned long n = 7;
-    const unsigned long m = 7;
+    const unsigned long n = 11;
+    const unsigned long m = 6;
     matrix<double> A( n, m );
+    matrix<double> x;
+    matrix<double> w;
+    matrix<double> v;
 
-    variate_generator<double> v(-1.0, 1.0);
-    copy( v.begin(), v.begin()+n*m, A.begin() );
+    variate_generator<double> vg(-10.0, 10.0);
+    copy( vg.begin(), vg.begin()+n*m, A.begin() );
 
-    cout << "\nA= \n" << A;
-    singular_value_decomposition<matrix<double> > svd( A );
+    singular_value_decomposition( A, x, w, v);
 
-    auto u = svd.u();
-    auto w = svd.w();
-    auto V = svd.v();
+    std::cout << "\nx is \n " << x;
+    std::cout << "\nw is \n " << w;
+    std::cout << "\nv is \n " << v;
 
-    matrix<double> W( n, n );
-    copy( &(w[0]), &(w[0])+n, W.diag_begin() ); 
+    std::cout << "\nx x^t is \n " << ~x * x ;
+    std::cout << "\nv v^t is \n " << ~v * v ;
 
-    cout << "\nA - U W V^{T} = \n" << A - u * W * (~V) << "\n";
+    std::cout.precision(1);
+    std::cout << "\nA-x*w*v^t = \n" << A - x * w * (~v);
 
     return 0;
 }

@@ -7,7 +7,8 @@ DEFINES       = -Wall -std=c++0x
 #CFLAGS        = -gcc-460 -fast $(DEFINES)
 CFLAGS        = -O2 $(DEFINES)
 #CXXFLAGS        = -gcc-460 -fast $(DEFINES)
-CXXFLAGS        = -O2 $(DEFINES)
+CXXFLAGS        = -g $(DEFINES)
+#CXXFLAGS        = -O2 $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include
 #LINK          = icpc
 LINK          = g++
@@ -22,7 +23,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -40,10 +41,6 @@ test_lu: test/test_lu.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_lu.o test/test_lu.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_lu $(OBJECTS_DIR)/test_lu.o
 
-test_svd: test/test_svd.cc
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_svd.o test/test_svd.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_svd $(OBJECTS_DIR)/test_svd.o
-
 test_cd: test/test_cd.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_cd.o test/test_cd.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_cd $(OBJECTS_DIR)/test_cd.o
@@ -59,4 +56,8 @@ test_llsf: test/test_llsf.cc
 test_llsf2: test/test_llsf2.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_llsf2.o test/test_llsf2.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_llsf2 $(OBJECTS_DIR)/test_llsf2.o
+
+test_svd: test/test_svd.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_svd.o test/test_svd.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_svd $(OBJECTS_DIR)/test_svd.o
 

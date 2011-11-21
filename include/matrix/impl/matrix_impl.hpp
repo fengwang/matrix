@@ -208,8 +208,7 @@ public:
 
 public:
     self_type&
-    resize( const size_type new_row,
-            const size_type new_col )
+    resize( const size_type new_row, const size_type new_col )
     {
         if ( ( row_ == new_row ) && ( col_ == new_col ) )
             return *this;
@@ -765,12 +764,24 @@ public:
     }
 
 public:
+    value_type&
+    operator()( const size_type r = 0, const size_type c = 0 )
+    {
+        return *(row_begin(r)+c);
+    }
+
+    value_type
+    operator()( const size_type r = 0, const size_type c = 0 ) const 
+    {
+        return *(row_begin(r)+c);
+    }
+
+public:
     const self_type 
     operator-() const
     {
         self_type ans(*this);
-        std::transform(ans.begin(), ans.end(), ans.begin(),
-                       std::negate<value_type > ());
+        std::transform(ans.begin(), ans.end(), ans.begin(), std::negate<value_type>());
         return ans;
     }
 
@@ -841,7 +852,6 @@ public:
     self_type &
     operator *= ( const self_type& other );
     with this[R]{C], other[C][OC]
-
 
     //ALGORITHM DETAILS:
         //threshold should be determined from experiments

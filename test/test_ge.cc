@@ -11,7 +11,7 @@ int main()
 
 
     const unsigned long n = 15;
-    const unsigned long m = 10;
+    const unsigned long m = 1;
     matrix<double> A( n, n );
     matrix<double> x( n, m );
     matrix<double> b( n, m );
@@ -25,8 +25,15 @@ int main()
     cout << "\nb= \n" << b;
     cout << "\nx= \n" << x;
 
-    matrix<double> x_ = gauss_jordan_elimination()( A, b );
+    matrix<double> x_ = gauss_jordan_elimination( A, b );
     cout << "\nx_= \n" << x_;
+
+    cout << "\nx-x_ is \n" << x-x_ << "\n";
+
+    vector<double> XX( n );
+    gauss_jordan_elimination( A, b.begin(), b.end(), XX.begin() );
+    cout << "\nXX= \n";
+    copy( XX.begin(), XX.end(), ostream_iterator<double>(cout, "\t"));
 
     return 0;
 }
