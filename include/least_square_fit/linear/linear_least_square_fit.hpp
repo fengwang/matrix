@@ -94,18 +94,19 @@ namespace feng
             for ( auto j = 0; j < n; ++j )
                 beta[i] += w_[j] * w_[j] * y_[j] * fx[i][j];
 
-        //TODO: approximation algorithms here needed
-        //const std::size_t threshold = 10000;
-        //if ( alpha.size() < threshold )
-        {
-            // a = \beta * \alpha^{-1}
-            auto const i_alpha = alpha.inverse();
-            auto const ans_b = i_alpha*beta;
-            //auto const ans_b = gauss_jordan_elimination()( alpha, beta );
-            return std::copy( ans_b.begin(), ans_b.end(), a_ );
-        }
-
-        //return gauss_jordan_elimination( alpha, std::begin(beta), std::end(beta), a_ );
+        // solve \alpha b = \beta
+        //      by SVD
+        //              \alpha      = u w v^{T}
+        //              \alpha^{-1} = v w^{-1} u^{T}
+        //      get
+        //              b = v * w^{-1} * u^{T} * beta
+        matrix<value_type> u;
+        matrix<value_type> w;
+        matrix<value_type> v;
+        singular_value_decomposition( alpha, u, w, v );
+        std::for_each( w.diag_begin(), w.diag_end(), [](value_type& v){ v = value_type(1)/v; } );
+        auto const ans_b = v * w * (~u) * beta;
+        return std::copy( ans_b.begin(), ans_b.end(), a_ );
     }
             
     template< typename T, typename II1, typename II2, typename II3, typename OI >
@@ -137,19 +138,20 @@ namespace feng
         for ( auto i = 0; i < m; ++i )
             beta[i] = std::inner_product( fx.row_begin(i), fx.row_end(i), y_, value_type() );
 
-        //TODO: approximation algorithms here needed
-        //const std::size_t threshold = 10000;
-        //if ( alpha.size() < threshold )
-        {
-            // a = \beta * \alpha^{-1}
-            auto const i_alpha = alpha.inverse();
-            auto const ans_b = i_alpha*beta;
-            return std::copy( ans_b.begin(), ans_b.end(), a_ );
-        }
-
-        //return gauss_jordan_elimination( alpha, std::begin(beta), std::end(beta), a_ );
+        // solve \alpha b = \beta
+        //      by SVD
+        //              \alpha      = u w v^{T}
+        //              \alpha^{-1} = v w^{-1} u^{T}
+        //      get
+        //              b = v * w^{-1} * u^{T} * beta
+        matrix<value_type> u;
+        matrix<value_type> w;
+        matrix<value_type> v;
+        singular_value_decomposition( alpha, u, w, v );
+        std::for_each( w.diag_begin(), w.diag_end(), [](value_type& v){ v = value_type(1)/v; } );
+        auto const ans_b = v * w * (~u) * beta;
+        return std::copy( ans_b.begin(), ans_b.end(), a_ );
     }
-
 
 }//namespace feng
 

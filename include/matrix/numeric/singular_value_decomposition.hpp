@@ -2,6 +2,7 @@
 #define _SVD_HPP_INCLUDED_OFSIDHJLKJ34OAHFD98HU398UHYAFOSOIUH3IUHD98U4EIJDFIJSDI
 
 #include <matrix/matrix.hpp>
+#include <misc.hpp>
 
 #include <cstddef>
 #include <cassert>
@@ -32,14 +33,15 @@ namespace feng
         const value_type zero(0);
         const value_type one(1);
         const std::size_t max_its(30);
-        std::size_t m = A.row();
-        std::size_t n = A.col();
+        const std::size_t m = A.row();
+        const std::size_t n = A.col();
         u = A;
         w.resize( n, n );
         v.resize( n, n );
-        int i, j, jj, k, l;
+        //int i, j, k, l;
+        std::size_t i, l;
         value_type c, f, h;
-        std::vector<value_type> rv1(n);
+        std::vector<value_type> arr(n);
         value_type g = zero;
         value_type s = zero;
         value_type scale = zero;
@@ -48,7 +50,7 @@ namespace feng
         for ( i = 0; i < n; ++i )
         {
             l = i + 2;
-            rv1[i] = scale * g;
+            arr[i] = scale * g;
             g = zero;
             s = zero;
             scale = zero;
@@ -66,7 +68,7 @@ namespace feng
                     const value_type tmp_h = u[i][i] * g - tmp_s;
                     u[i][i] -= g;
 
-                    for ( j = l-1; j < n; ++j )
+                    for ( std::size_t j = l-1; j < n; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.col_begin(i)+i, u.col_end(i), u.col_begin(j)+i, value_type(0) );
                         std::transform( u.col_begin(j)+i, u.col_end(j), u.col_begin(i)+i, u.col_begin(j)+i, [tmp_ss, tmp_h]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2 / tmp_h; } );
@@ -94,22 +96,22 @@ namespace feng
                     auto const tmp_h = u[i][l-1] * g - tmp_s;
                     u[i][l-1] -=  g;
 
-                    std::transform( u.row_begin(i)+l-1, u.row_end(i), rv1.begin()+l-1, [tmp_h](value_type v){ return v/tmp_h; } );
+                    std::transform( u.row_begin(i)+l-1, u.row_end(i), arr.begin()+l-1, [tmp_h](value_type v){ return v/tmp_h; } );
 
-                    for ( j = l-1; j < m; ++j )
+                    for ( std::size_t j = l-1; j < m; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.row_begin(j)+l-1, u.row_end(j), u.row_begin(i)+l-1, value_type(0) );
-                        std::transform( u.row_begin(j)+l-1, u.row_end(j), rv1.begin()+l-1, u.row_begin(j)+l-1, [tmp_ss](value_type v1, value_type v2){ return v1 + tmp_ss * v2; } );
+                        std::transform( u.row_begin(j)+l-1, u.row_end(j), arr.begin()+l-1, u.row_begin(j)+l-1, [tmp_ss](value_type v1, value_type v2){ return v1 + tmp_ss * v2; } );
                     } // j loop
 
                     std::for_each( u.row_begin(i)+l-1, u.row_end(i), [scale](value_type& v) { v *= scale; } );
                 } // if i+1 != m && ...
             }
 
-            anorm = std::max( anorm, ( std::fabs( w[i][i] ) + std::fabs( rv1[i] ) ) );
+            anorm = std::max( anorm, ( std::fabs( w[i][i] ) + std::fabs( arr[i] ) ) );
         }
 
-        for ( i = n-1; i >= 0; i-- )
+        for ( i = n-1; ; --i )
         {
             if ( i < n-1 )
             {
@@ -118,7 +120,7 @@ namespace feng
                     auto const tmp_uil = u[i][l];
                     std::transform( u.row_begin(i)+l, u.row_end(i), v.col_begin(i)+l, [g, tmp_uil](value_type val){ return val/(tmp_uil*g); } );
 
-                    for ( j = l; j < n; j++ )
+                    for ( std::size_t j = l; j < n; j++ )
                     {
                         const auto tmp_s = std::inner_product( u.row_begin(i)+l, u.row_end(i), v.col_begin(j)+l, value_type(0));
                         std::transform( v.col_begin(j)+l, v.col_end(j), v.col_begin(i)+l, v.col_begin(j)+l, [tmp_s](value_type v1, value_type v2){ return v1 + v2 * tmp_s; } );
@@ -131,11 +133,12 @@ namespace feng
             } // if i < n-1
 
             v[i][i] = one;
-            g = rv1[i];
+            g = arr[i];
             l = i;
+            if ( !i ) break;
         } // i loop
 
-        for ( i = std::min( m, n )-1; i >= 0; --i )
+        for ( i = std::min( m, n )-1; ; --i )
         {
             auto const tmp_l = i + 1;
             auto const tmp_g = w[i][i];
@@ -144,7 +147,7 @@ namespace feng
 
             if ( tmp_g != zero )
             {
-                for ( j = tmp_l; j < n; j++ )
+                for ( std::size_t j = tmp_l; j < n; j++ )
                 {
                     auto const tmp_s = std::inner_product( u.col_begin(i)+tmp_l, u.col_end(i), u.col_begin(j)+tmp_l, value_type(0) );
                     auto const tmp_f = tmp_s / (u[i][i] * tmp_g);
@@ -157,9 +160,11 @@ namespace feng
                 std::fill( u.col_begin(i)+i, u.col_end(i), zero );
 
             ++u[i][i];
+
+            if( !i ) break;
         } // i loop
 
-        for ( k = n-1; k >= 0; k-- )
+        for ( std::size_t k = n-1; ; --k )
         {
             for ( std::size_t its = 0; its < max_its; its++ )
             {
@@ -170,7 +175,7 @@ namespace feng
                 {
                     tmp_nm = l-1;
 
-                    if ( std::fabs( rv1[l] ) + anorm == anorm )
+                    if ( std::fabs( arr[l] ) + anorm == anorm )
                     {
                         flag = false;
                         break;
@@ -185,10 +190,10 @@ namespace feng
                     c = zero;
                     s = one;
 
-                    for ( i = l-1; i < k + 1; i++ )
+                    for ( i = l-1; i < k + 1; ++i )
                     {
-                        f = s * rv1[i];
-                        rv1[i] = c * rv1[i];
+                        f = s * arr[i];
+                        arr[i] = c * arr[i];
 
                         if ( std::fabs( f ) + anorm == anorm )
                         { break; }
@@ -200,7 +205,7 @@ namespace feng
                         c = g * h;
                         s = -f * h;
 
-                        for ( j = 0; j < m; j++ )
+                        for ( std::size_t j = 0; j < m; ++j )
                         {
                             value_type y = u[j][tmp_nm];
                             value_type z = u[j][i];
@@ -219,7 +224,6 @@ namespace feng
                         w[k][k] = -z;
                         std::for_each( v.col_begin(k), v.col_end(k), [](value_type& v){ v = -v; } );
                     }
-
                     break;
                 } // if l == k
 
@@ -228,23 +232,22 @@ namespace feng
 
                 value_type x = w[l][l];
                 value_type y = w[k-1][k-1];
-                g = rv1[k-1];
-                h = rv1[k];
+                g = arr[k-1];
+                h = arr[k];
                 f = ( ( y - z ) * ( y + z ) + ( g - h ) * ( g + h ) ) / ( 2.0 * h * y );
                 g = std::hypot( f, one );
                 g = ( f >= zero ) ? g : -g;
                 f = ( ( x - z ) * ( x + z ) + h * ( ( y / ( f + g ) ) ) - h ) / x;
                 c = s = one;
 
-                for ( j = l; j <= k-1; j++ )
+                for ( std::size_t j = l; j <= k-1; j++ )
                 {
-                    i = j + 1;
-                    g = rv1[i];
-                    y = w[i][i];
+                    g = arr[j+1];
+                    y = w[j+1][j+1];
                     h = s * g;
                     g = c * g;
                     z = std::hypot( f, h );
-                    rv1[j] = z;
+                    arr[j] = z;
                     c = f / z;
                     s = h / z;
                     f = x * c + g * s;
@@ -252,42 +255,31 @@ namespace feng
                     h = y * s;
                     y *= c;
 
-                    for ( jj = 0; jj < n; jj++ )
-                    {
-                        const value_type tmp1 = v[jj][j];
-                        const value_type tmp2 = v[jj][i];
-                        v[jj][j] = tmp1 * c + tmp2 * s;
-                        v[jj][i] = tmp2 * c - tmp1 * s;
-                    } // jj loop
+                    feng::for_each( v.col_begin(j), v.col_end(j), v.col_begin(j+1), [c, s]( value_type& v1, value_type& v2 ) { const auto vv1(v1); const auto vv2(v2); v1 = vv1*c + vv2*s; v2 = vv2*c - vv1*s; } );
 
-                    z = std::hypot( f, h );
-                    w[j][j] = z;
+                    w[j][j] = std::hypot( f, h );
 
-                    if ( z )
+                    if ( value_type(0) != w[j][j] )
                     {
-                        z = one / z;
-                        c = f * z;
-                        s = h * z;
+                        c = f / w[j][j];
+                        s = h / w[j][j];
                     } // if z
+
+                    //defined in misc.hpp
+                    feng::for_each( u.col_begin(j), u.col_end(j), u.col_begin(j+1), [c, s]( value_type& v1, value_type& v2 ) { const auto vv1(v1); const auto vv2(v2); v1 = vv1*c + vv2*s; v2 = vv2*c - vv1*s; } );
 
                     f = c * g + s * y;
                     x = c * y - s * g;
+                } // j loop
 
-                    for ( jj = 0; jj < m; jj++ )
-                    {
-                        const value_type tmp1 = u[jj][j];
-                        const value_type tmp2 = u[jj][i];
-                        u[jj][j] = tmp1 * c + tmp2 * s;
-                        u[jj][i] = tmp2 * c - tmp1 * s;
-                    } // jj loop
-                }
-
-                rv1[l] = zero;
-                rv1[k] = f;
+                arr[l] = zero;
+                arr[k] = f;
                 w[k][k] = x;
-            }
-        }
-    }
+                i = k;
+            }//its loop
+            if ( !k ) break;
+        } // k loop
+    }//singular_value_decomposition 
 
 }//namespace sm
 
