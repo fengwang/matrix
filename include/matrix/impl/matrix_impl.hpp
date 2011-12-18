@@ -36,7 +36,7 @@ class matrix
 {
 
 public:
-    typedef typename remove_reference<Type>::result_type                  value_type1;
+    typedef typename remove_reference<Type>::result_type                value_type1;
     typedef typename remove_const<value_type1>::result_type             value_type;
     typedef matrix                                                      self_type;
     typedef value_type*                                                 iterator;
@@ -46,7 +46,8 @@ public:
     typedef std::size_t                                                 size_type;
     typedef std::ptrdiff_t                                              difference_type;
 
-    typedef std::pair<size_type, size_type>                             range_type;
+    //typedef std::pair<size_type, size_type>                             range_type;
+    typedef range                                                       range_type;
 
     //stride iterators
     typedef matrix_stride_iterator<value_type*>                         row_type;
