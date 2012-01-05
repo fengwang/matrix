@@ -37,13 +37,13 @@ int main()
     f.push_back( [](double x) -> double{ return exp(x); } );
 
     copy( vgg.begin(), vgg.begin()+n, y.begin() );
-    for ( auto i = 0; i < n; ++i )
-        for ( auto j = 0; j < m; ++j )
+    for ( std::size_t i = 0; i < n; ++i )
+        for ( std::size_t j = 0; j < m; ++j )
             y[i] += a[j] * f[j](x[i]);
 
     linear_lease_square_fit<double>( x.begin(), x.end(), y.begin(), f.begin(), f.end(), b.begin() );
 
-    for ( auto i = 0; i < m; ++i )
+    for ( std::size_t i = 0; i < m; ++i )
         cout << "\na[" << i << "] = " << a[i] << "<->" << b[i] << "<<>>" << a[i]-b[i]; 
 
     
