@@ -95,7 +95,7 @@ namespace feng
                 beta[i] += w_[j] * w_[j] * y_[j] * fx[i][j];
 
         // solve \alpha b = \beta
-        //      by SVD
+        //      using SVD
         //              \alpha      = u w v^{T}
         //              \alpha^{-1} = v w^{-1} u^{T}
         //      get
@@ -139,7 +139,7 @@ namespace feng
             beta[i] = std::inner_product( fx.row_begin(i), fx.row_end(i), y_, value_type() );
 
         // solve \alpha b = \beta
-        //      by SVD
+        //      using SVD
         //              \alpha      = u w v^{T}
         //              \alpha^{-1} = v w^{-1} u^{T}
         //      get

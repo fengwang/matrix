@@ -48,7 +48,8 @@ public:
     
 private:
     // elements size that could be stored in stack buffer
-    enum {  var_length = SPACE*sizeof(std::size_t)/sizeof(Type) };
+    enum {  var_length = SPACE ? SPACE : 1 };
+    //enum {  var_length = SPACE*sizeof(std::size_t)/sizeof(Type) };
 
 public:
 
@@ -357,6 +358,8 @@ private:
 
 };
 
+#if 0
+
 template<
         	typename Type,
 			class Allocator // = std::allocator<Type>
@@ -554,6 +557,7 @@ private:
 
 };
 
+#endif
 
 }//namespace feng
 
