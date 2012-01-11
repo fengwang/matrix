@@ -94,6 +94,15 @@ GENERATE_MATRIX_MATH_UNARY_FUNCTION(trunc);
         auto m( mm ); \
         transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return f_name( v1, v ); } ); \
         return m; \
+    } \
+    template< typename T1, std::size_t N1, typename A1, typename T2 > \
+    const matrix<T1, N1, A1> \
+    f_name( const T2 v, const matrix<T1, N1, A1> & mm ) \
+    { \
+        using namespace std; \
+        auto m( mm ); \
+        transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return f_name( v, v1 ); } ); \
+        return m; \
     }
 
 GENERATE_MATRIX_MATH_BINARY_FUNCTION(atan2);

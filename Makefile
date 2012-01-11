@@ -3,17 +3,17 @@
 CC            = gcc
 #CXX           = icpc
 CXX           = g++
-DEFINES       = -Wall -std=c++0x 
+DEFINES       = -Wall -std=c++0x  -pg
 #CFLAGS        = -gcc-460 -fast $(DEFINES)
-CFLAGS        = -O2 $(DEFINES)
+CFLAGS        = $(DEFINES)
 #CXXFLAGS        = -gcc-460 -fast $(DEFINES)
 #CXXFLAGS        = -g $(DEFINES)
-CXXFLAGS        = -O2 $(DEFINES)
+CXXFLAGS        = $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include
 #LINK          = icpc
 LINK          = g++
-#LFLAGS        = -g
-LFLAGS        = -lgsl -lgslcblas
+LFLAGS        = -pg
+#LFLAGS        = -lgsl -lgslcblas
 DEL_FILE      = rm -f
 DEL_DIR       = rmdir
 MOVE          = mv -f
@@ -23,7 +23,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd benchmark
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd benchmark nllsf_test
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -52,6 +52,10 @@ test_magic: test/test_magic.cc
 test_llsf: test/test_llsf.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_llsf.o test/test_llsf.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_llsf $(OBJECTS_DIR)/test_llsf.o
+
+nllsf_test: test/nllsf_test.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/nllsf_test.o test/nllsf_test.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/nllsf_test $(OBJECTS_DIR)/nllsf_test.o
 
 test_llsf2: test/test_llsf2.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_llsf2.o test/test_llsf2.cc

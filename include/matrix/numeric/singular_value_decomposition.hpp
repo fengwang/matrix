@@ -32,7 +32,7 @@ namespace feng
 
         const value_type zero(0);
         const value_type one(1);
-        const std::size_t max_its(30);
+        const std::size_t max_its(100);
         const std::size_t m = A.row();
         const std::size_t n = A.col();
         u = A;
@@ -228,7 +228,7 @@ namespace feng
                 } // if l == k
 
                 if ( (its+1) == max_its )
-                { assert( !"no convergence in 30 svdcmp iterations" ); }
+                { assert( !"no convergence in 100 singular_value_decomposition iterations" ); }
 
                 value_type x = w[l][l];
                 value_type y = w[k-1][k-1];
