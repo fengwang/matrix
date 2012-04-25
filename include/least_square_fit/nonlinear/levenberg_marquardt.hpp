@@ -2,6 +2,7 @@
 #define _LEVENBERG_MARQUARDT_HPP_INCLUDED_SDFOIU498FDSIUHVSKJHNC98Y4KJHFDSSIUHY4KJHSDFMJNBCKJHSASKJHSKJHCKJH4EU7KJSDFVNKJ
 
 #include <matrix.hpp>
+#include <misc/inner_product.hpp>
 
 #include <cmath>
 #include <vector>

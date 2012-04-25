@@ -23,7 +23,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd benchmark nllsf_test
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -64,8 +64,4 @@ test_llsf2: test/test_llsf2.cc
 test_svd: test/test_svd.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_svd.o test/test_svd.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_svd $(OBJECTS_DIR)/test_svd.o
-
-benchmark: test/benchmark.cc
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/benchmark.o test/benchmark.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/benchmark $(OBJECTS_DIR)/benchmark.o
 
