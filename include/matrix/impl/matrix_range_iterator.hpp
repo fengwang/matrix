@@ -42,9 +42,9 @@ struct matrix_range_iterator
             : first_( first__ ), last_( last__ ), step_( step__ )
         { }
 
-        matrix_range_iterator( const self_type& other )
-            : first_( other.first_ ), last_( other.last_ ), step_( other.step_ )
-        { }
+        matrix_range_iterator( const self_type& ) = default;
+
+        matrix_range_iterator( self_type&& ) = default;
 
         self_type& 
 		operator = ( const self_type& other )
@@ -52,6 +52,8 @@ struct matrix_range_iterator
             do_copy( other );
             return *this;
         }
+
+        self_type& operator = ( self_type&& ) = default; 
 
         reference 
 		operator*()

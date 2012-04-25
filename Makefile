@@ -3,7 +3,7 @@
 CC            = gcc
 #CXX           = icpc
 CXX           = g++
-DEFINES       = -Wall -std=c++0x  -pg
+DEFINES       = -Wall -std=c++11  -pg
 #CFLAGS        = -gcc-460 -fast $(DEFINES)
 CFLAGS        = $(DEFINES)
 #CXXFLAGS        = -gcc-460 -fast $(DEFINES)

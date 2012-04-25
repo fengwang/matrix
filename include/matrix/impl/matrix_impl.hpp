@@ -129,6 +129,11 @@ public:
     }
 
 public:
+    matrix( self_type&& ) = default;
+    self_type& operator = ( self_type&& ) = default;
+
+
+public:
     matrix (    const self_type& other, 
                 const range_type& rr, 
                 const range_type& rc )

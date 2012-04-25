@@ -72,7 +72,7 @@ namespace feng
     
     template<typename T, std::size_t D, typename A, typename T_>
     const matrix<T,D,A>
-    operator * ( const std::vector<T_>& lhs, const matrix<T,D,A>& rhs, )
+    operator * ( const std::vector<T_>& lhs, const matrix<T,D,A>& rhs )
     {
         assert( rhs.col() == lhs.size() );
         matrix<T,D,A> ans(1, rhs.col());

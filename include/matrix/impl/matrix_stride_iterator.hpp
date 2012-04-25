@@ -29,15 +29,19 @@ public:
     typedef typename std::iterator_traits<Iterator_Type>::difference_type 			difference_type;
     typedef typename std::iterator_traits<Iterator_Type>::pointer 					pointer;
     typedef std::random_access_iterator_tag 										iterator_category;
-    typedef matrix_stride_iterator 											self_type;
+    typedef matrix_stride_iterator 			        								self_type;
 
 	//	default ctor.
     matrix_stride_iterator() 
 	: iterator_(0), step_(1) { }
 
-	//	copy ctor.
-    matrix_stride_iterator(const self_type& s)
-    : iterator_(s.iterator_), step_(s.step_) { }
+    matrix_stride_iterator(const self_type&) = default;
+
+    matrix_stride_iterator(self_type&&) = default;
+
+    self_type& operator = (const self_type&) = default;
+
+    self_type& operator = (self_type&&) = default;
 
 	//	ctor from an iterator and a step
     matrix_stride_iterator(const Iterator_Type& it, const difference_type& dt)
