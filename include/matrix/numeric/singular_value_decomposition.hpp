@@ -2,7 +2,7 @@
 #define _SVD_HPP_INCLUDED_OFSIDHJLKJ34OAHFD98HU398UHYAFOSOIUH3IUHD98U4EIJDFIJSDI
 
 #include <matrix/matrix.hpp>
-#include <misc.hpp>
+#include <misc/for_each.hpp>
 
 #include <cstddef>
 #include <cassert>
