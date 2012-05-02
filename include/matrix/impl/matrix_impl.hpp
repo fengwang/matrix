@@ -257,6 +257,18 @@ public:
         return data_.end();
     }
 
+    const_iterator 
+    cbegin() const
+    {
+        return data_.begin();
+    }
+
+    const_iterator 
+    cend() const
+    {
+        return data_.end();
+    }
+
 public:
     reverse_iterator 
     rbegin()
@@ -278,6 +290,18 @@ public:
 
     const_reverse_iterator 
     rend() const
+    {
+        return const_reverse_iterator( begin() );
+    }
+
+    const_reverse_iterator 
+    crbegin() const
+    {
+        return const_reverse_iterator( end() );
+    }
+
+    const_reverse_iterator 
+    crend() const
     {
         return const_reverse_iterator( begin() );
     }
@@ -307,6 +331,18 @@ public:
         return row_begin(index) + col();
     }
 
+    const_row_type 
+    row_cbegin(const size_type index = 0) const
+    {
+        return const_row_type(begin() + index * col(), 1);
+    }
+
+    const_row_type 
+    row_cend(const size_type index = 0) const
+    {
+        return row_begin(index) + col();
+    }
+
 public:
     reverse_row_type 
     row_rbegin( const size_type index = 0 )
@@ -328,6 +364,18 @@ public:
 
     const_reverse_row_type 
     row_rend( const size_type index = 0 ) const
+    {
+        return const_reverse_row_type( row_begin( index ) );
+    }
+
+    const_reverse_row_type 
+    row_crbegin( const size_type index = 0 ) const
+    {
+        return const_reverse_row_type( row_end( index ) );
+    }
+
+    const_reverse_row_type 
+    row_crend( const size_type index = 0 ) const
     {
         return const_reverse_row_type( row_begin( index ) );
     }
@@ -357,6 +405,18 @@ public:
         return col_begin(index) + row();
     }
 
+    const_col_type 
+    col_cbegin(const size_type index) const
+    {
+        return const_col_type(begin() + index, col());
+    }
+
+    const_col_type 
+    col_cend(const size_type index) const
+    {
+        return col_begin(index) + row();
+    }
+
 public:
     reverse_col_type 
     col_rbegin( const size_type index = 0 )
@@ -382,6 +442,18 @@ public:
         return const_reverse_col_type( col_begin( index ) );
     }
 
+    const_reverse_col_type 
+    col_crbegin( const size_type index = 0 ) const
+    {
+        return const_reverse_col_type( col_end( index ) );
+    }
+
+    const_reverse_col_type 
+    col_crend( const size_type index = 0 ) const
+    {
+        return const_reverse_col_type( col_begin( index ) );
+    }
+
 public:
     diag_type 
     upper_diag_begin(const size_type index)
@@ -401,11 +473,26 @@ public:
     const_diag_type 
     upper_diag_begin(const size_type index) const
     {
-        return const_diag_type(begin() + index, col() + 1);
+        return diag_type(begin() + index, col() + 1);
     }
 
     const_diag_type 
-    upper_diag_end(const size_type index) const
+    upper_diag_end(const size_type index) const 
+    {
+        size_type depth = col() - index;
+        if (row() < depth)
+            depth = row();
+        return upper_diag_begin(index) + depth;
+    }
+
+    const_diag_type 
+    upper_diag_cbegin(const size_type index) const
+    {
+        return diag_type(begin() + index, col() + 1);
+    }
+
+    const_diag_type 
+    upper_diag_cend(const size_type index) const 
     {
         size_type depth = col() - index;
         if (row() < depth)
@@ -434,6 +521,18 @@ public:
 
     const_reverse_upper_diag_type 
     upper_diag_rend( const size_type index = 0 ) const
+    {
+        return const_reverse_upper_diag_type( upper_diag_begin( index ) );
+    }
+
+    const_reverse_upper_diag_type 
+    upper_diag_crbegin( const size_type index = 0 ) const
+    {
+        return const_reverse_upper_diag_type( upper_diag_end( index ) );
+    }
+
+    const_reverse_upper_diag_type 
+    upper_diag_crend( const size_type index = 0 ) const
     {
         return const_reverse_upper_diag_type( upper_diag_begin( index ) );
     }
@@ -469,6 +568,21 @@ public:
         return lower_diag_begin(index) + depth;
     }
 
+    const_diag_type 
+    lower_diag_cbegin(const size_type index) const
+    {
+        return const_diag_type(begin() + index * col(), col() + 1);
+    }
+
+    const_diag_type 
+    lower_diag_cend(const size_type index) const
+    {
+        size_type depth = row() - index;
+        if (col() < depth)
+            depth = col();
+        return lower_diag_begin(index) + depth;
+    }
+
 public:
     reverse_lower_diag_type 
     lower_diag_rbegin( const size_type index = 0 )
@@ -490,6 +604,18 @@ public:
 
     const_reverse_lower_diag_type 
     lower_diag_rend( const size_type index = 0 ) const
+    {
+        return const_reverse_lower_diag_type( lower_diag_begin( index ) );
+    }
+
+    const_reverse_lower_diag_type 
+    lower_diag_crbegin( const size_type index = 0 ) const
+    {
+        return const_reverse_lower_diag_type( lower_diag_end( index ) );
+    }
+
+    const_reverse_lower_diag_type 
+    lower_diag_crend( const size_type index = 0 ) const
     {
         return const_reverse_lower_diag_type( lower_diag_begin( index ) );
     }
@@ -519,6 +645,18 @@ public:
         return lower_diag_end(0);
     }
 
+    const_diag_type 
+    diag_cbegin() const
+    {
+        return lower_diag_begin(0);
+    }
+
+    const_diag_type 
+    diag_cend() const
+    {
+        return lower_diag_end(0);
+    }
+
 public:
     reverse_diag_type 
     diag_rbegin()
@@ -540,6 +678,18 @@ public:
 
     const_reverse_diag_type 
     diag_rend() const
+    {
+        return const_reverse_diag_type( diag_begin() );
+    }
+
+    const_reverse_diag_type 
+    diag_crbegin() const
+    {
+        return const_reverse_diag_type( diag_end() );
+    }
+
+    const_reverse_diag_type 
+    diag_crend() const
     {
         return const_reverse_diag_type( diag_begin() );
     }
