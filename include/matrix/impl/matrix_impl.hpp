@@ -1584,6 +1584,40 @@ public:
     {
         assert( row() == col() );
 
+        if (1 == size())
+        {
+            self_type ans(*this);
+
+            *ans.begin() = value_type(1) / (*ans.begin());
+            return ans;
+        }
+
+        if (4 == size())
+        {
+            self_type ans(*this);
+            std::swap(ans[0][0], ans[1][1]);
+            ans[0][1] = -ans[0][1]; 
+            ans[1][0] = -ans[1][0];
+            auto const v = ans[0][0]*ans[1][1] - ans[1][0]*ans[0][1];
+            return ans / v;
+        }
+        
+        if (9 == size())
+        {
+            self_type ans(*this);
+            auto const a = ans[0][0]; auto const b = ans[0][1]; auto const c = ans[0][2];        
+            auto const d = ans[1][0]; auto const e = ans[1][1]; auto const f = ans[1][2];        
+            auto const g = ans[2][0]; auto const h = ans[2][1]; auto const i = ans[2][2];        
+            auto const A = e*i - f*h; auto const B = f*g - d*i; auto const C = d*h - e*g;
+            auto const D = c*h - b*i; auto const E = a*i - c*g; auto const F = g*b - a*h;
+            auto const G = b*f - c*e; auto const H = c*d - a*f; auto const I = a*e - b*d;
+            auto const v = a*A + b*B + c*C;
+            ans[0][0] = A; ans[0][1] = D; ans[0][2] = G;
+            ans[1][0] = B; ans[1][1] = E; ans[1][2] = H;
+            ans[2][0] = C; ans[2][1] = F; ans[2][2] = I;
+            return ans / v;
+        }
+
         if ( row() & 1 )
             return direct_inverse();
 
@@ -1611,16 +1645,11 @@ public:
     // i) R'[n,m] = -sR*P'
     // j) S'[n,n] = s + sR * P' * Qs
     //
+    //TODO:
+    //      seems something wrong with this algorithm, check it
     const self_type 
     direct_inverse() const
     {
-        if (1 == size())
-        {
-            self_type ans(*this);
-
-            *ans.begin() = value_type(1) / (*ans.begin());
-            return ans;
-        }
 
         self_type ans(row(), col());
 
