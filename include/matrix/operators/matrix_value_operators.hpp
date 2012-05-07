@@ -32,66 +32,66 @@
 
 namespace feng{
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator + ( const matrix<T1,D,A>& lhs, const T2& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator + ( const matrix<T,D,A>& lhs, const T& rhs )
 {
-	matrix<T1,D,A> ans( lhs );
+	matrix<T,D,A> ans( lhs );
 	ans += rhs;
 	return ans;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator + ( const T2& lhs, const matrix<T1,D,A>& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator + ( const T& lhs, const matrix<T,D,A>& rhs )
 {
 	return rhs + lhs;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator - ( const matrix<T1,D,A>& lhs, const T2& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator - ( const matrix<T,D,A>& lhs, const T& rhs )
 {
-	matrix<T1,D,A> ans( lhs );
+	matrix<T,D,A> ans( lhs );
 	ans -= rhs;
 	return ans;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator - ( const T2& lhs, const matrix<T1,D,A>& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator - ( const T& lhs, const matrix<T,D,A>& rhs )
 {
 	return - rhs + lhs;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator * ( const matrix<T1,D,A>& lhs, const T2& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator * ( const matrix<T,D,A>& lhs, const T& rhs )
 {
-	matrix<T1,D,A> ans( lhs );
+	matrix<T,D,A> ans( lhs );
 	ans *= rhs;
 	return ans;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator * ( const T2& lhs, const matrix<T1,D,A>& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator * ( const T& lhs, const matrix<T,D,A>& rhs )
 {
 	return rhs * lhs;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator / ( const matrix<T1,D,A>& lhs, const T2& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator / ( const matrix<T,D,A>& lhs, const T& rhs )
 {
-	matrix<T1,D,A> ans( lhs );
+	matrix<T,D,A> ans( lhs );
 	ans /= rhs;
 	return ans;
 }
 
-template< typename T1, std::size_t D, typename A, typename T2 >
-const matrix<T1,D,A>
-operator / ( const T2& lhs, const matrix<T1,D,A>& rhs )
+template< typename T, std::size_t D, typename A>
+const matrix<T,D,A>
+operator / ( const T& lhs, const matrix<T,D,A>& rhs )
 {
 	return lhs * rhs.inverse();
 }

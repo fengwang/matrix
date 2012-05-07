@@ -352,7 +352,9 @@ public:
 
     matrix_buffer( self_type&& other )
     {
-        operator = ( other );
+        std::copy( other.internal_, other.internal_+var_length, internal_ );
+        buffer_ = other.buffer_;
+        items_ = other.items_;
     }
 
     self_type& operator = ( self_type&& other )
@@ -360,6 +362,7 @@ public:
         std::copy( other.internal_, other.internal_+var_length, internal_ );
         buffer_ = other.buffer_;
         items_ = other.items_;
+        return *this;
     }
 
 private:
