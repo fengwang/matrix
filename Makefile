@@ -1,19 +1,12 @@
 ####### Compiler, tools and options
-#CC            = icc
 CC            = gcc
-#CXX           = icpc
 CXX           = g++
-DEFINES       = -Wall -std=c++11  -pg
-#CFLAGS        = -gcc-460 -fast $(DEFINES)
+DEFINES       = -Wall -std=c++11  -g
 CFLAGS        = $(DEFINES)
-#CXXFLAGS        = -gcc-460 -fast $(DEFINES)
-#CXXFLAGS        = -g $(DEFINES)
 CXXFLAGS        = $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include
-#LINK          = icpc
 LINK          = g++
-LFLAGS        = -pg
-#LFLAGS        = -lgsl -lgslcblas
+LFLAGS        = -g
 DEL_FILE      = rm -f
 DEL_DIR       = rmdir
 MOVE          = mv -f
@@ -23,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -64,4 +57,9 @@ test_llsf2: test/test_llsf2.cc
 test_svd: test/test_svd.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_svd.o test/test_svd.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_svd $(OBJECTS_DIR)/test_svd.o
+
+
+test_inverse: test/test_inverse.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_inverse.o test/test_inverse.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_inverse $(OBJECTS_DIR)/test_inverse.o
 
