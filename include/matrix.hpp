@@ -33,6 +33,7 @@
 #include <matrix/matrix.hpp>
 #include <matrix/operators.hpp>
 #include <matrix/numeric.hpp>
+#include <matrix/functional.hpp>
 #include <matrix/misc.hpp>
 
 #endif

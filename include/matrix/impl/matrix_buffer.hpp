@@ -67,9 +67,7 @@ public:
             buffer_ = &internal_[0];
         }
         else
-        {
             buffer_ = static_cast<pointer>(Allocator::allocate(items_));
-        }
      
         memset(buffer_, 0, items_*sizeof(Type));
     }
@@ -102,9 +100,7 @@ public:
     ~matrix_buffer()
     {
         if (!is_internal_alloc())
-        {
             Allocator::deallocate(buffer_, items_);
-        }
     }
 
 public:
