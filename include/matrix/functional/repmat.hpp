@@ -22,7 +22,7 @@ namespace feng
 
         if ( 1 == c ) return repmat( m, r-1, 1 ) && m;
 
-        return repmat( m, r, c-1 ) || m;
+        return repmat( repmat( m, 1, c), r, 1 );
     }
 
 }//namespace feng
