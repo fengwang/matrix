@@ -29,7 +29,6 @@ namespace feng
 
 template<   typename Type, 
             std::size_t Default = 256,
-//            class Allocator = std::allocator<Type> 
             class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
         >
 class matrix
@@ -45,8 +44,6 @@ public:
     typedef matrix_buffer<value_type, Default, Allocator>               storage_type;
     typedef std::size_t                                                 size_type;
     typedef std::ptrdiff_t                                              difference_type;
-
-    //typedef std::pair<size_type, size_type>                             range_type;
     typedef range                                                       range_type;
 
     //stride iterators
@@ -175,6 +172,14 @@ public:
                         row_begin(i-rr.first)
                      );
         }
+    }
+
+public:
+    template< typename Itor >
+    matrix( const size_type r, const size_type c, Itor first, Itor last )
+    :   row_(r), col_(c), data_(storage_type(r*c)) 
+    {
+        std::copy( first, last, begin() ); 
     }
 
 private:
