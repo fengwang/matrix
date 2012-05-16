@@ -1774,29 +1774,31 @@ public:
     const value_type 
     det() const
     {
+        assert( row() == col() );
+
         if (1 == size())
             return *begin();
 
-        const size_type m = row() >> 1;
-        const size_type n = row() - m;
-        self_type P(m, m), Q(m, n), R(n, m), S(n, n);
+        if (4 == size())
+            return (*this)[0][0] * (*this)[1][1] - (*this)[1][0] * (*this)[0][1];
 
-        for (size_type i = 0; i < m; ++i)
-        {
-            std::copy(row_begin(i), row_begin(i) + m, P.row_begin(i));
-            std::copy(row_begin(i) + m, row_end(i), Q.row_begin(i));
-        }
-        for (size_type i = m; i < row(); ++i)
-        {
-            std::copy(row_begin(i), row_begin(i) + m, R.row_begin(i - m));
-            std::copy(row_begin(i) + m, row_end(i), S.row_begin(i - m));
-        }
+        auto const N = row();
+        auto const m = N >> 1;
+        
+        self_type const P(*this, range_type(0, m), range_type(0, m));
+        self_type const Q(*this, range_type(0, m), range_type(m, N));
+        self_type const R(*this, range_type(m, N), range_type(0, m));
+        self_type const S(*this, range_type(m, N), range_type(m, N));
+        auto const tmp = S - ( R * ( P.inverse() ) * Q );
 
-        self_type tmp = S - ( R * ( P.inverse() ) * Q );
+        return P.det() * tmp.det();
+    }
 
-        const value_type ans = P.det() * tmp.det();
-
-        return ans;
+public:
+    const value_type 
+    tr() const 
+    {
+        return std::accumulate( diag_begin(), diag_end(), value_type() );
     }
 
 public:
@@ -1815,7 +1817,6 @@ public:
         std::copy( begin(), end(), &ans[0] );
         return ans;
     }
-
 
 private:
 
