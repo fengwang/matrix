@@ -11,6 +11,7 @@
 
 namespace feng
 {
+    // M = A A^T
     template<typename Matrix1, typename Matrix2>
     void
     cholesky_decomposition( const Matrix1& m, Matrix2& a )
