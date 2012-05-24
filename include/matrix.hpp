@@ -31,6 +31,7 @@
 #define _MATRIX_HPP_INCLUDED_WR8E9FSDLKJVNKJFDSDFJLKREOIUFSLKJDLKJSSJLKLKJFSLKJSFEOIOIFSDOIEOIEEOIOEIOIWWOWOWOEIOOIREUOIE
 
 #include <matrix/matrix.hpp>
+#include <matrix/sparse_matrix.hpp>
 #include <matrix/operators.hpp>
 #include <matrix/numeric.hpp>
 #include <matrix/functional.hpp>

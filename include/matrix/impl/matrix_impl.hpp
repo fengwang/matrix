@@ -198,6 +198,7 @@ private:
         data_.assign(rhs.begin(), rhs.end());
     }
 
+    //is there a memory overflow problem here?
     void do_copy( const self_type& rhs )
     {
         row_ = rhs.row();

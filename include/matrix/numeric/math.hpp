@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cassert>
+#include <complex>
 
 namespace feng
 {
@@ -15,9 +16,8 @@ namespace feng
     const matrix<T, N, A> \
     f_name( const matrix<T, N, A> & mm ) \
     { \
-        using namespace std; \
         matrix<T, N, A> m( mm ); \
-        for_each( m.begin(), m.end(), [](T& val) { val = f_name(val); } ); \
+        std::for_each( m.begin(), m.end(), [](T& val) { val = std:: f_name(val); } ); \
         return m; \
     }
     
@@ -81,27 +81,24 @@ GENERATE_MATRIX_MATH_UNARY_FUNCTION(trunc);
     { \
         assert( mm.row() == nn.row() ); \
         assert( mm.col() == nn.col() ); \
-        using namespace std; \
         auto m( mm ); \
-        transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ){ return f_name( v1, v2 ); } ); \
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ){ return std:: f_name( v1, v2 ); } ); \
         return m; \
     } \
     template< typename T1, std::size_t N1, typename A1, typename T2 > \
     const matrix<T1, N1, A1> \
     f_name( const matrix<T1, N1, A1> & mm, const T2 v ) \
     { \
-        using namespace std; \
         auto m( mm ); \
-        transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return f_name( v1, v ); } ); \
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return std:: f_name( v1, v ); } ); \
         return m; \
     } \
     template< typename T1, std::size_t N1, typename A1, typename T2 > \
     const matrix<T1, N1, A1> \
     f_name( const T2 v, const matrix<T1, N1, A1> & mm ) \
     { \
-        using namespace std; \
         auto m( mm ); \
-        transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return f_name( v, v1 ); } ); \
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return std:: f_name( v, v1 ); } ); \
         return m; \
     }
 
