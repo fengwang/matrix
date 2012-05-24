@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -58,8 +58,11 @@ test_svd: test/test_svd.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_svd.o test/test_svd.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_svd $(OBJECTS_DIR)/test_svd.o
 
-
 test_inverse: test/test_inverse.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_inverse.o test/test_inverse.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_inverse $(OBJECTS_DIR)/test_inverse.o
+
+test_jacobi: test/test_jacobi.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_jacobi.o test/test_jacobi.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_jacobi $(OBJECTS_DIR)/test_jacobi.o
 

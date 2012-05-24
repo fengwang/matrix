@@ -129,6 +129,13 @@ public:
     matrix( self_type&& ) = default;
     self_type& operator = ( self_type&& ) = default;
 
+public:
+    self_type& operator = ( const value_type & v )
+    {
+        std::fill( begin(), end(), v );
+        return *this;
+    }
+
 
 public:
     matrix (    const self_type& other, 
