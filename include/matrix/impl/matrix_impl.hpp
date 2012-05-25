@@ -486,7 +486,7 @@ public:
     const_diag_type 
     upper_diag_begin(const size_type index) const
     {
-        return diag_type(begin() + index, col() + 1);
+        return const_diag_type(begin() + index, col() + 1);
     }
 
     const_diag_type 
@@ -501,7 +501,7 @@ public:
     const_diag_type 
     upper_diag_cbegin(const size_type index) const
     {
-        return diag_type(begin() + index, col() + 1);
+        return const_diag_type(cbegin() + index, col() + 1);
     }
 
     const_diag_type 
@@ -510,7 +510,7 @@ public:
         size_type depth = col() - index;
         if (row() < depth)
             depth = row();
-        return upper_diag_begin(index) + depth;
+        return upper_diag_cbegin(index) + depth;
     }
 
 public:

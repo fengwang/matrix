@@ -183,8 +183,6 @@ namespace feng
     public:
         size_type row() const { return row_; }
         size_type col() const { return col_; }
-        size_type& row() { return row_; }
-        size_type& col() { return col_; }
 
         bool empty() const { return data_.empty(); }
         bool size() const { return data_.size(); }
@@ -297,6 +295,55 @@ namespace feng
             return lhs;
         }
 
+        //dense matrix multiply sparse matrix
+        template< std::size_t D, typename A >
+    friend const matrix<T,D,A>
+        operator * ( const matrix<T,D,A>& lhs, const sparse_matrix<T>& rhs )
+        {
+            assert( lhs.col() == rhs.row() );
+            //TODO: this method only works for square matrices, rewrite when have time
+            return (rhs.transpose() * lhs.transpose()).transpose();        
+        }
+
+        //sparse matrix multiply dense matrix
+        template< std::size_t D, typename A >
+    friend const matrix<T,D,A>
+        operator * ( const sparse_matrix<T>& lhs, const matrix<T,D,A>& rhs )
+        {
+            assert( lhs.col() == rhs.row() );
+            matrix<T,D,A> ans( lhs.row(), rhs.col() );
+            
+            for ( std::size_t i = 0; i < rhs.col(); ++i )
+                lhs.multiply_array( rhs.col_begin(i), rhs.col_end(i), ans.col_begin(i), ans.col_end(i) );
+            
+            return ans;
+        }
+
+    private:
+
+        template< typename Itor, typename Otor >
+        Otor 
+        multiply_array( Itor in_first, Itor in_last, Otor out_first, Otor out_last ) const 
+        {
+            size_type index = 0;
+            auto last_head = data_.begin();
+            while ( out_first != out_last )
+            {   //find the first one whose row is index, from the start, and save the result to head
+                auto head = std::find_if( last_head, data_.end(), [index](wrapped_value_type p) { return index == sparse_matrix_private::isolate_row()(p.first); } );
+                //find the first one whose row is not index, from the head, and save the result to tail
+                auto tail = std::find_if( head, data_.end(), [index](wrapped_value_type p) { return index != sparse_matrix_private::isolate_row()(p.first); } );
+                //if no one whose row is index found, then set the output to 0, and continue the loop
+                if ( data_.end() == head ) { *out_first++ = value_type(); last_head = data_.begin(); continue; }
+                //a simple inner product to generate the output value
+                auto sum = value_type();//                                                  the n th  element in the array                                  sparse value
+                std::for_each( head, tail, [&sum, in_first](wrapped_value_type p ) { sum += (*( in_first + sparse_matrix_private::isolate_col()(p.first) )) * p.second; } );
+                *out_first++ = sum;
+                ++index;
+            }
+
+            return out_first;
+        }
+
         // multiply array 
         template< typename Itor, typename Otor >
         Otor multiply_array( Itor in_first, Itor in_last, Otor out ) const 
@@ -357,69 +404,7 @@ namespace feng
         }
         // multiply array 
 
-        template< typename Itor, typename Otor >
-        Otor 
-        multiply_array( Itor in_first, Itor in_last, Otor out_first, Otor out_last, size_type index ) const 
-        {
-            while ( out_first != out_last )
-            {
-                auto head = std::find_if( data_.begin(), data_.end(), [index](wrapped_value_type p) { return index == sparse_matrix_private::isolate_row()(p.first); } );
-                //auto tail = std::find_if( data_.begin(), data_.end(), [&index](wrapped_value_type p) { return index++ != sparse_matrix_private::isolate_row()(p.first); } );
-                auto tail = std::find_if( head, data_.end(), [&index](wrapped_value_type p) { return index++ != sparse_matrix_private::isolate_row()(p.first); } );
-                if ( data_.end() == head ) { *out_first++ = value_type(); continue; }
-                auto sum = value_type();
-                std::for_each( head, tail, [&sum, in_first](wrapped_value_type p ) { sum += (*( in_first + sparse_matrix_private::isolate_col()(p.first) )) * p.second; } );
-                *out_first++ = sum;
-            }
-            return out_first;
-
-            /*
-            for ( size_type i = 0; i < row_; ++i )
-            {
-                head = tail;
-                tail = std::find_if( head, data_.end(), [i](wrapped_value_type p) { return i+1 == sparse_matrix_private::isolate_row()(p.first); } );
-                if ( std::distance( head, tail ) == 0 ) { *out++ = 0; continue; }
-                auto tmp = value_type();
-                std::for_each( head, tail, [&tmp, in_first](wrapped_value_type p ) { tmp += (*( in_first + sparse_matrix_private::isolate_col()(p.first) )) * p.second; } );
-                *out++ = tmp;
-            }
-            return out;
-            */
-        }
-
-        value_type* 
-        multiply_array( value_type* in_first, value_type* in_last, value_type* out_first, value_type* out_last, size_type index ) const 
-        {
-            return multiply_array<value_type*, value_type*>( in_first, in_last, out_first, out_last, index );
-        }
-
     };//sparse_matrix 
-
-    //dense matrix multiply sparse matrix
-    template< typename T, std::size_t D, typename A >
-    const matrix<T,D,A>
-    operator * ( const matrix<T,D,A>& lhs, const sparse_matrix<T>& rhs )
-    {
-        assert( lhs.col() == rhs.row() );
-        //TODO: this method only works for square matrices, rewrite when have time
-        return rl.transpose();
-        return (rhs.transpose() * lhs.transpose()).transpose();        
-    }
-
-    //sparse matrix multiply dense matrix
-    template< typename T, std::size_t D, typename A >
-    const matrix<T,D,A>
-    operator * ( const sparse_matrix<T>& lhs, const matrix<T,D,A>& rhs )
-    {
-        assert( lhs.col() == rhs.row() );
-        matrix<T,D,A> ans( lhs.row(), rhs.col() );
-        
-        for ( std::size_t i = 0; i < rhs.col(); ++i )
-            lhs.multiply_array( rhs.col_begin(i), rhs.col_end(i), ans.col_begin(i) );
-        
-        return ans;
-    }
-
 }//namespace feng
 
 #endif//_SPARSE_MATRIX_HPP_INCLUDED_SDLKJ4OIJSDFEKLJSDOUJ4LKJSDFLKJSDFLKMNCLKJDFLKJSOIJULKJDFOIJ4LKJSFDOIJFJ

@@ -1,12 +1,12 @@
 ####### Compiler, tools and options
 CC            = gcc
 CXX           = g++
-DEFINES       = -Wall -std=c++11  -g -O0
-CFLAGS        = $(DEFINES)
-CXXFLAGS        = $(DEFINES)
-INCPATH       = -Iinclude  -I/home/feng/include
+DEFINES       = -Wall -std=c++11  -pg 
+#CFLAGS        = $(DEFINES)
+#CXXFLAGS        = $(DEFINES)
+INCPATH       = -Iinclude  -I/home/feng/include -pg
 LINK          = g++
-LFLAGS        = -g
+LFLAGS        = -pg
 DEL_FILE      = rm -f
 DEL_DIR       = rmdir
 MOVE          = mv -f
