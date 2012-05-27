@@ -10,6 +10,7 @@
 #include <map>
 #include <algorithm>
 #include <thread>
+#include <iostream>
 
 namespace feng
 {
@@ -170,14 +171,14 @@ namespace feng
         {
             self_type ans( *this );
             std::for_each( ans.begin(), ans.end(), []( wrapped_value_type& p ) { p.second = - p.second; } );
-            return std::move(ans);
+            return ans;
         }
 
         const self_type 
         operator + () 
         {
             self_type ans( *this );
-            return std::move(ans);
+            return ans;
         }
     
     public:
@@ -194,7 +195,7 @@ namespace feng
             self_type ans(col(), row());
             for( auto i = data_.begin(); i != data_.end(); ++i )
                 ans.insert( ((((*i).first)<<32)>>32), ((*i).first)>>32, (*i).second ); 
-            return std::move( ans );
+            return ( ans );
         }
 
         void insert( const size_type r, const size_type c, const value_type v )
@@ -202,9 +203,11 @@ namespace feng
             assert( row_ > r );
             assert( col_ > c );
 
+            if ( value_type() == v ) return;
+
             const key_type key = sparse_matrix_private::make_key()(r, c);
-            data_[key] = v;
-            if ( value_type() == v ) data_.erase( key );
+            data_.insert(std::make_pair(key,v));
+            //data_[key] = v;
         }
 
         void resize( const size_type r, const size_type c )
@@ -230,7 +233,7 @@ namespace feng
         {
             self_type ans( lhs );
             ans += rhs;
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const self_type // A-B
@@ -238,7 +241,7 @@ namespace feng
         {
             self_type ans( lhs );
             ans -= rhs;
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const self_type // A*b
@@ -246,7 +249,7 @@ namespace feng
         {
             self_type ans( lhs );
             ans *= rhs;
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const self_type // A/b
@@ -254,7 +257,7 @@ namespace feng
         {
             self_type ans( lhs );
             ans /= rhs;
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const self_type // AB
@@ -262,7 +265,7 @@ namespace feng
         {
             self_type ans( lhs );
             ans *= rhs;
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const std::vector<value_type> // Ax
@@ -271,7 +274,7 @@ namespace feng
             assert( rhs.size() == lhs.col_ );
             std::vector<value_type> ans( lhs.row_ ); 
             lhs.multiply_array( rhs.begin(), rhs.end(), ans.begin() );
-            return std::move( ans );
+            return ( ans );
         }
 
     friend const std::valarray<value_type> 
@@ -282,7 +285,7 @@ namespace feng
 
             lhs.multiply_array( &rhs[0], &rhs[lhs.col_], &ans[0] );
 
-            return std::move( ans );
+            return ( ans );
         }
     friend std::ostream&
         operator << ( std::ostream& lhs, const self_type& rhs )
@@ -299,110 +302,91 @@ namespace feng
         template< std::size_t D, typename A >
     friend const matrix<T,D,A>
         operator * ( const matrix<T,D,A>& lhs, const sparse_matrix<T>& rhs )
-        {
+        {   //dimension check
             assert( lhs.col() == rhs.row() );
-            //TODO: this method only works for square matrices, rewrite when have time
-            return (rhs.transpose() * lhs.transpose()).transpose();        
+            matrix<T,D,A> ans(lhs.row(), rhs.col() );
+            for ( std::size_t i = 0; i < lhs.row(); ++i )
+                // the ith row of left side dense matrix, say x
+                // compute x multiply every column of the right side sparse matrix, 
+                // the generated result is the ith row of the ans
+                rhs.left_multiply_array( lhs.row_begin(i), lhs.row_end(i), ans.row_begin(i) );
+
+            return ans;
         }
 
         //sparse matrix multiply dense matrix
         template< std::size_t D, typename A >
     friend const matrix<T,D,A>
         operator * ( const sparse_matrix<T>& lhs, const matrix<T,D,A>& rhs )
-        {
+        {   //dimension check
             assert( lhs.col() == rhs.row() );
             matrix<T,D,A> ans( lhs.row(), rhs.col() );
-            
+           
             for ( std::size_t i = 0; i < rhs.col(); ++i )
-                lhs.multiply_array( rhs.col_begin(i), rhs.col_end(i), ans.col_begin(i), ans.col_end(i) );
-            
+                lhs.multiply_array( rhs.col_begin(i), rhs.col_end(i), ans.col_begin(i) );
+
             return ans;
         }
 
     private:
+        // Inputs:
+        //          in_first :      the first pos of the left array
+        //          in_last  :      the last pos of the left array
+        //          out_first:      the first pos of the output array
+        // Return:
+        //          the last pos of the output array
+        // Function:
+        //          compute blas level 2 
+        //                      x * A
+        //          where  x is an array whose size is (1 , m)
+        //                 A is the current sparse matrix, whose size is (m, n)
+        //          then put forward the result to the output iterator
+        template< typename Itor, typename Otor >
+        Otor // x*A
+        left_multiply_array( Itor in_first, Itor in_last, Otor out_first ) const 
+        {   
+            //dimension check
+            assert( std::distance(in_first, in_last) == row() );
+            //create an empty array
+            std::valarray<value_type> b( value_type(0), col() );
+            //for each elements in data_
+
+            for ( auto it = data_.begin(); it != data_.end(); ++it )
+            {
+                auto const & wrapped_value = *it;
+                auto const r = sparse_matrix_private::isolate_row()(wrapped_value.first); 
+                auto const c = sparse_matrix_private::isolate_col()(wrapped_value.first); 
+                b[c] += wrapped_value.second * *(in_first+r);
+            }
+
+            std::copy( std::begin(b), std::end(b), out_first );
+           
+            return out_first;
+        }
 
         template< typename Itor, typename Otor >
-        Otor 
-        multiply_array( Itor in_first, Itor in_last, Otor out_first, Otor out_last ) const 
-        {
-            size_type index = 0;
-            auto last_head = data_.begin();
-            while ( out_first != out_last )
-            {   //find the first one whose row is index, from the start, and save the result to head
-                auto head = std::find_if( last_head, data_.end(), [index](wrapped_value_type p) { return index == sparse_matrix_private::isolate_row()(p.first); } );
-                //find the first one whose row is not index, from the head, and save the result to tail
-                auto tail = std::find_if( head, data_.end(), [index](wrapped_value_type p) { return index != sparse_matrix_private::isolate_row()(p.first); } );
-                //if no one whose row is index found, then set the output to 0, and continue the loop
-                if ( data_.end() == head ) { *out_first++ = value_type(); last_head = data_.begin(); continue; }
-                //a simple inner product to generate the output value
-                auto sum = value_type();//                                                  the n th  element in the array                                  sparse value
-                std::for_each( head, tail, [&sum, in_first](wrapped_value_type p ) { sum += (*( in_first + sparse_matrix_private::isolate_col()(p.first) )) * p.second; } );
-                *out_first++ = sum;
-                ++index;
+        Otor // A*x 
+        multiply_array( Itor in_first, Itor in_last, Otor out_first ) const 
+        {   
+            //dimension check
+            assert( std::distance( in_first, in_last ) == col() );
+            //create an empty array
+            std::valarray<value_type> b( value_type(0), row() );
+            //for each elements in data_
+
+            for ( auto it = data_.begin(); it != data_.end(); ++it )
+            {
+                auto const & wrapped_value = *it;
+                auto const r = sparse_matrix_private::isolate_row()(wrapped_value.first); 
+                auto const c = sparse_matrix_private::isolate_col()(wrapped_value.first); 
+                b[r] += wrapped_value.second * *(in_first+c);
             }
+
+            std::copy( std::begin(b), std::end(b), out_first );
 
             return out_first;
         }
 
-        // multiply array 
-        template< typename Itor, typename Otor >
-        Otor multiply_array( Itor in_first, Itor in_last, Otor out ) const 
-        {
-            static const auto block_multiply = [&,this](size_type index_first, size_type index_last) 
-            {
-                auto head = std::find_if( (*this).data_.begin(), (*this).data_.end(), [index_first](wrapped_value_type p) { return index_first == sparse_matrix_private::isolate_row()(p.first); } );
-                auto tail = head;
-
-                for ( auto i = index_first; i != index_last; ++i )
-                {
-                    head = tail;
-                    tail = std::find_if( head, (*this).data_.end(), [i](wrapped_value_type p) { return i+1 == sparse_matrix_private::isolate_row()(p.first); } );
-                    if ( std::distance( head, tail ) == 0 ) { *out++ = 0; continue; }
-                    auto tmp = value_type();
-                    std::for_each( head, tail, [&tmp, in_first](wrapped_value_type p ) { tmp += (*( in_first + sparse_matrix_private::isolate_col()(p.first) )) * p.second; } );
-                    *(out+i) = tmp;                            
-                }
-            };
-
-            const size_type length = std::distance( in_first, in_last );
-            assert( col_ == length );
-            
-#if 1
-            //!!non-parallel impl
-            block_multiply( size_type(), length );
-#endif 
-
-#if 0
-            //!!parallel impl
-            parallel_organizer()( block_multiply, size_type(), size_type(std::distance( in_first, in_last )) );            
-#endif
-
-#if 0
-            //!!concret parallel impl
-            size_type cpu_number = std::thread::hardware_concurrency() > 4 ? std::thread::hardware_concurrency() : 4;
-            const size_type thread_number = cpu_number - 1;
-            std::thread concurrency_thread[ thread_number ];
-            
-            const size_type block_size = length / thread_number;
-
-            size_type block_first = 0;
-            size_type block_last = 0;
-
-            for ( size_type index = 0; index != thread_number; ++index )
-            {
-                block_last += block_size;
-                concurrency_thread[index] = std::thread( block_multiply, block_first, block_last );
-                block_first = block_last;
-            }
-            block_multiply( block_last, length );
-
-            std::for_each( concurrency_thread, concurrency_thread+thread_number, [](std::thread& t){t.join();});
-#endif       
-
-            return out; 
-
-        }
-        // multiply array 
 
     };//sparse_matrix 
 }//namespace feng

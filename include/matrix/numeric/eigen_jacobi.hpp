@@ -8,12 +8,37 @@
 #include <cassert>
 #include <cstddef>
 #include <cmath>
+#include <vector>
+#include <valarray>
 
 namespace feng
 {
+    /* Input:
+     *          A       Symmetric dense matrix
+     *          V       Eigen Vectors
+     *          Lambda  Eigen Values
+     * Function:
+     *          calculate the eigen vectors V and eigen values lambda using Jacobi method
+     * Returns:
+     *          the iterations used
+     */
+    template<typename Matrix1, typename Matrix2, typename T = double>
+    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector<T>& Lambda, const T eps = T(1.0e-5) )
+    {
+        Lambda.resize( A.row() );
+        return eigen_jacobi( A, V, Lambda.begin() );
+    }
 
+    template<typename Matrix1, typename Matrix2, typename T = double>
+    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray<T>& Lambda, const T eps = T(1.0e-5) )
+    {
+        Lambda.resize( A.row() );
+        return eigen_jacobi( A, V, Lambda.begin() );
+    }
+
+    // A = V * diag{lambda...} * V^T
     template< typename Matrix1, typename Matrix2, typename Otor, typename T = double>
-    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, const T eps = double(1.0e-5) )
+    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, const T eps = T(1.0e-5) )
     {
         typedef typename Matrix1::value_type value_type;
         typedef typename Matrix1::size_type size_type;
@@ -29,14 +54,8 @@ namespace feng
         V = zero;
         std::fill( V.diag_begin(), V.diag_end(), one );
 
-        //the sparse matrix
-        sparse_matrix<value_type> P(n,n);
-        for (size_type i = 0; i != n; ++i )
-            P(i,i) = one;
-
         for ( size_type i = 0; i != size_type(-1); ++i )
         {
-
             // @find max non-diag value in A
             size_type p = 0;
             size_type q = 1;
@@ -65,21 +84,44 @@ namespace feng
             auto const c     = one / std::sqrt(t*t + one);
             auto const s     = t * c;
 
-            // @generate 4 special elements for sparse matrix P
-            P(p,p) =  c;
-            P(q,q) =  c;
-            P(p,q) =  s;
-            P(q,p) = -s;
+            // a quick explaination here:
+            // the sparse matrix P is 
+            // [ 1  0  0  0 ....  0  0  0  0 ]
+            // [ 0  1  0  0 ....  0  0  0  0 ]
+            // [ 0  0  c  0 ....  0  s  0  0 ]  <- pth row
+            // [ 0  0  0  1 ....  0  0  0  0 ]
+            // [ .  .  .  . ....  .  .  .  . ]
+            // [ 0  0  0  0 ....  1  0  0  0 ]
+            // [ 0  0 -s  0 ....  0  c  0  0 ]  <- qth row
+            // [ 0  0  0  0 ....  0  0  1  0 ]
+            // [ 0  0  0  0 ....  0  0  0  1 ]
+            //        pth           qth
+            //
+            // is reduced to P = I + P_, where I is unit matrix and P_ is 
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            // [ 0  0 c-1 0 ....  0  s  0  0 ]  <- pth row
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            // [ .  .  .  . ....  .  .  .  . ]
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            // [ 0  0 -s  0 ....  0 c-1 0  0 ]  <- qth row
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            // [ 0  0  0  0 ....  0  0  0  0 ]
+            //        pth           qth
+            //
+            // this way, the iteratiron of V, V*P = V * (I+P_) = V + V*P_, i.e. V += V*P_
+            // and the iteration of a, a = P^T * a * P = (I+P_^T) * a * (I+P_) 
+            //                           = ( a + P_^T * a ) * (I + P_)
+            //                       i.e., a += P_^T * a; a += a * P_;
+            sparse_matrix<value_type> P_(n,n);
+            P_(p,p) = c - one;
+            P_(p,q) = s;
+            P_(q,q) = c - one;
+            P_(q,p) = -s;
 
-            // @Jacobi iteration
-            a = P.transpose() * a * P;
-            V = V * P;
-
-            // @recover sparse matrix for next iteration
-            P(p,p) = one;
-            P(q,q) = one;
-            P(p,q) = zero;
-            P(q,p) = zero;
+            a += P_.transpose() * a;
+            a += a * P_;
+            V += V * P_;
 
         }//end for
         

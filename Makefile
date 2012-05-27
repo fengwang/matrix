@@ -1,10 +1,10 @@
 ####### Compiler, tools and options
-CC            = gcc
-CXX           = g++
+#CC            = gcc
+#CXX           = g++
 DEFINES       = -Wall -std=c++11  -pg 
 #CFLAGS        = $(DEFINES)
-#CXXFLAGS        = $(DEFINES)
-INCPATH       = -Iinclude  -I/home/feng/include -pg
+CXXFLAGS        = $(DEFINES)
+INCPATH       = -Iinclude  -I/home/feng/include  -I/Users/feng/include
 LINK          = g++
 LFLAGS        = -pg
 DEL_FILE      = rm -f
@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -65,4 +65,8 @@ test_inverse: test/test_inverse.cc
 test_jacobi: test/test_jacobi.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_jacobi.o test/test_jacobi.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_jacobi $(OBJECTS_DIR)/test_jacobi.o
+
+test_sparse_multiply: test/test_sparse_multiply.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_sparse_multiply.o test/test_sparse_multiply.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_sparse_multiply $(OBJECTS_DIR)/test_sparse_multiply.o
 
