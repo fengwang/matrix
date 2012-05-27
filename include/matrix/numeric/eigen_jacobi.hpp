@@ -80,12 +80,14 @@ namespace feng
 
             // @calc c and s
             auto const theta = ( a[q][q] - a[p][p] ) / ( a[p][q] + a[p][q] );
-            auto const t     = std::copysign( one / ( std::abs(theta) + std::sqrt(theta*theta + one ) ), theta );
-            auto const c     = one / std::sqrt(t*t + one);
+            auto const t     = std::copysign( one / ( std::abs(theta) + std::hypot(theta, one ) ), theta );
+            //auto const t     = std::copysign( one / ( std::abs(theta) + std::sqrt(theta*theta + one ) ), theta );
+            auto const c     = one / std::hypot(t, one);
+            //auto const c     = one / std::sqrt(t*t + one);
             auto const s     = t * c;
 
             // a quick explaination here:
-            // the sparse matrix P is 
+            // the sparse matrix P, Givens matrix, is 
             // [ 1  0  0  0 ....  0  0  0  0 ]
             // [ 0  1  0  0 ....  0  0  0  0 ]
             // [ 0  0  c  0 ....  0  s  0  0 ]  <- pth row
