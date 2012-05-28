@@ -28,6 +28,7 @@ int main()
     for ( unsigned int i = 1; i != n; ++i )
         std::copy( A.upper_diag_begin(i), A.upper_diag_end(i), A.lower_diag_begin(i) );
 
+    //std::cout << "iterations is " << feng::cyclic_eigen_jacobi( A, V, std::begin(Lambda) );
     std::cout << "iterations is " << feng::eigen_jacobi( A, V, std::begin(Lambda) );
 
     std::cout << "\nV V^T = \n";
