@@ -377,7 +377,7 @@ namespace feng
             left_multiply_array( Itor in_first, Itor in_last, Otor out_first ) const
             {
                 //dimension check
-                assert( std::distance( in_first, in_last ) == row() );
+                assert( std::distance( in_first, in_last ) == std::ptrdiff_t(row()) );
                 //create an empty array
                 std::valarray<value_type> b( value_type( 0 ), col() );
                 //for each elements in data_
@@ -409,7 +409,7 @@ namespace feng
             multiply_array( Itor in_first, Itor in_last, Otor out_first ) const
             {
                 //dimension check
-                assert( std::distance( in_first, in_last ) == col() );
+                assert( std::distance( in_first, in_last ) == std::ptrdiff_t(col()) );
                 //create an empty array
                 std::valarray<value_type> b( value_type( 0 ), row() );
                 //for each elements in data_

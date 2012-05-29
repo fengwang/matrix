@@ -110,6 +110,13 @@ namespace feng
         return eigen_jacobi( A, V, Lambda.begin() );
     }
 
+    template<typename Matrix1, typename Matrix2, typename T, std::size_t D, typename A_, typename T_=double>
+    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, feng::matrix<T,D,A_>& Lambda, const T_ eps = T_( 1.0e-5 ) )
+    {
+        Lambda.resize( A.row(), A.col() );
+        return eigen_jacobi( A, V, Lambda.diag_begin() );
+    }
+
     // A = V * diag{lambda...} * V^T
     template< typename Matrix1, typename Matrix2, typename Otor, typename T = double>
     std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, const T eps = T( 1.0e-5 ) )
@@ -190,6 +197,29 @@ namespace feng
         std::copy( a.diag_begin(), a.diag_end(), o );
         return max_rot;
     }
+
+    template<typename Matrix1, typename Matrix2, typename T = double>
+    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector<T>& Lambda, const T eps = T( 1.0e-5 ) )
+    {
+        Lambda.resize( A.row() );
+        return cyclic_eigen_jacobi( A, V, Lambda.begin() );
+    }
+
+    template<typename Matrix1, typename Matrix2, typename T = double>
+    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray<T>& Lambda, const T eps = T( 1.0e-5 ) )
+    {
+        Lambda.resize( A.row() );
+        return cyclic_eigen_jacobi( A, V, Lambda.begin() );
+    }
+
+    template<typename Matrix1, typename Matrix2, typename T, std::size_t D, typename A_, typename T_=double>
+    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, feng::matrix<T,D,A_>& Lambda, const T_ eps = T_( 1.0e-5 ) )
+    {
+        Lambda.resize( A.row(), A.col() );
+        return cyclic_eigen_jacobi( A, V, Lambda.diag_begin() );
+    }
+
+    // A = V * diag{lambda...} * V^T
 
 }//namespace feng
 

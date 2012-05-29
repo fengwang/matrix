@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -69,4 +69,12 @@ test_jacobi: test/test_jacobi.cc
 test_sparse_multiply: test/test_sparse_multiply.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_sparse_multiply.o test/test_sparse_multiply.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_sparse_multiply $(OBJECTS_DIR)/test_sparse_multiply.o
+
+test_power_iteration: test/test_power_iteration.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_power_iteration.o test/test_power_iteration.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_power_iteration $(OBJECTS_DIR)/test_power_iteration.o
+
+test_norm: test/test_norm.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_norm.o test/test_norm.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_norm $(OBJECTS_DIR)/test_norm.o
 
