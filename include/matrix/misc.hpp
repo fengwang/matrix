@@ -5,6 +5,7 @@
 #include <matrix/misc/is_symmetric.hpp>
 #include <matrix/misc/is_positive_definite.hpp>
 #include <matrix/misc/is_orthogonal.hpp>
+#include <matrix/misc/eye.hpp>
 
 #endif//_MISC_HPP_INCLUDED_DSFOIJH4O8USFDLKIHJ4938YUSFDLKIHJSDFLKJHNVKJHSFKHUJASFDOIUH4RIUHYSDFKUHAIFUDSHYI8YUJ7RESKFUDHD
 
