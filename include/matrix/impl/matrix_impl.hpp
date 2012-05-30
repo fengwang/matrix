@@ -1567,8 +1567,7 @@ public:
     self_type & 
     operator /=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(),
-                       std::bind2nd(std::divides<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind2nd(std::divides<value_type > (), rhs));
         return *this;
     }
 
@@ -1576,6 +1575,14 @@ public:
     operator /=(const self_type& rhs)
     {
         return operator*=(!rhs);
+    }
+
+    template<typename T_>
+    self_type &
+    operator /= ( const T_& rhs )
+    {
+        std::for_each( begin(), end(), [&rhs](value_type& v) { v /= rhs; } );
+        return *this;
     }
 
     public:

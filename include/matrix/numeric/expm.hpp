@@ -8,16 +8,30 @@
 #include <cassert>
 #include <cmath>
 
+#include <iostream>
+
 namespace feng
 {
+    template<typename T>
+    struct fix_complex_value_type
+    {
+        typedef T value_type; 
+    };
+
+    template<typename T>
+    struct fix_complex_value_type<std::complex<T> >
+    {
+        typedef typename fix_complex_value_type<T>::value_type value_type;
+    };
 
     template<typename T, std::size_t D, typename A_>
     const matrix<T, D, A_>
     expm( const matrix<T, D, A_>& A )
     {
-        typedef matrix<T, D, A_>                      matrix_type;
-        typedef typename matrix_type::value_type    value_type;
-        typedef typename matrix_type::size_type     size_type;
+        typedef matrix<T, D, A_>                                                matrix_type;
+        typedef typename matrix_type::value_type                                value_type_;
+        typedef typename fix_complex_value_type<value_type_>::value_type        value_type;
+        typedef typename matrix_type::size_type                                 size_type;
         assert( A.row() == A.col() );
         static const value_type theta[] = { 0.000000000000000e+000,
                                             3.650024139523051e-008,
@@ -34,10 +48,10 @@ namespace feng
                                             4.458935413036850e+000,
                                             5.371920351148152e+000
                                           };
-        auto const norm_A               = norm( A, 1 );
+        auto const norm_A               = norm_1( A );
         auto const ratio                = theta[13] / norm_A;
-        size_type const s               = static_cast<size_type>( std::ceil( std::log2( ratio ) ) );
-        value_type s__2                 = 1 << s;
+        size_type const s               = ratio < value_type(1) ? 0 : static_cast<size_type>( std::ceil( std::log2( ratio ) ) );
+        const value_type s__2           = s ? value_type(1) : value_type(1 << s);
         auto const _A                   = A / s__2;
         auto const n                    = A.row();
         static value_type const c []    = { 0.000000000000000,  // 0
@@ -61,7 +75,7 @@ namespace feng
         auto const _A6 = _A2 * _A4;
         auto const U   = _A * ( _A6 * ( c[14] * _A6 + c[12] * _A4 + c[10] * _A2 ) + c[8] * _A6 + c[6] * _A4 + c[4] * _A2 + c[2] * eye<value_type>( n, n ) );
         auto const V   = _A6 * ( c[13] * _A6 + c[11] * _A4 + c[9] * _A2 ) + c[7] * _A6 + c[5] * _A4 + c[3] * _A2 + c[1] * eye<value_type>( n, n );
-        auto const F   = ( -U + V ).inverse() * ( U + V );
+        auto       F   = ( -U + V ).inverse() * ( U + V );
         for ( size_type i = 0; i != s; ++i )
             F *= F;
         return F;
