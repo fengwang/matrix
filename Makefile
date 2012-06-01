@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -81,4 +81,8 @@ test_norm: test/test_norm.cc
 test_expm: test/test_expm.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_expm.o test/test_expm.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_expm $(OBJECTS_DIR)/test_expm.o
+
+test_rand: test/test_rand.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_rand.o test/test_rand.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_rand $(OBJECTS_DIR)/test_rand.o
 
