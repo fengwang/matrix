@@ -12,6 +12,8 @@
 
 namespace feng
 {
+    namespace expm_private
+    {
     template<typename T>
     struct fix_complex_value_type
     {
@@ -23,15 +25,17 @@ namespace feng
     {
         typedef typename fix_complex_value_type<T>::value_type value_type;
     };
+    }//namespace expm_private
 
+    // Nicholas J. Higham. The Scaling and Squaring Method for the Matrix Exponential Revisited. SIAM Review (2009) 51: pp. 747-764.
     template<typename T, std::size_t D, typename A_>
     const matrix<T, D, A_>
     expm( const matrix<T, D, A_>& A )
     {
-        typedef matrix<T, D, A_>                                                matrix_type;
-        typedef typename matrix_type::value_type                                value_type_;
-        typedef typename fix_complex_value_type<value_type_>::value_type        value_type;
-        typedef typename matrix_type::size_type                                 size_type;
+        typedef matrix<T, D, A_>                                                        matrix_type;
+        typedef typename matrix_type::value_type                                        value_type_;
+        typedef typename expm_private::fix_complex_value_type<value_type_>::value_type  value_type;
+        typedef typename matrix_type::size_type                                         size_type;
         assert( A.row() == A.col() );
         static const value_type theta[] = { 0.000000000000000e+000,
                                             3.650024139523051e-008,
@@ -52,9 +56,8 @@ namespace feng
         auto const ratio                = theta[13] / norm_A;
         size_type const s               = ratio < value_type(1) ? 0 : static_cast<size_type>( std::ceil( std::log2( ratio ) ) );
         const value_type s__2           = s ? value_type(1 << s) : value_type(1);
-        //const value_type s__2           = s ? value_type(1) : value_type(1 << s);
         auto const _A                   = A / s__2;
-        auto const n                    = A.row();
+        auto const n                    = _A.row();
         static value_type const c []    = { 0.000000000000000,  // 0
                                             64764752532480000,  // 1
                                             32382376266240000,  // 2

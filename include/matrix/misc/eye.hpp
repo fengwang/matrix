@@ -16,6 +16,12 @@ namespace feng
         return ans;
     }
 
+    template<typename T>
+    matrix<T> const eye( const std::size_t n )
+    {
+        return eye( n, n );
+    }
+
 }//namespace feng
 
 #endif//_EYE_HPP_INCLUDED_SOFIJ398UAFSLKJ3498YUFSKDHJCVJKDFSAUH948YASKFHOQE9YSDFY7478YTSFUKDHREUFKUH

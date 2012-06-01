@@ -2,7 +2,9 @@
 #define _MATRIX_VALUE_OPERATORS_HPP_INCLUDED
 
 #include <matrix/matrix.hpp>
+#include <matrix/misc/eye.hpp>
 
+#include <cassert>
 #include <cstddef>
 #include <algorithm>
 
@@ -27,6 +29,7 @@
  *    matrix<double> m10= m&&d;
  *    matrix<double> m11= d||m;
  *    matrix<double> m12= m||d;
+ *    matrix<double> m13= m^2;
  *
  */
 
@@ -150,6 +153,27 @@ operator && ( const T_& lhs, const matrix<T,D,A>& rhs )
 	std::fill( ans.row_begin(0), ans.row_end(0), rhs );
 	
 	return ans;
+}
+
+template< typename T, std::size_t D, typename A >
+const matrix<T,D,A>
+operator ^ ( const matrix<T,D,A>& lhs, std::size_t n )
+{
+    assert( lhs.row() == lhs.col() );
+
+    auto const n = lhs.row();
+
+    if ( 0 == n )
+        return eye( n, n );
+
+    if ( 1 == n )
+        return lhs;
+    
+    if ( n & 1 )
+        return lhs^(n-1) * lhs;
+
+    auto const lhs_2 = lhs^(n>>1);
+    return lhs_2 * lhs_2;
 }
 
 }//namespace feng
