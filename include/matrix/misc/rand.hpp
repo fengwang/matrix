@@ -10,6 +10,11 @@
 
 namespace feng
 {
+    // Parameters: 
+    //              r   ----    row of the return matrix
+    //              c   ----    col of the return matrix
+    // Return
+    //          a matrix with size (r,c), and every element s.t. U(0,1)
     template<typename T = double,
              std::size_t D = 256,
              typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
@@ -29,6 +34,14 @@ namespace feng
     matrix<T,D,A> const rand( const std::size_t n )
     {
         return rand<T,D,A>( n, n );
+    }
+
+    template<typename T = double,
+             std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const rand( const matrix<T,D,A>& m )
+    {
+        return rand<T,D,A>( m.row(), m.col() );
     }
 
 }//namespace feng
