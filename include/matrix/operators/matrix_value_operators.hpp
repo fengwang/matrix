@@ -161,10 +161,10 @@ operator ^ ( const matrix<T,D,A>& lhs, std::size_t n )
 {
     assert( lhs.row() == lhs.col() );
 
-    auto const n = lhs.row();
+    auto const r = lhs.row();
 
     if ( 0 == n )
-        return eye( n, n );
+        return eye<T>( r, r );
 
     if ( 1 == n )
         return lhs;

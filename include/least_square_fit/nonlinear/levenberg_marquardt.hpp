@@ -70,7 +70,6 @@ struct levenberg_marquardt
     {
         initialize_a( std::distance( p_, _p ) );
         update_chi_square( x_, _x, a, y_, sigma_, f );
-        std::cout << *this << std::endl;
         value_type old_chi = chi_square;
         const value_type chi_chi = std::inner_product( y_, y_+std::distance(x_, _x), y_, value_type() );
         const value_type threshold = chi_chi * eps;
@@ -79,7 +78,8 @@ struct levenberg_marquardt
             update_beta(x_, _x, a, y_, sigma_, f, p_, _p) ;
             update_alpha(x_, _x, a, sigma_, p_, _p);
             update_alpha_();
-            update_delta_a();
+            if( update_delta_a() ) break; //stop with nan or inf
+            //update_delta_a();
             update_a();
             update_chi_square( x_, _x, a, y_, sigma_, f );
 
@@ -99,7 +99,6 @@ struct levenberg_marquardt
             {
                 old_chi = chi_square;
                 lambda /= factor;
-                std::cout << *this << std::endl;
             }
 
         }
@@ -110,7 +109,6 @@ struct levenberg_marquardt
     void 
     initialize_a( const std::size_t m )
     {
-        //std::cout << "\n initialize_a called." << std::endl;
         if ( !a.empty() ) return;                       //break if a[] has been initialized
         a.resize( m );                                  //resize a[]
         std::fill( a.begin(), a.end(), value_type(1.5) ); //set a[] to {1.0, 1.0, ..., 1.0}
@@ -150,17 +148,12 @@ struct levenberg_marquardt
     void 
     update_chi_square(IIX x_, IIX _x, A a, IIY y_, IIW sigma_, F f) 
     {
-        //std::cout << "\n update_chi_square called." << std::endl;
         chi_square = feng::inner_product( x_, _x, y_, sigma_, value_type(0), 
                                           [f,a]( value_type x, value_type y, value_type sig )
                                           {
                                             const value_type fxa = f(x,a);
                                             if ( isnan(fxa) || isinf(fxa) )
                                             {
-                                                //std::cout << "x: " << x << std::endl;
-                                                //std::cout << "a[]:\n";
-                                                //std::copy( a.begin(), a.end(), std::ostream_iterator<value_type>(std::cout, "\t"));
-                                                //std::cout << std::endl;
                                                 assert(!"failed to evaluate chi^2 in feng::levenberg_marquardt::update_chi_square!");
                                             }
                                             const value_type dif = y - fxa;
@@ -181,7 +174,6 @@ struct levenberg_marquardt
     void 
     update_chi_square(IIX x_, IIX _x, A a, IIY y_, F f) 
     {
-        //std::cout << "\n update_chi_square called." << std::endl;
         chi_square = feng::inner_product( x_, _x, y_, value_type(0), 
                                           [f,a]( value_type x, value_type y )
                                           { auto const tmp =  y-f(x,a); return tmp*tmp; } 
@@ -217,7 +209,6 @@ struct levenberg_marquardt
     void 
     update_beta(IIX x_, IIX _x, A a, IIY y_, IIW sigma_, F f, IIP p_, IIP _p) 
     {
-        //std::cout << "\n update_beta called." << std::endl;
         beta.clear();
 
         for ( auto p__ = p_; p__ != _p; ++p__ )
@@ -230,8 +221,6 @@ struct levenberg_marquardt
             if ( isnan(tmp) || isinf(tmp) )
                 assert(!"failed to evaluate beta in feng::levenberg_marquardt::update_beta!");
         }
-        //std::cout << "\n beta = " << std::endl;
-        //std::copy( beta.begin(), beta.end(), std::ostream_iterator<value_type>(std::cout, "\t") );
     }
 
     //  Function:
@@ -241,7 +230,6 @@ struct levenberg_marquardt
     void 
     update_beta(IIX x_, IIX _x, A a, IIY y_, F f, IIP p_, IIP _p) 
     {
-        //std::cout << "\n update_beta called." << std::endl;
         beta.clear();
 
         for ( auto p__ = p_; p__ != _p; ++_p )
@@ -265,7 +253,6 @@ struct levenberg_marquardt
     void 
     update_alpha(IIX x_, IIX _x, A a, IIW sigma_, IIP p_, IIP _p) 
     {
-        //std::cout << "\n update_alpha called." << std::endl;
         std::size_t const N = std::distance( x_, _x );
         std::size_t const M = std::distance( p_, _p );
         alpha.resize( M, M );
@@ -286,8 +273,6 @@ struct levenberg_marquardt
                     assert(!"failed to evaluate mat[][] in feng::levenberg_marquardt::update_alpha!");
             }
         }
-
-        //std::cout << "\nmat[][] = \n" << mat << std::endl;
 
         for ( std::size_t k = 0; k < M; ++k )
             for ( std::size_t l = 0; l < M; ++l )
@@ -310,7 +295,6 @@ struct levenberg_marquardt
     void 
     update_alpha(IIX x_, IIX _x, A a, IIP p_, IIP _p) 
     {
-        //std::cout << "\n update_alpha called." << std::endl;
         auto const N = std::distance( x_, _x );
         auto const M = std::distance( p_, _p );
         alpha.resize( M, M );
@@ -348,31 +332,33 @@ struct levenberg_marquardt
     void 
     update_alpha_()
     {
-        //std::cout << "\n update_alpha_ called." << std::endl;
         std::for_each( alpha.diag_begin(), alpha.diag_end(), [this](value_type& v){ v *= this->lambda + value_type(1); } );
     }
 
     // Function:
     //              calculate \delta a
     //          \alpha^{'} \times \delta a = \beta
-    void
+    // Return:
+    //          1   ----    failed with nan of inf
+    //          0   ----    successfully update a
+    std::size_t
     update_delta_a()
     {
-        //std::cout << "\n update_delta_a called.";
-        //std::cout << "\n alpha = " << alpha << std::endl;
         delta_a.clear();
-        //matrix_type u, w, v;
-        //feng::singular_value_decomposition( alpha, u, w, v );
-        //std::for_each( w.diag_begin(), w.diag_end(), [](value_type& v){ v = value_type(1)/v; } );
-        //auto const ans_b = v * w * (~u) * beta;
-        auto const ans_b = alpha.inverse() * beta;
+        matrix_type u, w, v;
+        feng::singular_value_decomposition( alpha, u, w, v );
+        std::for_each( w.diag_begin(), w.diag_end(), [](value_type& v){ v = value_type(1)/v; } );
+        auto const ans_b = v * w * (~u) * beta;
+        //auto const ans_b = alpha.inverse() * beta;
         std::copy( ans_b.begin(), ans_b.end(), std::back_inserter(delta_a) );
 
         for ( auto v: delta_a )
         {
             if ( isnan(v) || isinf(v) )
-                assert(!"failed to solve equation in feng::levenberg_marquardt::update_delta_a!");
+                return 1;
+                //assert(!"failed to solve equation in feng::levenberg_marquardt::update_delta_a!");
         }
+        return 0;
     }
 
     // Function:
@@ -381,7 +367,6 @@ struct levenberg_marquardt
     void 
     update_a()
     {
-        //std::cout << "\n update_a called." << std::endl;
         std::transform( a.begin(), a.end(), delta_a.begin(), a.begin(), 
                         []( value_type a, value_type d_a ) { return a+d_a; } 
                       );
@@ -393,7 +378,6 @@ struct levenberg_marquardt
     void 
     rollback_a()
     {
-        //std::cout << "\n rollback_a called." << std::endl;
         std::transform( a.begin(), a.end(), delta_a.begin(), a.begin(), 
                         []( value_type a, value_type d_a ) { return a-d_a; } 
                       );

@@ -22,17 +22,24 @@ namespace feng
     // matrix<double> v;
     // singular_value_decomposition( A, u, w, v );
 
+
+    // Return
+    //          1   ----    Failed to solve within given iterations
+    //          0   ----    Successfully solve SVD
     template< typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
-    void singular_value_decomposition(  const Matrix1& A,
-                                        Matrix2& u,
-                                        Matrix3& w,
-                                        Matrix4& v )
+    std::size_t
+    singular_value_decomposition(  const Matrix1& A,
+                                   Matrix2& u,
+                                   Matrix3& w,
+                                   Matrix4& v,
+                                   std::size_t const max_its = 100
+                                   )
     {
         typedef typename Matrix1::value_type value_type;
 
         const value_type zero(0);
         const value_type one(1);
-        const std::size_t max_its(100);
+        //const std::size_t max_its(100);
         const std::size_t m = A.row();
         const std::size_t n = A.col();
         u = A;
@@ -228,7 +235,8 @@ namespace feng
                 } // if l == k
 
                 if ( (its+1) == max_its )
-                { assert( !"no convergence in 100 singular_value_decomposition iterations" ); }
+                    return 1;
+                //{ assert( !"no convergence in 100 singular_value_decomposition iterations" ); }
 
                 value_type x = w[l][l];
                 value_type y = w[k-1][k-1];
@@ -279,6 +287,8 @@ namespace feng
             }//its loop
             if ( !k ) break;
         } // k loop
+
+        return 0;//return with success
     }//singular_value_decomposition 
 
 }//namespace sm

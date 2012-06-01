@@ -8,18 +8,22 @@
 
 namespace feng
 {
-    template<typename T>
-    matrix<T> const eye( const std::size_t r, const std::size_t c )
+    template<typename T,
+             std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const eye( const std::size_t r, const std::size_t c )
     {
         matrix<T> ans{ r, c };
         std::fill( ans.diag_begin(), ans.diag_end(), T(1) );
         return ans;
     }
 
-    template<typename T>
-    matrix<T> const eye( const std::size_t n )
+    template<typename T,
+             std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const eye( const std::size_t n )
     {
-        return eye( n, n );
+        return eye<T,D,A>( n, n );
     }
 
 }//namespace feng
