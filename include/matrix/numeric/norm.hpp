@@ -53,18 +53,6 @@ namespace feng
         return  value_type(0);
     }
 
-    template< typename T, std::size_t D, typename A_ >
-    T
-    norm_1( const matrix<std::complex<T>, D, A_>& A )
-    {
-        std::vector<T> m( A.col() );
-
-        for ( std::size_t i = 0; i != A.col(); ++i )
-            m[i] = std::accumulate( A.col_cbegin(i), A.col_cend(i), T(0), []( const T u, const std::complex<T>& v ) { return u + std::abs(v); } );
-
-        return *(std::max_element( m.begin(), m.end() ));
-    }
-
     template< typename Matrix >
     typename Matrix::value_type 
     norm_1( const Matrix& A )
@@ -74,6 +62,18 @@ namespace feng
 
         for ( std::size_t i = 0; i != A.col(); ++i )
             m[i] = std::accumulate( A.col_cbegin(i), A.col_cend(i), value_type(0), []( value_type u, value_type v ) { return u + std::abs(v); } );
+
+        return *(std::max_element( m.begin(), m.end() ));
+    }
+
+    template< typename T, std::size_t D, typename A_ >
+    T
+    norm_1( const matrix<std::complex<T>, D, A_>& A )
+    {
+        std::vector<T> m( A.col() );
+
+        for ( std::size_t i = 0; i != A.col(); ++i )
+            m[i] = std::accumulate( A.col_cbegin(i), A.col_cend(i), T(0), []( const T u, const std::complex<T>& v ) { return u + std::abs(v); } );
 
         return *(std::max_element( m.begin(), m.end() ));
     }

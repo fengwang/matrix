@@ -51,7 +51,8 @@ namespace feng
         auto const norm_A               = norm_1( A );
         auto const ratio                = theta[13] / norm_A;
         size_type const s               = ratio < value_type(1) ? 0 : static_cast<size_type>( std::ceil( std::log2( ratio ) ) );
-        const value_type s__2           = s ? value_type(1) : value_type(1 << s);
+        const value_type s__2           = s ? value_type(1 << s) : value_type(1);
+        //const value_type s__2           = s ? value_type(1) : value_type(1 << s);
         auto const _A                   = A / s__2;
         auto const n                    = A.row();
         static value_type const c []    = { 0.000000000000000,  // 0
