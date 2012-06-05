@@ -3,6 +3,7 @@
 
 #include <matrix/misc/diag.hpp>
 #include <matrix/misc/eye.hpp>
+#include <matrix/misc/hilb.hpp>
 #include <matrix/misc/is_orthogonal.hpp>
 #include <matrix/misc/is_positive_definite.hpp>
 #include <matrix/misc/is_symmetric.hpp>
