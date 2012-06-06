@@ -13,6 +13,7 @@
 #include <matrix/misc/tril.hpp>
 #include <matrix/misc/triu.hpp>
 #include <matrix/misc/zeros.hpp>
+#include <matrix/misc/toeplitz.hpp>
 
 #endif//_MISC_HPP_INCLUDED_DSFOIJH4O8USFDLKIHJ4938YUSFDLKIHJSDFLKJHNVKJHSFKHUJASFDOIUH4RIUHYSDFKUHAIFUDSHYI8YUJ7RESKFUDHD
 
