@@ -10,7 +10,7 @@ namespace feng
         while ( _ii1 != ii1_ )
         { f( *_ii1++ ); }
 
-        return std::move( f );
+        return f;
     }
 
     template<typename II1, typename II2, typename F>
@@ -19,7 +19,7 @@ namespace feng
         while ( _ii1 != ii1_ )
         { f( *_ii1++, *_ii2++ ); }
 
-        return std::move( f );
+        return f;
     }
 
     template<typename II1, typename II2, typename II3, typename F>
@@ -28,7 +28,16 @@ namespace feng
         while ( _ii1 != ii1_ )
         { f( *_ii1++, *_ii2++, *_ii3++ ); }
 
-        return std::move( f );
+        return f;
+    }
+
+    template<typename II1, typename II2, typename II3, typename II4, typename F>
+    F for_each( II1 _ii1, II1 ii1_, II2 _ii2, II3 _ii3, II4 _ii4, F f )
+    {
+        while ( _ii1 != ii1_ )
+        { f( *_ii1++, *_ii2++, *_ii3++, *_ii4++ ); }
+
+        return f;
     }
 
 }//namespace feng

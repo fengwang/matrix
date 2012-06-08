@@ -28,6 +28,15 @@ namespace feng
         return m;
     }
 
+    template<typename Itor,
+             typename T = double,
+             std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const toeplitz( Itor i_, Itor _i )
+    {
+        return toeplitz( i_, _i, i_, _i );
+    }
+
 }//namespace feng
 
 #endif//_TOEPLITZ_HPP_INCLUDED_DSOIFJ4ID9UIF498OSDIFAKLSFDJVNVCXNKSFDJAHSFDAOI4HOSDIFT4UISFDIOU489YJ

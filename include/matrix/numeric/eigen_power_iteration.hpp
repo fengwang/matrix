@@ -49,17 +49,17 @@ namespace feng
         return eigen_power_iteration(A, b.begin(), eps);
     }
 
-    template< typename T, std::size_t D, typename A_, typename O >
-    T eigen_power_iteration( const matrix<std::complex<T>,D,A_>& A, O output, const T eps = T(1.0e-5) )
+    template< typename T, std::size_t D, typename _A_, typename O >
+    T eigen_power_iteration( const matrix<std::complex<T>,D,_A_>& A, O output, const T eps = T(1.0e-5) )
     {
         assert( A.row() == A.col() );
 
-        matrix<std::complex<T>,D,A_> b( A.col(), 1 );
-        matrix<std::complex<T>,D,A_> b_( A.col(), 1 );
+        matrix<std::complex<T>,D,_A_> b( A.col(), 1 );
+        matrix<std::complex<T>,D,_A_> b_( A.col(), 1 );
         std::copy( A.diag_cbegin(), A.diag_cend(), b.begin() ); // random initialize
 
-        matrix<std::complex<T>, D,A> A_(A);
-        std::for_each( A_.begin(), A_.end(), [](std::complex<T>& c) { c = std::conj(c) } );
+        matrix<std::complex<T>, D, _A_> A_(A);
+        std::for_each( A_.begin(), A_.end(), [](std::complex<T>& c) { c = std::conj(c); } );
 
         for (;;)
         {

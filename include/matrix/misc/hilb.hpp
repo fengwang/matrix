@@ -29,7 +29,7 @@ namespace feng
              typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
     matrix<T,D,A> const hilbert( const std::size_t n )
     {
-        return hilb(n);
+        return hilb<T,D,A>(n);
     }
 
 }//namespace feng
