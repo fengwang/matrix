@@ -33,13 +33,13 @@ namespace feng
     //          A       :       square matrix A [n,]
     //          x       :       unknown vector x [n,1]
     //          b       :       vector b [n,1]
-    //          loops   :       max iterations, default is 50
+    //          loops   :       max iterations, default is 100
     //          eps     :       precision control, default is 1.0e-5
     // Returns:
     //          iterations consumed
     //
     template<typename Matrix, typename T, std::size_t D, typename A_>
-    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 50, T const eps = T(1.0e-5) )
+    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 100, T const eps = T(1.0e-5) )
     {
         typedef matrix<T,D,A_> matrix_type;
         typedef T value_type;
@@ -109,13 +109,13 @@ namespace feng
     //          A       :       square matrix A [n,]
     //          iix_    :       first position of unknown vector x 
     //          iib_    :       first position of vector b 
-    //          loops   :       max iterations, default is 50
+    //          loops   :       max iterations, default is 100
     //          eps     :       precision control, default is 1.0e-5
     // Returns:
     //          iterations consumed
     //
     template<typename Matrix, typename II1, typename II2, typename T=double>
-    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 50, T const eps = T(1.0e-5) )
+    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T(1.0e-5) )
     {
         auto const n = A.row();
         matrix<T> x{ n, 1 };
@@ -126,13 +126,13 @@ namespace feng
     }
 
     template<typename Matrix, typename T, std::size_t D, typename A_>
-    std::size_t bicgstab( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 50, T const eps = T(1.0e-5) )
+    std::size_t bicgstab( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 100, T const eps = T(1.0e-5) )
     {
         return biconjugate_gradient_stablized_method( A, x, b, loops, eps );
     }
 
     template<typename Matrix, typename II1, typename II2, typename T=double>
-    std::size_t bicgstab( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 50, T const eps = T(1.0e-5) )
+    std::size_t bicgstab( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T(1.0e-5) )
     {
         return biconjugate_gradient_stablized_method( A, iix_, IIb_, loops, eps );
     }
