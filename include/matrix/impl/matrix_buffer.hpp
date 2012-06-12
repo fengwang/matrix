@@ -49,7 +49,6 @@ public:
 private:
     // elements size that could be stored in stack buffer
     enum {  var_length = SPACE ? SPACE : 1 };
-    //enum {  var_length = SPACE*sizeof(std::size_t)/sizeof(Type) };
 
 public:
 

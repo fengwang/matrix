@@ -7,29 +7,31 @@
 #ifndef _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED
 #define _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED
 
+#include <matrix/impl/matrix_allocator.hpp>
 #include <matrix/impl/matrix_buffer.hpp>
-#include <matrix/impl/matrix_stride_iterator.hpp>
 #include <matrix/impl/matrix_range_iterator.hpp>
+#include <matrix/impl/matrix_stride_iterator.hpp>
 #include <matrix/impl/misc.hpp>
 
-#include <cstddef> //for size_t and ptrdiff_t
-#include <memory>
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+#include <cstddef> 
 #include <functional>
-#include <numeric>
-#include <iterator>
 #include <iosfwd>
+#include <iterator>
+#include <memory>
+#include <numeric>
 #include <utility>
-#include <vector>
 #include <valarray>
+#include <vector>
 
 namespace feng
 {
 
 template<   typename Type, 
             std::size_t Default = 256,
-            class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            //class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            class Allocator = feng::matrix_allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
         >
 class matrix
 {

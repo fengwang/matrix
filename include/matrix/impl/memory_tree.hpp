@@ -67,6 +67,8 @@ namespace feng
          */
         void* allocate( size_type n )
         {
+            n = ((n >> 6) + 1) << 6;
+
             mutex_available_tree_.lock();
             // 1)
             auto it = available_tree_.find( n );
@@ -75,11 +77,12 @@ namespace feng
             if ( it != available_tree_.end() )
             {
                 lock_guard_type lo1 { mutex_occupied_tree_ };
+                auto mem = (*it).second;
                 // 2.1)
                 occupied_tree_.insert( *it );
                 // 2.2)
                 available_tree_.erase( it );
-                return ( *it ).second;
+                return mem;
             }
 
             mutex_available_tree_.unlock();
@@ -100,6 +103,8 @@ namespace feng
          */
         void deallocate( void* p, size_t n )
         {
+            n = ((n >> 6) + 1) << 6;
+
             lock_guard_type lo { mutex_occupied_tree_ };
             // 1)
             auto low_b = occupied_tree_.lower_bound( n );
