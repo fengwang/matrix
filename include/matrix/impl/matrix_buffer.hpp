@@ -68,7 +68,7 @@ public:
         else
             buffer_ = static_cast<pointer>(Allocator::allocate(items_));
      
-        memset(buffer_, 0, items_*sizeof(Type));
+        std::memset(buffer_, 0, items_*sizeof(Type));
     }
 
     // Description:
@@ -277,7 +277,8 @@ private:
 
         if (!is_internal_alloc())
         {
-            buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+            //buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+            Allocator::deallocate( buffer_, items_ );
         }
         items_ = dis;
         if (items_ <= var_length)
@@ -299,7 +300,8 @@ public:
 
         if (!is_internal_alloc())
         {
-            buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+            //buffer_ = static_cast<pointer>(Allocator::deallocate(items_));
+            Allocator::deallocate( buffer_, items_ );
         }
         items_ = dis;
         if (items_ <= var_length)

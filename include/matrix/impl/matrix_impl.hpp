@@ -30,8 +30,8 @@ namespace feng
 
 template<   typename Type, 
             std::size_t Default = 256,
-            //class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
-            class Allocator = feng::matrix_allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            //class Allocator = feng::matrix_allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
         >
 class matrix
 {
@@ -1667,8 +1667,6 @@ public:
     // i) R'[n,m] = -sR*P'
     // j) S'[n,n] = s + sR * P' * Qs
     //
-    //TODO:
-    //      seems something wrong with this algorithm, check it
     const self_type 
     direct_inverse() const
     {

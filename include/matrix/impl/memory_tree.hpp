@@ -2,11 +2,13 @@
 #define _MEMORY_TREE_HPP_INCLUDED_SFDOI498ULSFKJKVJKSFDJAOIU4POSFDIJAOPISAIOJSFOIRRU8SDIOJUIGIOJFGOIF
 
 #include <map>
+#include <unordered_map>
 #include <algorithm>
 #include <mutex>
 #include <cstddef>
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 
 namespace feng
 {
@@ -15,9 +17,9 @@ namespace feng
         typedef std::size_t                                 size_type;
         typedef void*                                       address_type;
         typedef std::multimap< size_type, address_type >    size_address_associate_type;
+        //typedef std::unordered_multimap< size_type, address_type >    size_address_associate_type;
         typedef std::mutex                                  mutex_type;
         typedef std::lock_guard<mutex_type>                 lock_guard_type;
-        typedef unsigned long                               unit_type;
 
         size_address_associate_type     available_tree_;
         mutable mutex_type              mutex_available_tree_;
@@ -63,6 +65,10 @@ namespace feng
          *    2.2) delete the node from available tree
          * 3) if not found
          *    3.1) alloc a new node from heap
+         *       3.1.1) if failed to allocate 
+         *       3.1.2) release idle memory
+         *       3.1.3) allocate again
+         *       3.1.4) if failed then throw exception
          *    3.2) insert the node to occupied tree
          */
         void* allocate( size_type n )
@@ -86,10 +92,21 @@ namespace feng
             }
 
             mutex_available_tree_.unlock();
-            lock_guard_type lo2 { mutex_occupied_tree_ };
             // 3.1)
             auto node = std::make_pair( n, malloc( n ) );
+            // 3.1.1)
+            if ( ! node.second )
+            {
+                // 3.1.2)
+                destroy_idle(); 
+                // 3.1.3)
+                node = std::make_pair( n, malloc( n ) );
+                // 3.1.4
+                if ( !node.second )
+                    throw std::bad_alloc();
+            }
             // 3.2
+            lock_guard_type lo2 { mutex_occupied_tree_ };
             occupied_tree_.insert( node );
             return node.second;
         }
@@ -121,6 +138,7 @@ namespace feng
                     available_tree_.insert( *low_b );
                     // 5)
                     occupied_tree_.erase( low_b );
+                    if ( 64 < available_tree_.size() ) destroy_idle();
                     return;
                 }
 
