@@ -9,7 +9,7 @@ int main()
 {
     using namespace feng;
 
-    unsigned int const n = 20;
+    unsigned int const n = 35;
     vg::variate_generator<double> v;
     matrix<double> A(n, n);
     matrix<double> V(n, n);

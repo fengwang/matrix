@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -90,3 +90,10 @@ test_bicgstab: test/test_bicgstab.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_bicgstab.o test/test_bicgstab.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_bicgstab $(OBJECTS_DIR)/test_bicgstab.o
 
+complex_jacobi: test/complex_jacobi.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/complex_jacobi.o test/complex_jacobi.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/complex_jacobi $(OBJECTS_DIR)/complex_jacobi.o
+
+householder: test/householder.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/householder.o test/householder.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/householder $(OBJECTS_DIR)/householder.o

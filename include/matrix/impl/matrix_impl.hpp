@@ -90,13 +90,8 @@ public:
     typedef std::reverse_iterator<const_col_range_type>                 const_reverse_col_range_type;
 
 public:
-    explicit matrix(    const size_type r = 0, 
-                        const size_type c = 0,
-                        const value_type v = value_type() 
-                   ) 
-    :   row_(r), 
-        col_(c), 
-        data_(storage_type(r*c)) 
+    explicit matrix(    const size_type r = 0, const size_type c = 0, const value_type v = value_type() ) 
+    :   row_(r), col_(c), data_(storage_type(r*c)) 
     { 
         std::fill( begin(), end(), v ); 
     }
@@ -138,14 +133,9 @@ public:
         return *this;
     }
 
-
 public:
-    matrix (    const self_type& other, 
-                const range_type& rr, 
-                const range_type& rc )
-        :   row_( rr.second - rr.first ),
-            col_( rc.second - rc.first ),
-            data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
+    matrix (    const self_type& other, const range_type& rr, const range_type& rc )
+        :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
         assert( rr.second > rr.first ); 
         assert( rc.second > rc.first );
@@ -153,21 +143,12 @@ public:
         assert( rc.second <= other.col() );
     
         for ( size_type i = rr.first; i < rr.second; ++i )
-        {
-            std::copy(  other.row_begin(i)+rc.first,
-                        other.row_begin(i)+rc.second,
-                        row_begin(i-rr.first)
-                    );
-        }
+            std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
     }
 
     template< typename T, size_type D, typename A >
-    matrix (    const matrix<T,D,A>& other, 
-                const range_type& rr, 
-                const range_type& rc )
-        :   row_( rr.second - rr.first ),
-            col_( rc.second - rc.first ),
-            data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
+    matrix (    const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
+        :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
         assert( rr.second > rr.first ); 
         assert( rc.second > rc.first );
@@ -175,12 +156,7 @@ public:
         assert( rc.second < other.col() );
     
         for ( size_type i = rr.first; i < rr.second; ++i )
-        {
-            std::copy(  other.row_begin(i)+rc.first,
-                        other.row_begin(i)+rc.second,
-                        row_begin(i-rr.first)
-                     );
-        }
+            std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
     }
 
 public:
@@ -239,9 +215,7 @@ public:
         const size_type the_col_to_copy = std::min(col_, new_col);
 
         for ( size_type i = 0; i < the_row_to_copy; ++i )
-        {
             std::copy( row_begin(i), row_begin(i)+the_col_to_copy, ans.row_begin(i) );  
-        }
 
         *this = ans;
         return *this;
@@ -713,136 +687,76 @@ public:
     row_range_type
     row_range( const_row_type begin, const_row_type end )
     {
-        return row_range_type
-                (
-                    begin,
-                    end - 1,
-                    col()
-                );
+        return row_range_type ( begin, end - 1, col());
     }
 
     const_row_range_type
     row_range( const_row_type begin, const_row_type end ) const
     {
-        return const_row_range_type
-                (
-                    begin,
-                    end - 1,
-                    col()
-                );
+        return const_row_range_type ( begin, end - 1, col());
     }
 
 public:
     row_range_type
     row_range_begin( const size_type first, const size_type last )
     {
-        return row_range_type
-                (
-                    row_begin(first),
-                    row_begin(last),
-                    col()
-                );
+        return row_range_type ( row_begin(first), row_begin(last), col());
     }
 
     row_range_type
     row_range_end( const size_type first, const size_type last )
     {
-        return row_range_type
-                (
-                    row_end(first),
-                    row_end(last),
-                    col()
-                );
+        return row_range_type ( row_end(first), row_end(last), col());
     }
 
     const_row_range_type
     row_range_begin( const size_type first, const size_type last ) const
     {
-        return const_row_range_type
-                (
-                    row_begin(first),
-                    row_begin(last),
-                    col()
-                );
+        return const_row_range_type ( row_begin(first), row_begin(last), col());
     }
 
     const_row_range_type
     row_range_end( const size_type first, const size_type last ) const
     {
-        return const_row_range_type
-                (
-                    row_end(first),
-                    row_end(last),
-                    col()
-                );
+        return const_row_range_type ( row_end(first), row_end(last), col());
     }
 
 public:
     col_range_type
     col_range( const_col_type begin, const_col_type end )
     {
-        return col_range_type
-                (
-                    begin,
-                    end - 1,
-                    1
-                );
+        return col_range_type ( begin, end - 1, 1);
     }
 
     const_col_range_type
     col_range( const_col_type begin, const_col_type end ) const
     {
-        return const_col_range_type
-                (
-                    begin,
-                    end - 1,
-                    1
-                );
+        return const_col_range_type ( begin, end - 1, 1);
     }
 
 public:
     col_range_type
     col_range_begin( const size_type first, const size_type last )
     {
-        return col_range_type
-                (
-                    col_begin(first),
-                    col_begin(last),
-                    1
-                );
+        return col_range_type ( col_begin(first), col_begin(last), 1);
     }
 
     col_range_type
     col_range_end( const size_type first, const size_type last )
     {
-        return col_range_type
-                (
-                    col_end(first),
-                    col_end(last),
-                    1
-                );
+        return col_range_type ( col_end(first), col_end(last), 1);
     }
 
     const_col_range_type
     col_range_begin( const size_type first, const size_type last ) const
     {
-        return const_col_range_type
-                (
-                    col_begin(first),
-                    col_begin(last),
-                    1
-                );
+        return const_col_range_type ( col_begin(first), col_begin(last), 1);
     }
 
     const_col_range_type
     col_range_end( const size_type first, const size_type last ) const
     {
-        return const_col_range_type
-                (
-                    col_end(first),
-                    col_end(last),
-                    1
-                );
+        return const_col_range_type ( col_end(first), col_end(last), 1);
     }
 
 public:
@@ -944,7 +858,7 @@ public:
     value_type
     operator()( const size_type r = 0, const size_type c = 0 ) const 
     {
-        return *(row_begin(r)+c);
+        return *(row_cbegin(r)+c);
     }
 
 public:
@@ -979,40 +893,35 @@ public:
     self_type & 
     operator +=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(),
-                       std::bind1st(std::plus<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind1st(std::plus<value_type > (), rhs));
         return *this;
     }
 
     self_type & 
     operator +=(const self_type& rhs)
     {
-        std::transform(begin(), end(), rhs.begin(), begin(),
-                       std::plus<value_type > ());
+        std::transform(begin(), end(), rhs.begin(), begin(), std::plus<value_type > ());
         return *this;
     }
 
     self_type & 
     operator -=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(),
-                       std::bind1st(std::minus<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind1st(std::minus<value_type > (), rhs));
         return *this;
     }
 
     self_type & 
     operator -=(const self_type& rhs)
     {
-        std::transform(begin(), end(), rhs.begin(), begin(),
-                       std::minus<value_type > ());
+        std::transform(begin(), end(), rhs.begin(), begin(), std::minus<value_type > ());
         return *this;
     }
 
     self_type & 
     operator *=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(),
-                       std::bind1st(std::multiplies<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind1st(std::multiplies<value_type > (), rhs));
         return *this;
     }
 
@@ -1159,15 +1068,9 @@ private:
     {
         self_type tmp(row(), other.col());
         for (size_type i = 0; i < row(); ++i)
-        {
             for (size_type j = 0; j < other.col(); ++j)
-            {
-                tmp[i][j] = std::inner_product(
-                                                   row_begin(i), row_end(i),
-                                                   other.col_begin(j), value_type(0)
-                                               );
-            }
-        }
+                tmp[i][j] = std::inner_product( row_begin(i), row_end(i), other.col_begin(j), value_type(0)); 
+
         *this = tmp;
         return *this;   
     }
@@ -1194,11 +1097,7 @@ private:
         const self_type 
         new_ans = new_this * other;
 
-        const self_type 
-        ans(    new_ans,
-                range_type( 0, row() ),
-                range_type( 0, other.col() )
-           );
+        const self_type ans(    new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
 
         *this = ans;
         return *this;
@@ -1228,26 +1127,15 @@ private:
     self_type&
     rr2( const self_type& other )
     {
-        const self_type 
-        new_this(   *this,
-                    range_type( 0, row()-1 ),
-                    range_type( 0, col() )
-                );
+        const self_type new_this(   *this, range_type( 0, row()-1 ), range_type( 0, col() ));
 
-        const self_type 
-        last_row(   *this,
-                    range_type( row()-1, row() ),
-                    range_type( 0, col() )
-                );
+        const self_type last_row(   *this, range_type( row()-1, row() ), range_type( 0, col() ));
         
-        const self_type 
-        new_ans = new_this * other;
+        const self_type new_ans = new_this * other;
         
-        const self_type 
-        last_row_ans = last_row * other;
+        const self_type last_row_ans = last_row * other;
         
-        const self_type
-        ans = new_ans && last_row_ans;
+        const self_type ans = new_ans && last_row_ans;
 
         *this = ans;
         return *this;
@@ -1311,31 +1199,15 @@ private:
     cc2( const self_type& other )
     {   
         //[new_this <- this] [R,C-1]
-        const self_type 
-        new_this(   *this,
-                    range_type( 0, row() ),
-                    range_type( 0, col()-1 )
-                );
+        const self_type new_this(   *this, range_type( 0, row() ), range_type( 0, col()-1 ));
         //[last_col <- this] [R,1]
-        const self_type 
-        last_col(   *this,
-                    range_type( 0, row() ),
-                    range_type( col()-1, col() )
-                );
+        const self_type last_col(   *this, range_type( 0, row() ), range_type( col()-1, col() ));
 
         //[new_other <- other] [C-1,OC]
-        const self_type
-        new_other(  other,
-                    range_type( 0, other.row()-1 ),
-                    range_type( 0, other.col() )
-                 );
+        const self_type new_other(  other, range_type( 0, other.row()-1 ), range_type( 0, other.col() ));
                     
         //[last_row <- other]  [1, OC]
-        const self_type
-        last_row(   other,
-                    range_type( other.row()-1, other.row() ),
-                    range_type( 0, other.col() )
-                );
+        const self_type last_row(   other, range_type( other.row()-1, other.row() ), range_type( 0, other.col() ));
 
         self_type new_ans = new_this * new_other;
         self_type res_col_row = last_col * last_row;
@@ -1367,17 +1239,11 @@ private:
     oc1( const self_type& other )
     {
         //[new_other <- other] [C,OC+1]
-        const self_type
-        new_other = other || value_type(0);
+        const self_type new_other = other || value_type(0);
 
-        const self_type
-        new_ans = *this * new_other;
+        const self_type new_ans = *this * new_other;
 
-        const self_type 
-        ans(    new_ans,
-                range_type( 0, row() ),
-                range_type( 0, other.col() ) 
-            );
+        const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ) );
 
         *this = ans;
         return *this;
@@ -1407,26 +1273,15 @@ private:
     self_type&
     oc2( const self_type& other )
     {
-        const self_type 
-        new_other(  other,
-                    range_type(0,other.row()),
-                    range_type(0, other.col()-1)
-               );
+        const self_type new_other(  other, range_type(0,other.row()), range_type(0, other.col()-1));
 
-        const self_type 
-        last_col(   other, 
-                    range_type(0, other.row()), 
-                    range_type(other.col()-1, other.col()) 
-              );
+        const self_type last_col(   other, range_type(0, other.row()), range_type(other.col()-1, other.col()) );
 
-        const self_type 
-        new_ans = (*this) * new_other;
+        const self_type new_ans = (*this) * new_other;
         
-        const self_type 
-        last_col_ans = (*this) * last_col;
+        const self_type last_col_ans = (*this) * last_col;
 
-        const self_type 
-        ans = new_ans || last_col_ans;
+        const self_type ans = new_ans || last_col_ans;
 
         *this = ans;
         return *this;
@@ -1593,9 +1448,7 @@ public:
         self_type ans(col(), row());
 
         for (size_type i = 0; i < col(); ++i)
-        {
             std::copy(col_begin(i), col_end(i), ans.row_begin(i));
-        }
 
         return ans;
     }
