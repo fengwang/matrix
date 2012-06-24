@@ -2,15 +2,30 @@
 #define _HOUSEHOLDER_HPP_INCLUDED_SOIJ43ULDSAKJVCKLJAKLJALKJCSDFUI4UHSDKJAF4HTKJFLAJKSFDLKJFDVNAJKSD
 
 #include <matrix/matrix.hpp>
+#include <matrix/misc/eye.hpp>
 
 #include <cmath>
 #include <cassert>
 #include <valarray>
 
+#include <iostream>
+
 namespace feng
 {
 
-    // A = Q D Q^T
+    // HouseHolder Transform
+    // reduct a real, symmetric matrix A to its tridiagonal form D, using Householder matrix Q
+    // Input:
+    //          A       --      the symmetric real matrix
+    //          Q       --      the transformation matrix
+    //          D       --      the tridigonal form reduced from matrix A
+    //Comment:
+    //          Q is othogonal and symmetirc,
+    //              Q * Q^T = I
+    //          D is tridigonal
+    //          and 
+    //          A = Q D Q
+    //
     template< typename Matrix1, typename Matrix2, typename Matrix3 >
     void householder( const Matrix1& A, Matrix2& Q, Matrix3& D )
     {
@@ -18,70 +33,60 @@ namespace feng
         typedef typename Matrix1::size_type  size_type;
 
         assert( A.row() == A.col() );
+
         size_type const n = A.row();
+        value_type const zero = value_type(0);
+        value_type const one = value_type(1);
+        value_type const two = value_type(2);
+
+        Matrix1 const I = eye(n, A);
 
         Q = eye<value_type>(n);
         D = A;
 
+        Matrix1 x(n, 1);
+        Matrix1 P(n, n);
+
         if ( n < 3 ) { return; }
 
-#if 0
-        Matrix1 v( n, 1 );
-        Matrix1 P( n, n );
 
-        for ( size_type k = 0; k != n; ++k )
-        {
-            auto const alpha = std::copysign( std::sqrt( std::inner_product(D.col_begin(k)+k+1, D.col_end(k), D.col_begin(k)+k+1, value_type()) ), D[k+1][k] );
-
-            auto const r = std::sqrt(value_type(0.5) * ( alpha*(alpha + D[k+1][k]) ));
-            if ( value_type(0) == r ) continue;
-
-            std::fill( v.begin(), v.begin()+k+1, value_type() );
-            std::copy( D.col_begin(k)+k+1, D.col_end(k), v.begin()+k+1 );
-            v[k+1][0] += alpha;
-            v /= r+r;
-
-            P = value_type(1) - value_type(2) * v * v.transpose();
-
-            D= P * D * P;
-
-            Q *= P;
+        // for step i, 
+        // 1) vector x is set to be the ith column of matrix A'(or D), without first n+1 th elements,
+        //      eg.  x = {0,0,A[2][1], A[3][1], ..., A[3][n]}
+        // 2) calculate the length of vector x to get delta
+        // 3) add or sub delta to x[i+1] (to generate vector u)
+        // 4) calcuate the common factor H, which is |u|/2
+        // 5) calculate matrix P, which is I - u u^T / H
+        // 6) D(or A) = P * D * P
+        // 7) Q = Q*P;
+        for ( size_type i = 0; i != n-1; ++i )
+        { 
+            //1)
+            std::fill( x.begin(), x.begin()+i+1, zero ); 
+            std::copy( D.col_begin(i)+i+1, D.col_end(i), x.begin()+i+1 );
+            //2)
+            auto const delta = std::sqrt(std::inner_product(x.begin(), x.end(), x.begin(), zero));
+            if ( zero == delta ) continue; //fix for zero lines
+            //3)
+            if ( x[i+1][0] > zero ) x[i+1][0] += delta;
+            else x[i+1][0] -= delta;
+            //4)
+            auto const H = std::inner_product( x.begin(), x.end(), x.begin(), zero ) / two;
+            //5)
+            P = I - (x * x.transpose()) / H;
+            if ( zero == H ) continue; //fix for zero lines
+            //6) 
+            //D = P * D * P;
+            //optimized version of D - P*D*P;
+            auto const p = D*x/H;
+            auto const k = std::inner_product( x.begin(), x.end(), p.begin(), zero ) / ( H+H );
+            auto const q = p - k*x;
+            D -= q * x.transpose() + x * q.transpose();
+            //7) 
+            //!!Q *= P;
+            //Optimized version of Q=Q*P
+            Q -= Q * x * x.transpose() / H;
         }
-#endif
-#if 1
-        Matrix1 u( n, 1 );
-        Matrix1 p( n, 1 );
-        Matrix1 q( n, 1 );
-
-        for ( size_type m = 0; m != n-2; ++m )
-        {
-            auto const i = n - m - 1;
-            
-            auto const delta = std::inner_product( D.row_begin(i), D.row_begin(i)+i, D.row_begin(i), value_type() );
-            
-            std::copy( D.row_begin(i), D.row_begin(i)+i, u.begin() );
-            std::fill( u.begin()+i, u.end(), value_type() );
-            if ( D[i][i-1] < value_type() ) u[i-1][0] += delta;
-            else u[i-1][0] -= delta;
-
-            auto const H = value_type(0.5) * std::inner_product( u.begin(), u.end(), u.begin(), value_type() ); //this line can be optimized
-
-            p = D * u / H;
-
-            auto const k = std::inner_product( u.begin(), u.end(), p.begin(), value_type() ) / //can be optimized
-                           ( value_type(0.5) * H );
-
-            q = p - k * u;
-
-            D -= q * u.transpose() + u * q.transpose();
-
-            Q -= Q * u * u.transpose() / H;
-        }
-#endif
-
-
-
-        
 
     }//function householder
 

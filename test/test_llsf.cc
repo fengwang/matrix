@@ -45,9 +45,7 @@ int main()
 
     for ( std::size_t i = 0; i < m; ++i )
         cout << "\na[" << i << "] = " << a[i] << "<->" << b[i] << "<<>>" << a[i]-b[i]; 
-
-    
-
     
     return 0;
 }
+

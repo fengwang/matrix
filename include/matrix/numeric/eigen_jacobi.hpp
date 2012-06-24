@@ -81,9 +81,9 @@ namespace feng
             P_( p, q ) = s;
             P_( q, q ) = c - one;
             P_( q, p ) = -s;
-            V += V * P_;
-            A += P_.transpose() * A;
-            A += A * P_;
+            V += V * P_; // this means V's pth col and qth col changed
+            A += P_.transpose() * A; //this means A's pth row and qth row changed
+            A += A * P_; //this means A's pth col and qth col changed
         } //void rotate
 
     }//namespace eigen_jacobi_private
