@@ -1,6 +1,10 @@
 #ifndef _EIGEN_JACOBI_HPP_INCLUDED_SDF3IUJFA89S04390SFIUH3IUHSFJKDH43QU9ISKJHIDUHASIUHFDIUHTKJHFSDIU
 #define _EIGEN_JACOBI_HPP_INCLUDED_SDF3IUJFA89S04390SFIUH3IUHSFJKDH43QU9ISKJHIDUHASIUHFDIUHTKJHFSDIU
 
+//TODO:
+//refractor this algorithm with policies
+//with Find_Max Policy(specilize for tridigonal matrix), Iteration Policy and Output Policy
+
 #include <matrix/matrix.hpp>
 #include <matrix/misc/is_symmetric.hpp>
 #include <matrix/numeric/math.hpp>
