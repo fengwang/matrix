@@ -10,7 +10,7 @@ int main()
     using namespace std;
     using namespace vg;
 
-    const unsigned long n = 15;
+    const unsigned long n = 35;
     matrix<double> A( n, n );
 
     variate_generator<double> v(-1.0, 1.0);
