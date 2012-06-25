@@ -143,6 +143,7 @@ namespace feng
     std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, feng::matrix<T,D,A_>& Lambda, const T_ eps = T_( 1.0e-10 ) )
     {
         Lambda.resize( A.row(), A.col() );
+        Lambda = T(0);
         return eigen_jacobi( A, V, Lambda.diag_begin(), eps);
     }
 
@@ -247,6 +248,7 @@ namespace feng
     std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, feng::matrix<T,D,A_>& Lambda, std::size_t const max_rot = 80, const T_ eps = T_( 1.0e-10 ) )
     {
         Lambda.resize( A.row(), A.col() );
+        Lambda = T(0);
         return cyclic_eigen_jacobi( A, V, Lambda.diag_begin(), max_rot, eps );
     }
 
