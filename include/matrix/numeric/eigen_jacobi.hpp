@@ -2,7 +2,7 @@
 #define _EIGEN_JACOBI_HPP_INCLUDED_SDF3IUJFA89S04390SFIUH3IUHSFJKDH43QU9ISKJHIDUHASIUHFDIUHTKJHFSDIU
 
 #include <matrix/matrix.hpp>
-#include <matrix/misc/is_symmetric.hpp>
+#include <matrix/functional.hpp>
 #include <matrix/numeric/math.hpp>
 //#include <matrix/sparse_matrix.hpp>
 

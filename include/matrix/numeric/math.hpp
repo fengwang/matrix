@@ -2,7 +2,7 @@
 #define _MATH_HPP_INCLUDED_SDOFIHJFDHJSDFLKJXCVKJHSDKHSFDOIUHASFHUSFDKJSHFDHJUERKFDSKJSFDFSDFSDFDKJFSDMSIUHSFDKJHKJBCMJBS
 
 #include <matrix/matrix.hpp>
-#include <misc/for_each.hpp>
+#include <algorithm/for_each.hpp>
 
 #include <cmath>
 #include <cstddef>

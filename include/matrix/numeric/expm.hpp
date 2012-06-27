@@ -3,7 +3,7 @@
 
 #include <matrix/matrix.hpp>
 #include <matrix/numeric/norm.hpp>
-#include <matrix/misc/eye.hpp>
+#include <matrix/functional.hpp>
 
 #include <cassert>
 #include <cmath>

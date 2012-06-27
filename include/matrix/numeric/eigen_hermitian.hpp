@@ -2,7 +2,7 @@
 #define _EIGEN_HERMITIAN_HPP_INCLUDED_DSOIJ4398UASFKLDJSKFLDJKDJVCMNSDJKAKLJFLLJDOIJH4IIDF89498FJSDF
 
 #include <matrix/matrix.hpp>
-#include <misc/for_each.hpp>
+#include <algorithm/for_each.hpp>
 #include <matrix/numeric/eigen_real_symmetric.hpp>
 #include <matrix/numeric/math.hpp>
 

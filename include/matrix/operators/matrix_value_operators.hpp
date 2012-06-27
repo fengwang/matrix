@@ -2,7 +2,7 @@
 #define _MATRIX_VALUE_OPERATORS_HPP_INCLUDED
 
 #include <matrix/matrix.hpp>
-#include <matrix/misc/eye.hpp>
+#include <matrix/functional.hpp>
 
 #include <cassert>
 #include <cstddef>

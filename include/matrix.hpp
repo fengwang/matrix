@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2010  wanng.fenng@gmail.com
+    Copyright (C) 2012 wang_feng@live.com
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,9 +22,8 @@
  *
  * Created on October 9, 2009, 3:30 PM
  *
- * Last Change on Mon Oct  3 14:58:56 CST 2011
+ * Last Change on Wed Jun 27 14:15:01 CEST 2012
  *
- * TODO: performance optimizaiton with c++1x features
  */
 
 #ifndef _MATRIX_HPP_INCLUDED_WR8E9FSDLKJVNKJFDSDFJLKREOIUFSLKJDLKJSSJLKLKJFSLKJSFEOIOIFSDOIEOIEEOIOEIOIWWOWOWOEIOOIREUOIE
@@ -35,7 +34,6 @@
 #include <matrix/operators.hpp>
 #include <matrix/numeric.hpp>
 #include <matrix/functional.hpp>
-#include <matrix/misc.hpp>
 
-#endif
+#endif//_MATRIX_HPP_INCLUDED_WR8E9FSDLKJVNKJFDSDFJLKREOIUFSLKJDLKJSSJLKLKJFSLKJSFEOIOIFSDOIEOIEEOIOEIOIWWOWOWOEIOOIREUOIE
 

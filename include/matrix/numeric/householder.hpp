@@ -2,7 +2,7 @@
 #define _HOUSEHOLDER_HPP_INCLUDED_SOIJ43ULDSAKJVCKLJAKLJALKJCSDFUI4UHSDKJAF4HTKJFLAJKSFDLKJFDVNAJKSD
 
 #include <matrix/matrix.hpp>
-#include <matrix/misc/eye.hpp>
+#include <matrix/functional.hpp>
 
 #include <cmath>
 #include <cassert>
