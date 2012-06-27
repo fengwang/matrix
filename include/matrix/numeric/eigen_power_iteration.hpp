@@ -12,7 +12,7 @@
 
 namespace feng
 {
-
+    //interfaces are messy, need cleaning
     template< typename T, std::size_t D, typename A_, typename O >
     T eigen_power_iteration( const matrix<T,D,A_>& A, O output, const T eps = T(1.0e-5) )
     {
