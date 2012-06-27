@@ -2,6 +2,7 @@
 #define _MATH_HPP_INCLUDED_SDOFIHJFDHJSDFLKJXCVKJHSDKHSFDOIUHASFHUSFDKJSHFDHJUERKFDSKJSFDFSDFSDFDKJFSDMSIUHSFDKJHKJBCMJBS
 
 #include <matrix/matrix.hpp>
+#include <misc/for_each.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -10,7 +11,71 @@
 
 namespace feng
 {
+//complex cases
+#define GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION( f_name )  \
+    template< typename T, std::size_t N, typename A > \
+    const matrix<T,N> \
+    f_name( const matrix<std::complex<T>, N, A> & mm ) \
+    { \
+        matrix<T,N> m(mm.row(), mm.col()); \
+        feng::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> c ) { t = std:: f_name(c); } ); \
+        return m; \
+    }
 
+GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(real);
+GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(imag);
+GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(abs);
+GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(arg);
+GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(norm);
+
+#undef GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION
+
+
+//complex only functions
+#define GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION( f_name )  \
+    template< typename T, std::size_t N, typename A > \
+    const matrix<std::complex<T>, N, A> \
+    f_name( const matrix<std::complex<T>, N, A>& mm ) \
+    { \
+        matrix<std::complex<T>, N, A> m( mm ); \
+        std::for_each( m.begin(), m.end(), [](std::complex<T>& val) { val = std:: f_name(val); } ); \
+        return m; \
+    }
+
+GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION(conj);
+GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION(proj);
+
+#undef GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION
+
+
+    //specialization for polar
+    template< typename T, std::size_t N, typename A, std::size_t N_, typename A_ >
+    const matrix<std::complex<T>, N> polar( const matrix<T,N,A>& mm, const matrix<T,N_,A_> nn )
+    {
+       assert( mm.row() == nn.row() );
+       assert( mm.col() == nn.col() );
+       matrix<std::complex<T>,N> m( mm.row(), mm.col() );
+       feng::for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex<T>& m ) { m = std::polar(_mm, _nn); } );
+       return m;
+    }
+
+    template< typename T, std::size_t N, typename A >
+    const matrix<std::complex<T>, N> polar( const matrix<T,N,A>& mm, const T nn )
+    {
+       matrix<std::complex<T>,N> m( mm.row(), mm.col() );
+       feng::for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex<T>& m ) { m = std::polar(_mm, nn); } );
+       return m;
+    }
+
+    template< typename T, std::size_t N, typename A >
+    const matrix<std::complex<T>, N> polar( const T nn, const matrix<T,N,A>& mm )
+    {
+       matrix<std::complex<T>,N> m( mm.row(), mm.col() );
+       feng::for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex<T>& m ) { m = std::polar(nn, _mm); } );
+       return m;
+    }
+
+//general case, i.e. for both complex and real
 #define GENERATE_MATRIX_MATH_UNARY_FUNCTION( f_name )  \
     template< typename T, std::size_t N, typename A > \
     const matrix<T, N, A> \

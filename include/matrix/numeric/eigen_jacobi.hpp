@@ -1,14 +1,10 @@
 #ifndef _EIGEN_JACOBI_HPP_INCLUDED_SDF3IUJFA89S04390SFIUH3IUHSFJKDH43QU9ISKJHIDUHASIUHFDIUHTKJHFSDIU
 #define _EIGEN_JACOBI_HPP_INCLUDED_SDF3IUJFA89S04390SFIUH3IUHSFJKDH43QU9ISKJHIDUHASIUHFDIUHTKJHFSDIU
 
-//TODO:
-//refractor this algorithm with policies
-//with Find_Max Policy(specilize for tridigonal matrix), Iteration Policy and Output Policy
-
 #include <matrix/matrix.hpp>
 #include <matrix/misc/is_symmetric.hpp>
 #include <matrix/numeric/math.hpp>
-#include <matrix/sparse_matrix.hpp>
+//#include <matrix/sparse_matrix.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -80,12 +76,12 @@ namespace feng
             //                       i.e., A += P_^T * A; A += A * P_;
             // in another word, here we avoid the multiplications between two dense matrices
 #if 0
+            //original version using sparse matrix
             sparse_matrix<value_type> P_( n, n );
             P_( p, p ) = c - one;
             P_( p, q ) = s;
             P_( q, q ) = c - one;
             P_( q, p ) = -s;
-            functions below can be optimized if necessary
             V += V * P_; // this means V's pth col and qth col changed
             A += P_.transpose() * A; //this means A's pth row and qth row changed
             A += A * P_;
@@ -163,6 +159,7 @@ namespace feng
         V.resize( n, n );
         V = zero;
         std::fill( V.diag_begin(), V.diag_end(), one );
+#if 1
         for ( size_type i = 0; i != size_type( -1 ); ++i )
         {
             // @find max non-diag value in A
@@ -190,7 +187,7 @@ namespace feng
             eigen_jacobi_private::rotate(a, V, p, q);
 
         }//end for
-
+#endif 
         // @just to kill warnings, should never reach here
         return size_type( -1 );
     }//eigen_jacobi

@@ -90,11 +90,15 @@ public:
     typedef std::reverse_iterator<const_col_range_type>                 const_reverse_col_range_type;
 
 public:
-    explicit matrix(    const size_type r = 0, const size_type c = 0, const value_type v = value_type() ) 
-    :   row_(r), col_(c), data_(storage_type(r*c)) 
+    explicit matrix( const size_type r = 0, const size_type c = 0, const value_type v = value_type() ) 
+    : row_(r), col_(c), data_(storage_type(r*c)) 
     { 
         std::fill( begin(), end(), v ); 
     }
+
+    explicit matrix( const size_type n ) 
+    : row_(n), col_(n), data_(storage_type(n*n)) 
+    {}
 
     ~matrix() { }
     

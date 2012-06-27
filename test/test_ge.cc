@@ -1,7 +1,8 @@
-#include <iostream>
-#include <algorithm>
 #include <matrix.hpp>
 #include <vg.hpp> //variate generator
+
+#include <algorithm>
+#include <iostream>
 
 int main()
 {
