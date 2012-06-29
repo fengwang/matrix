@@ -2,7 +2,7 @@
 #define _BICONJUGATE_GRADIENT_STABLIZED_METHOD_INCLUDED_FSDOJIIOSFADKLJOIRSDFKJSFOIJSDFOI489UVJKFUFF
 
 #include <matrix/matrix.hpp>
-#include <matrix/sparse_matrix.hpp>
+#include <matrix/functional.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -11,19 +11,6 @@
 
 namespace feng
 {
-
-    namespace bicgstab_private
-    {
-        template<typename T, typename It1, typename It2>
-        T included_angle( It1 i1_, It1 _i1, It2 i2_, T v )
-        {
-            auto const n = std::distance( i1_, _i1 );
-            auto const ab = std::inner_product( i1_, _i1, i2_, v );
-            auto const aa = std::inner_product( i1_, _i1, i1_, v );
-            auto const bb = std::inner_product( i2_, i2_+n, i2_, v );
-            return std::acos(ab/(std::sqrt(aa)*std::sqrt(bb)));
-        }
-    }//namespace bicgstab_private 
 
     //
     // Comment:
@@ -38,67 +25,60 @@ namespace feng
     // Returns:
     //          iterations consumed
     //
-    template<typename Matrix, typename T, std::size_t D, typename A_>
-    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 100, T const eps = T(1.0e-5) )
+    // TODO: opmtimize this algorithm to get rid of round-offs, and test it with more data
+    template< typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
+    std::size_t
+    biconjugate_gradient_stablized_method( const matrix<T1, D1, A1>&     A,
+                                           matrix<T2, D2, A2>&           x,
+                                           const matrix<T3, D3, A3>&     b,
+                                           const std::size_t           max_loops = 100,
+                                           const T1                    eps = 1.0e-10 )
     {
-        typedef matrix<T,D,A_> matrix_type;
-        typedef T value_type;
-
+        typedef matrix<T1, D1, A1>     matrix_type;
+        typedef T1                   value_type;
         assert( A.row() == A.col() );
-        assert( A.col() == b.row() );
+        assert( A.row() == b.row() );
         assert( b.col() == 1 );
-        
-        T const one = value_type(1);
-        T const zero = value_type(0);
+        auto const n     = A.row();
 
-        auto const n = A.row();
-        // x_0 = b
-        x = b;
-        // r_0 = b - A x_0
-        matrix_type r = b - A * x;
-        // r'_0 = r_0
-        matrix_type const r_ = r; 
-        // rho = alpha = omega = 1
-        auto rho = one;
-        auto alpha = one;
-        auto omega = one;
-        //v_0 = p_0 = {0,0...,0}
-        auto v  = matrix_type{n,1};
-        auto p  = matrix_type{n,1};
-        auto s  = matrix_type{n,1};
-        auto t  = matrix_type{n,1};
-        auto b_ = matrix_type{n,1};
-        //loops i = 1, 2, ..., n
-        for ( std::size_t i = 0; i != loops; ++i )
+        //if no initial guess of x, then set its initial guess to b
+        if ( ( n != x.row() ) || ( 1 != x.col() ) || ( 0 == std::count_if( x.begin(), x.end(), []( T2 const v ) { return v != T2( 0 ); } ) ) )
+            x = b;
+        auto r = b - A * x;
+        auto const r_ = r;
+        auto p = r;
+        auto s = p;
+        auto ap = p;
+        auto as = p;
+        auto new_r = r;
+        auto rem = r;
+        auto const EPS = eps * n;
+
+        for ( std::size_t i = 0; i != max_loops; ++i )
         {
-           // rho_i = ( r'_0, r_{i-1} 
-            auto const rho_new = std::inner_product( r_.begin(), r_.end(), r.begin(), zero );
-            // beta = rho_i / rho_{i-1}  * alpha / omega_{i-1}
-            auto const beta = rho_new * alpha / ( rho * omega );
-            rho = rho_new;
-            // p_i = r_{r-1} + beta ( p_{i-1} - omega v_{i-1} )
-            p = r + beta * ( p - omega * v );
-            // v_i = A p_i
-            v = A * p;
-            // alpha = rho / ( r'_0, v_i)
-            alpha = rho / std::inner_product( r_.begin(), r_.end(), v.begin(), zero );
-            // s = r_{i-1} - alpha v_{i}
-            s = r - alpha * v;
-            // t = A s
-            t = A * s;
-            // omega = (t,s)/(t,t)
-            omega = std::inner_product( t.begin(), t.end(), s.begin(), zero ) / std::inner_product( t.begin(), t.end(), t.begin(), zero );
-            // x_i = x_{i-1} + alpha p_i + omega s
+            ap = A * p;
+            auto const alpha = dot(r, r_) / dot( ap, r_ );
+            if ( std::isinf(alpha) || std::isnan(alpha) ) return i;
+
+            s = r - alpha * ap;
+            as = A * s;
+            auto const omega = dot( as, s) / dot( as, as );
+            if ( std::isinf(omega) || std::isnan(omega) ) return i;
+
             x += alpha * p + omega * s;
-            // if x_i is accurate enough, then quit
-            b_ = A * x;
-            if ( bicgstab_private::included_angle( b_.begin(), b_.end(), b.begin(), zero ) <= eps )
+            new_r = s - omega * as;
+            auto const beta = dot( new_r, r_ ) * alpha / dot(r, r_) / omega;
+            if ( std::isinf(beta) || std::isnan(beta) ) return i;
+            
+            r = new_r;
+            p = r + beta * ( p - omega * ap );
+
+            rem = A * x - b;
+            if ( dot(rem, rem) <= EPS )
                 return i;
-            // r_i = s - omega t
-            r = s - omega * t;
         }
-        
-        return loops;
+
+        return max_loops;
     }
 
     //
@@ -107,32 +87,32 @@ namespace feng
     //                  A x = b
     // Inputs:
     //          A       :       square matrix A [n,]
-    //          iix_    :       first position of unknown vector x 
-    //          iib_    :       first position of vector b 
+    //          iix_    :       first position of unknown vector x
+    //          iib_    :       first position of vector b
     //          loops   :       max iterations, default is 100
     //          eps     :       precision control, default is 1.0e-5
     // Returns:
     //          iterations consumed
     //
-    template<typename Matrix, typename II1, typename II2, typename T=double>
-    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T(1.0e-5) )
+    template<typename Matrix, typename II1, typename II2, typename T = double>
+    std::size_t biconjugate_gradient_stablized_method( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T( 1.0e-15 ) )
     {
         auto const n = A.row();
-        matrix<T> x{ n, 1 };
-        matrix<T> b{ n, 1, IIb_, IIb_+n };
+        matrix<T> x { n, 1 };
+        matrix<T> b { n, 1, IIb_, IIb_ + n };
         auto ans = biconjugate_gradient_stablized_method( A, x, b, loops, eps );
         std::copy( x.begin(), x.end(), iix_ );
         return ans;
     }
 
     template<typename Matrix, typename T, std::size_t D, typename A_>
-    std::size_t bicgstab( const Matrix& A, matrix<T,D,A_>& x, const matrix<T,D,A_>& b, std::size_t const loops = 100, T const eps = T(1.0e-5) )
+    std::size_t bicgstab( const Matrix& A, matrix<T, D, A_>& x, const matrix<T, D, A_>& b, std::size_t const loops = 100, T const eps = T( 1.0e-15 ) )
     {
         return biconjugate_gradient_stablized_method( A, x, b, loops, eps );
     }
 
-    template<typename Matrix, typename II1, typename II2, typename T=double>
-    std::size_t bicgstab( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T(1.0e-5) )
+    template<typename Matrix, typename II1, typename II2, typename T = double>
+    std::size_t bicgstab( const Matrix& A, II1 iix_, II2 IIb_, std::size_t const loops = 100, T const eps = T( 1.0e-15 ) )
     {
         return biconjugate_gradient_stablized_method( A, iix_, IIb_, loops, eps );
     }

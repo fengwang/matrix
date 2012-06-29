@@ -3,15 +3,11 @@
 
 #include <matrix/matrix.hpp>
 
-#include <algorithm>
-#include <cstddef>
-
 namespace feng
 {
-    template<typename T,
-             std::size_t D = 256,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
-    matrix<T,D,A> const transpose( const matrix<T,D,A>& m )
+
+    template<typename Matrix>
+    Matrix const transpose( const Matrix& m )
     {
         return m.transpose();
     }

@@ -2,6 +2,7 @@
 #define _NUMERIC_HPP_INCLUDED_SOIFU43989898RWEOIRWEUOSFDIKJFSDXKDJKJDKDJSFDKIUEIERYRE9843988977987989789789879987SFDDSEDF
 
 #include <matrix/numeric/biconjugate_gradient_stabilized_method.hpp>
+#include <matrix/numeric/conjugate_gradient_squared.hpp>
 #include <matrix/numeric/cholesky_decomposition.hpp>
 #include <matrix/numeric/eigen_hermitian.hpp>
 #include <matrix/numeric/eigen_jacobi.hpp>

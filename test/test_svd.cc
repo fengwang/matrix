@@ -11,8 +11,8 @@ int main()
     using namespace vg;
 
 
-    const unsigned long n = 11;
-    const unsigned long m = 6;
+    const unsigned long n = 110;
+    const unsigned long m = 60;
     matrix<double> A( n, m );
     matrix<double> x;
     matrix<double> w;
