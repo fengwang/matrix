@@ -47,7 +47,6 @@ GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION(proj);
 
 #undef GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION
 
-
     //specialization for polar
     template< typename T, std::size_t N, typename A, std::size_t N_, typename A_ >
     const matrix<std::complex<T>, N> polar( const matrix<T,N,A>& mm, const matrix<T,N_,A_> nn )

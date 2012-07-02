@@ -39,7 +39,6 @@ namespace feng
 
         const value_type zero(0);
         const value_type one(1);
-        //const std::size_t max_its(100);
         const std::size_t m = A.row();
         const std::size_t n = A.col();
         u = A;

@@ -13,6 +13,7 @@
 #include<matrix/functional/is_symmetric.hpp>
 #include<matrix/functional/magic.hpp>
 #include<matrix/functional/ones.hpp>
+#include<matrix/functional/pinverse.hpp>
 #include<matrix/functional/rand.hpp>
 #include<matrix/functional/repmat.hpp>
 #include<matrix/functional/toeplitz.hpp>

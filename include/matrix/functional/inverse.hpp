@@ -8,10 +8,14 @@
 
 namespace feng
 {
-    template<typename T,
-             std::size_t D = 256,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
-    matrix<T,D,A> const inverse( const matrix<T,D,A>& m )
+    template<typename Matrix>
+    Matrix const inverse( const Matrix& m )
+    {
+        return m.inverse();
+    }
+
+    template<typename Matrix>
+    Matrix const inv( const Matrix& m )
     {
         return m.inverse();
     }

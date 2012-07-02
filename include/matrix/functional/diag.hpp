@@ -8,12 +8,11 @@
 
 namespace feng
 {
-    template<typename T,
-             std::size_t D = 256,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
-    matrix<T,D,A> const diag( const matrix<T,D,A>& m )
+
+    template<typename Matrix>
+    Matrix const diag( const Matrix& m )
     {
-        matrix<T,D,A> ans{m.row(), m.col()};
+        Matrix ans{m.row(), m.col()};
         std::copy( m.diag_begin(), m.diag_end(), ans.diag_begin() );
         return ans;
     }
