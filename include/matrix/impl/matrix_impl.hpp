@@ -151,7 +151,7 @@ public:
     }
 
     template< typename T, size_type D, typename A >
-    matrix (    const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
+    matrix ( const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
         :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
         assert( rr.second > rr.first ); 
@@ -180,7 +180,6 @@ private:
         data_.assign(rhs.begin(), rhs.end());
     }
 
-    //is there a memory overflow problem here?
     void do_copy( const self_type& rhs )
     {
         row_ = rhs.row();
