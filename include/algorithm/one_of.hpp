@@ -13,7 +13,7 @@ namespace one_of_private
     std::size_t _one_of_count( Predicate predict, First_Input_Iterator first, First_Input_Iterator last, Rest_Input_Iterators ... rest )
     {
         if ( first == last ) return 0;
-        return predict( *first++, *rest++...) + _one_of_count( predict, first, last, rest... );
+        return ( predict( *first++, *rest++...) ? 1 : 0 ) + _one_of_count( predict, first, last, rest... );
     }
 
     struct dummy{};
