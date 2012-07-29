@@ -87,7 +87,7 @@ struct levenberg_marquardt
                  old_chi < chi_square * eps + chi_square  &&
                  chi_square < threshold )
                 break;
-            if ( isnan(lambda) || isinf(lambda) )
+            if ( std::isnan(lambda) || std::isinf(lambda) )
                 break;
 
             if ( chi_square >= old_chi )
@@ -152,7 +152,7 @@ struct levenberg_marquardt
                                           [f,a]( value_type x, value_type y, value_type sig )
                                           {
                                             const value_type fxa = f(x,a);
-                                            if ( isnan(fxa) || isinf(fxa) )
+                                            if ( std::isnan(fxa) || std::isinf(fxa) )
                                             {
                                                 assert(!"failed to evaluate chi^2 in feng::levenberg_marquardt::update_chi_square!");
                                             }
@@ -163,7 +163,7 @@ struct levenberg_marquardt
                                             //auto const tmp =  (y-f(x,a))/sig; return tmp*tmp; 
                                           } 
                                         );
-        if ( isnan(chi_square) || isinf(chi_square) )
+        if ( std::isnan(chi_square) || std::isinf(chi_square) )
             assert(!"failed to evaluate chi^2 in feng::levenberg_marquardt::update_chi_square!");
     }
 
@@ -178,7 +178,7 @@ struct levenberg_marquardt
                                           [f,a]( value_type x, value_type y )
                                           { auto const tmp =  y-f(x,a); return tmp*tmp; } 
                                         );
-        if ( isnan(chi_square) || isinf(chi_square) )
+        if ( std::isnan(chi_square) || std::isinf(chi_square) )
             assert(!"failed to evaluate chi^2 in feng::levenberg_marquardt::update_chi_square!");
     }
 
@@ -218,7 +218,7 @@ struct levenberg_marquardt
                                                   { return (y-f(x,a)) * ((*p__)(x,a)) / ( sig * sig ); } 
                                                 );
             beta.push_back( tmp );
-            if ( isnan(tmp) || isinf(tmp) )
+            if ( std::isnan(tmp) || std::isinf(tmp) )
                 assert(!"failed to evaluate beta in feng::levenberg_marquardt::update_beta!");
         }
     }
@@ -239,7 +239,7 @@ struct levenberg_marquardt
                                                   { return (y-f(x,a)) * ((*p__)(x,a)); } 
                                                 );
             beta.push_back( tmp );
-            if ( isnan(tmp) || isinf(tmp) )
+            if ( std::isnan(tmp) || std::isinf(tmp) )
                 assert(!"failed to evaluate beta in feng::levenberg_marquardt::update_beta!");
         }
     }
@@ -269,7 +269,7 @@ struct levenberg_marquardt
             for ( std::size_t l = 0; l != N; ++l )
             {
                 mat[k][l] = (*p__)(*x__++, a);
-                if ( isnan(mat[k][l]) || isinf(mat[k][l]) )
+                if ( std::isnan(mat[k][l]) || std::isinf(mat[k][l]) )
                     assert(!"failed to evaluate mat[][] in feng::levenberg_marquardt::update_alpha!");
             }
         }
@@ -281,7 +281,7 @@ struct levenberg_marquardt
                                                    [](value_type v1, value_type v2, value_type v3)
                                                    { return v1*v2*v3; } 
                                                  ); 
-                if ( isnan(alpha[k][l]) || isinf(alpha[k][l]) )
+                if ( std::isnan(alpha[k][l]) || std::isinf(alpha[k][l]) )
                     assert(!"failed to evaluate alpha[][] in feng::levenberg_marquardt::update_alpha!");
             }
 
@@ -311,7 +311,7 @@ struct levenberg_marquardt
             for ( std::size_t l = 0; l != N; ++l )
             {
                 mat[k][l] = (*p__++)(*x__++, a);
-                if ( isnan(mat[k][l]) || isinf(mat[k][l]) )
+                if ( std::isnan(mat[k][l]) || std::isinf(mat[k][l]) )
                     assert(!"failed to evaluate mat[][] in feng::levenberg_marquardt::update_alpha!");
             }
         }
@@ -320,7 +320,7 @@ struct levenberg_marquardt
             for ( std::size_t l = 0; l < M; ++l )
             {
                 alpha[k][l] = feng::inner_product( mat.row_begin(k), mat.row_end(k), mat.row_begin(l), value_type() ); 
-                if ( isnan(alpha[k][l]) || isinf(alpha[k][l]) )
+                if ( std::isnan(alpha[k][l]) || std::isinf(alpha[k][l]) )
                     assert(!"failed to evaluate alpha[][] in feng::levenberg_marquardt::update_alpha!");
             }
 
@@ -354,7 +354,7 @@ struct levenberg_marquardt
 
         for ( auto v: delta_a )
         {
-            if ( isnan(v) || isinf(v) )
+            if ( std::isnan(v) || std::isinf(v) )
                 return 1;
                 //assert(!"failed to solve equation in feng::levenberg_marquardt::update_delta_a!");
         }

@@ -33,7 +33,7 @@ namespace for_each_impl_private
 template< typename ... T >
 void for_each( T ... t )
 {
-    static_assert( sizeof ... ( t ) > 2, "for_each requires at least 3 arguments" );
+    static_assert( sizeof ... ( t ) > 2, "feng::for_each requires at least 3 arguments" );
     for_each_impl_private::rotate_then_impl( t..., for_each_impl_private::dummy() );
 }
 
