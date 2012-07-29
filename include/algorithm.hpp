@@ -3,6 +3,8 @@
 
 #include <algorithm/all_of.hpp>
 #include <algorithm/any_of.hpp>
+#include <algorithm/count.hpp>
+#include <algorithm/count_if.hpp>
 #include <algorithm/for_each.hpp>
 #include <algorithm/none_of.hpp>
 #include <algorithm/one_of.hpp>
