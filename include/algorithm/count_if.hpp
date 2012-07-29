@@ -13,7 +13,7 @@ namespace count_if_private
     std::size_t _count_if( Predicate predict, First_Input_Iterator first, First_Input_Iterator last, Rest_Input_Iterators ... rest )
     {
         if ( first == last ) return 0;
-        return predict( *first++, *rest++...) + _count_if( predict, first, last, rest... );
+        return ( predict( *first++, *rest++...) ? 1 : 0 )  + _count_if( predict, first, last, rest... );
     }
 
     struct dummy{};
