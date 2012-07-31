@@ -58,6 +58,10 @@ public:
     typedef matrix_stride_iterator<value_type*>                         diag_type;
     typedef matrix_stride_iterator<const value_type*>                   const_diag_type;
 
+    //for cross diagonal iterator
+    typedef matrix_stride_iterator<value_type*>                         cross_diag_type;
+    typedef matrix_stride_iterator<const value_type*>                   const_cross_diag_type;
+
     typedef std::reverse_iterator<iterator>                             reverse_iterator;
     typedef std::reverse_iterator<const_iterator>                       const_reverse_iterator;
 
@@ -75,6 +79,9 @@ public:
     
     typedef std::reverse_iterator<diag_type>                            reverse_diag_type;
     typedef std::reverse_iterator<const_diag_type>                      const_reverse_diag_type;
+
+    typedef std::reverse_iterator<cross_diag_type>                      reverse_cross_diag_type;
+    typedef std::reverse_iterator<const_cross_diag_type>                const_reverse_cross_diag_type;
 
     //range iterators
     typedef matrix_range_iterator<row_type>                             row_range_type;
@@ -684,6 +691,86 @@ public:
     diag_crend() const
     {
         return const_reverse_diag_type( diag_begin() );
+    }
+
+public:
+    cross_diag_type
+    upper_cross_diag_begin( const size_type index = 0 ) 
+    {
+        return cross_diag_type( begin() + col() - index - 1, col() - 1);
+    }
+
+    cross_diag_type
+    upper_cross_diag_end( const size_type index = 0 ) 
+    {
+        size_type depth = col() - index;
+        if ( row() < depth )
+            depth = row();
+        return upper_cross_diag_begin(index) + depth;
+    }
+
+    const_cross_diag_type
+    upper_cross_diag_begin( const size_type index = 0 )  const
+    {
+        return const_cross_diag_type( begin() + col() - index - 1, col() - 1);
+    }
+
+    const_cross_diag_type
+    upper_cross_diag_end( const size_type index = 0 )  const
+    {
+        size_type depth = col() - index;
+        if ( row() < depth )
+            depth = row();
+        return upper_cross_diag_begin(index) + depth;
+    }
+
+    const_cross_diag_type
+    upper_cross_diag_cbegin( const size_type index = 0 )  const
+    {
+        return upper_cross_diag_begin(index);
+    }
+
+    const_cross_diag_type
+    upper_cross_diag_cend( const size_type index = 0 )  const
+    {
+        return upper_cross_diag_end(index);
+    }
+
+public:
+    reverse_cross_diag_type
+    upper_cross_diag_rbegin( const size_type index = 0 ) 
+    {
+        return reverse_cross_diag_type(upper_cross_diag_end(index));
+    }
+
+    reverse_cross_diag_type
+    upper_cross_diag_rend( const size_type index = 0 ) 
+    {
+        return reverse_cross_diag_type(upper_cross_diag_begin(index));
+    }
+
+    const_reverse_cross_diag_type
+    upper_cross_diag_rbegin( const size_type index = 0 )  const
+    {
+        return const_reverse_cross_diag_type(upper_cross_diag_end(index));
+    }
+
+    const_reverse_cross_diag_type
+    upper_cross_diag_rend( const size_type index = 0 )  const
+    {
+        return const_reverse_cross_diag_type(upper_cross_diag_begin(index));
+    }
+
+    const_reverse_cross_diag_type
+    upper_cross_diag_crbegin( const size_type index = 0 )  const
+    {
+        return upper_cross_diag_rbegin(index);
+    }
+
+    const_reverse_cross_diag_type
+    upper_cross_diag_crend( const size_type index = 0 )  const
+    {
+        return upper_cross_diag_rend(index);
     }
 
 public:

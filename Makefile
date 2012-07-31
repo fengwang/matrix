@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_cross
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -105,3 +105,7 @@ eigen_symmetric: test/eigen_symmetric.cc
 eigen_hermitian: test/eigen_hermitian.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/eigen_hermitian.o test/eigen_hermitian.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/eigen_hermitian $(OBJECTS_DIR)/eigen_hermitian.o
+
+test_cross: test/test_cross.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_cross.o test/test_cross.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_cross $(OBJECTS_DIR)/test_cross.o
