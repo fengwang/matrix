@@ -774,6 +774,160 @@ public:
     }
 
 public:
+    cross_diag_type
+    cross_diag_begin()
+    {
+        return upper_cross_diag_begin(0);
+    }
+
+    cross_diag_type
+    cross_diag_end()
+    {
+        return upper_cross_diag_end(0);
+    }
+
+    const_cross_diag_type
+    cross_diag_begin() const
+    {
+        return upper_cross_diag_begin(0);
+    }
+
+    const_cross_diag_type
+    cross_diag_end() const
+    {
+        return upper_cross_diag_end(0);
+    }
+
+    const_cross_diag_type
+    cross_diag_cbegin() const
+    {
+        return upper_cross_diag_cbegin(0);
+    }
+
+    const_cross_diag_type
+    cross_diag_cend() const
+    {
+        return upper_cross_diag_cend(0);
+    }
+
+public:
+    reverse_cross_diag_type
+    cross_diag_rbegin()
+    {
+        return upper_cross_diag_rbegin(0);
+    }
+
+    reverse_cross_diag_type
+    cross_diag_rend()
+    {
+        return upper_cross_diag_rend(0);
+    }
+
+    const_reverse_cross_diag_type
+    cross_diag_rbegin() const
+    {
+        return upper_cross_diag_rbegin(0);
+    }
+
+    const_reverse_cross_diag_type
+    cross_diag_rend() const
+    {
+        return upper_cross_diag_rend(0);
+    }
+
+    const_reverse_cross_diag_type
+    cross_diag_crbegin() const
+    {
+        return upper_cross_diag_rbegin(0);
+    }
+
+    const_reverse_cross_diag_type
+    cross_diag_crend() const
+    {
+        return upper_cross_diag_rend(0);
+    }
+
+public:
+    cross_diag_type
+    lower_cross_diag_begin( const size_type index = 0 ) 
+    {
+        return cross_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
+    }
+
+    cross_diag_type
+    lower_cross_diag_end( const size_type index = 0 ) 
+    {
+        size_type depth = row() - index;
+        if ( col() < depth )
+            depth = col();
+        return lower_cross_diag_begin(index) + depth;
+    }
+
+    const_cross_diag_type
+    lower_cross_diag_begin( const size_type index = 0 )  const
+    {
+        return const_cross_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
+    }
+
+    const_cross_diag_type
+    lower_cross_diag_end( const size_type index = 0 )  const
+    {
+        size_type depth = row() - index;
+        if ( col() < depth )
+            depth = col();
+        return lower_cross_diag_begin(index) + depth;
+    }
+
+    const_cross_diag_type
+    lower_cross_diag_cbegin( const size_type index = 0 )  const
+    {
+        return lower_cross_diag_begin(index);
+    }
+
+    const_cross_diag_type
+    lower_cross_diag_cend( const size_type index = 0 )  const
+    {
+        return lower_cross_diag_end(index);
+    }
+
+public:
+    reverse_cross_diag_type
+    lower_cross_diag_rbegin( const size_type index = 0 ) 
+    {
+        return reverse_cross_diag_type(lower_cross_diag_end(index));
+    }
+
+    reverse_cross_diag_type
+    lower_cross_diag_rend( const size_type index = 0 ) 
+    {
+        return reverse_cross_diag_type(lower_cross_diag_begin(index));
+    }
+
+    const_reverse_cross_diag_type
+    lower_cross_diag_rbegin( const size_type index = 0 )  const
+    {
+        return const_reverse_cross_diag_type(lower_cross_diag_end(index));
+    }
+
+    const_reverse_cross_diag_type
+    lower_cross_diag_rend( const size_type index = 0 )  const
+    {
+        return const_reverse_cross_diag_type(lower_cross_diag_begin(index));
+    }
+
+    const_reverse_cross_diag_type
+    lower_cross_diag_crbegin( const size_type index = 0 )  const
+    {
+        return lower_cross_diag_rbegin(index);
+    }
+
+    const_reverse_cross_diag_type
+    lower_cross_diag_crend( const size_type index = 0 )  const
+    {
+        return lower_cross_diag_rend(index);
+    }
+
+public:
     row_range_type
     row_range( const_row_type begin, const_row_type end )
     {
