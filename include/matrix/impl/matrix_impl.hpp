@@ -632,6 +632,8 @@ public:
         return const_reverse_lower_diag_type( lower_diag_begin( index ) );
     }
 
+#if 0
+
 public:
     diag_type 
     diag_begin()
@@ -705,6 +707,98 @@ public:
     {
         return const_reverse_diag_type( diag_begin() );
     }
+
+#endif
+
+#if 1
+
+public:
+    diag_type 
+    diag_begin( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_diag_begin( index );
+        return lower_diag_begin( -index );
+    }
+    
+    diag_type 
+    diag_end( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_diag_end( index );
+        return lower_diag_end( -index );
+    }
+
+    const_diag_type 
+    diag_begin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_begin( index );
+        return lower_diag_begin( -index );
+    }
+    
+    const_diag_type 
+    diag_end( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_end( index );
+        return lower_diag_end( -index );
+    }
+
+    const_diag_type 
+    diag_cbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_cbegin( index );
+        return lower_diag_cbegin( -index );
+    }
+    
+    const_diag_type 
+    diag_cend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_cend( index );
+        return lower_diag_cend( -index );
+    }
+
+public:
+    reverse_diag_type 
+    diag_rbegin( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_diag_rbegin( index );
+        return lower_diag_rbegin( -index );
+    }
+    
+    reverse_diag_type 
+    diag_rend( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_diag_rend( index );
+        return lower_diag_rend( -index );
+    }
+
+    const_reverse_diag_type 
+    diag_rbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_rbegin( index );
+        return lower_diag_rbegin( -index );
+    }
+    
+    const_reverse_diag_type 
+    diag_rend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_rend( index );
+        return lower_diag_rend( -index );
+    }
+
+    const_reverse_diag_type 
+    diag_crbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_crbegin( index );
+        return lower_diag_crbegin( -index );
+    }
+    
+    const_reverse_diag_type 
+    diag_crend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_diag_crend( index );
+        return lower_diag_crend( -index );
+    }
+
+#endif
 
 public:
     anti_diag_type
@@ -786,6 +880,8 @@ public:
         return upper_anti_diag_rend(index);
     }
 
+#if 0
+
 public:
     anti_diag_type
     anti_diag_begin()
@@ -859,6 +955,8 @@ public:
     {
         return upper_anti_diag_rend(0);
     }
+
+#endif
 
 public:
     anti_diag_type
@@ -939,6 +1037,95 @@ public:
     {
         return lower_anti_diag_rend(index);
     }
+
+#if 1
+
+public:
+    anti_diag_type 
+    anti_diag_begin( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_anti_diag_begin( index );
+        return lower_anti_diag_begin( -index );
+    }
+    
+    anti_diag_type 
+    anti_diag_end( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_anti_diag_end( index );
+        return lower_anti_diag_end( -index );
+    }
+
+    const_anti_diag_type 
+    anti_diag_begin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_begin( index );
+        return lower_anti_diag_begin( -index );
+    }
+    
+    const_anti_diag_type 
+    anti_diag_end( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_end( index );
+        return lower_anti_diag_end( -index );
+    }
+
+    const_anti_diag_type 
+    anti_diag_cbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_cbegin( index );
+        return lower_anti_diag_cbegin( -index );
+    }
+    
+    const_anti_diag_type 
+    anti_diag_cend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_cend( index );
+        return lower_anti_diag_cend( -index );
+    }
+
+public:
+    reverse_anti_diag_type 
+    anti_diag_rbegin( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_anti_diag_rbegin( index );
+        return lower_anti_diag_rbegin( -index );
+    }
+    
+    reverse_anti_diag_type 
+    anti_diag_rend( const difference_type index = 0 )
+    {
+        if ( index > 0 ) return upper_anti_diag_rend( index );
+        return lower_anti_diag_rend( -index );
+    }
+
+    const_reverse_anti_diag_type 
+    anti_diag_rbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_rbegin( index );
+        return lower_anti_diag_rbegin( -index );
+    }
+    
+    const_reverse_anti_diag_type 
+    anti_diag_rend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_rend( index );
+        return lower_anti_diag_rend( -index );
+    }
+
+    const_reverse_anti_diag_type 
+    anti_diag_crbegin( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_crbegin( index );
+        return lower_anti_diag_crbegin( -index );
+    }
+    
+    const_reverse_anti_diag_type 
+    anti_diag_crend( const difference_type index = 0 ) const
+    {
+        if ( index > 0 ) return upper_anti_diag_crend( index );
+        return lower_anti_diag_crend( -index );
+    }
+#endif
 
 public:
     row_range_type

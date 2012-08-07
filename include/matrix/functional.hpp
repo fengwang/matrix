@@ -1,12 +1,13 @@
 #ifndef _FUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
 #define _FUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
 
-#include<matrix/functional/ctranspose.hpp>
 #include<matrix/functional/blkdiag.hpp>
+#include<matrix/functional/ctranspose.hpp>
 #include<matrix/functional/det.hpp>
 #include<matrix/functional/diag.hpp>
 #include<matrix/functional/dot.hpp>
 #include<matrix/functional/eye.hpp>
+#include<matrix/functional/flip.hpp>
 #include<matrix/functional/hilb.hpp>
 #include<matrix/functional/inverse.hpp>
 #include<matrix/functional/is_orthogonal.hpp>

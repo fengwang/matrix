@@ -5,7 +5,7 @@
 
 int main()
 {
-    feng::matrix<int> m( 12, 8 );
+    feng::matrix<int> m( 12, 12 );
     int i = 1;
 
     std::for_each( m.begin(), m.end(), [&i](int& v){ v = i++; } );
@@ -52,7 +52,6 @@ int main()
     std::cout << "\nreverse order of anti diag is\n";
     std::copy( m.anti_diag_crbegin(), m.anti_diag_crend(), std::ostream_iterator<int>(std::cout, " " ));
 
-
     std::cout << "\nFilling 0 to the 4th lane\n";
         std::fill( m.upper_anti_diag_begin(4), m.upper_anti_diag_end(4), 0 );
 
@@ -60,6 +59,22 @@ int main()
 
     std::cout << "filling -1 to the anti diag\n";
     std::fill( m.anti_diag_begin(), m.anti_diag_end(), -1 );
+    std::cout << "M=\n" << m << "\n";
+
+    std::cout << "\nFilling 4 to the 4th anti lane\n";
+        std::fill( m.anti_diag_begin(4), m.anti_diag_end(4), 4 );
+    std::cout << "M=\n" << m << "\n";
+
+    std::cout << "\nFilling 4 to the -4th anti lane\n";
+        std::fill( m.anti_diag_begin(-4), m.anti_diag_end(-4), 4 );
+    std::cout << "M=\n" << m << "\n";
+
+    std::cout << "\nFilling 9 to the 4th lane\n";
+        std::fill( m.diag_begin(4), m.diag_end(4), 9 );
+    std::cout << "M=\n" << m << "\n";
+
+    std::cout << "\nFilling 9 to the -4th lane\n";
+        std::fill( m.diag_begin(-4), m.diag_end(-4), 9 );
     std::cout << "M=\n" << m << "\n";
 
     return 0;
