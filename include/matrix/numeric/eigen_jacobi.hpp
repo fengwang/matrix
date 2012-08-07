@@ -150,7 +150,7 @@ namespace feng
         typedef typename Matrix1::value_type value_type;
         typedef typename Matrix1::size_type size_type;
         assert( A.row() == A.col() );
-        assert( is_symmetric( A ) );
+        //assert( is_symmetric( A ) );
         auto a          = A;
         auto const n    = a.row();
         auto const one  = value_type( 1 );
@@ -199,7 +199,7 @@ namespace feng
         typedef typename Matrix1::size_type size_type;
         auto const compare_func = [eps]( const value_type lhs, const value_type rhs ) { return std::abs(lhs-rhs) < eps; };
         assert( A.row() == A.col() );
-        assert( is_symmetric( A, compare_func ) );
+        //assert( is_symmetric( A, compare_func ) );
 
         size_type i     = 0;
         auto a          = A;

@@ -25,12 +25,16 @@ namespace feng
         return zeros<T,D,A>( n, n );
     }
 
-    template<typename T,
-             std::size_t D = 256,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    template<typename T, std::size_t D, typename A >
     matrix<T,D,A> const zeros( const matrix<T,D,A>& m )
     {
         return zeros<T,D,A>( m.row(), m.col() );
+    }
+
+    template<typename T, std::size_t D, typename A >
+    matrix<T,D,A> const zeros( const matrix<T,D,A>& m, const std::size_t r, const std::size_t c )
+    {
+        return zeros<T,D,A>( r, c );
     }
 
 }//namespace feng

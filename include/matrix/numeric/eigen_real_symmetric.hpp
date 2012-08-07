@@ -46,7 +46,7 @@ namespace feng
     void eigen_real_symmetric( const Matrix1& A, Matrix2& V, Otor o, const T eps = T( 1.0e-10 ) )
     {
         assert( A.row() == A.col() );
-        assert( is_symmetric( A ) );
+        //assert( is_symmetric( A ) );
 
         Matrix1 D(A);
         Matrix1 Q(A);

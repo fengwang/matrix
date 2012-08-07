@@ -40,7 +40,8 @@ namespace feng
         {
             //find max element
             const size_type
-            p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), []( value_type x, value_type y ) { return std::abs( x ) < std::abs( y );} ) );
+            p = std::distance( a.col_begin( i ), 
+                               std::max_element( a.col_begin( i ) + i, a.col_end( i ), []( value_type x, value_type y ) { return std::abs( x ) < std::abs( y );} ) );
 
             //swap row i and row p
             if ( p != i )
@@ -57,7 +58,8 @@ namespace feng
                 { continue; }
 
                 const value_type ratio = a[j][i];
-                std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio]( value_type x, value_type y ) { return x - y * ratio; } );
+                std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), 
+                                [ratio]( value_type x, value_type y ) { return x - y * ratio; } );
             }
         }
 

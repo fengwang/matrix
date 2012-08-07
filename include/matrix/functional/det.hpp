@@ -5,8 +5,9 @@
 
 namespace feng
 {
-    template<typename Matrix>
-    typename Matrix::value_type det( const Matrix& m )
+
+    template<typename T, std::size_t D, typename A>
+    T const det( const matrix<T,D,A>& m )
     {
         return m.det();
     }

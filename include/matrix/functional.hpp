@@ -2,6 +2,7 @@
 #define _FUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
 
 #include<matrix/functional/ctranspose.hpp>
+#include<matrix/functional/blkdiag.hpp>
 #include<matrix/functional/det.hpp>
 #include<matrix/functional/diag.hpp>
 #include<matrix/functional/dot.hpp>

@@ -58,9 +58,9 @@ public:
     typedef matrix_stride_iterator<value_type*>                         diag_type;
     typedef matrix_stride_iterator<const value_type*>                   const_diag_type;
 
-    //for cross diagonal iterator
-    typedef matrix_stride_iterator<value_type*>                         cross_diag_type;
-    typedef matrix_stride_iterator<const value_type*>                   const_cross_diag_type;
+    //for anti diagonal iterator
+    typedef matrix_stride_iterator<value_type*>                         anti_diag_type;
+    typedef matrix_stride_iterator<const value_type*>                   const_anti_diag_type;
 
     typedef std::reverse_iterator<iterator>                             reverse_iterator;
     typedef std::reverse_iterator<const_iterator>                       const_reverse_iterator;
@@ -80,8 +80,8 @@ public:
     typedef std::reverse_iterator<diag_type>                            reverse_diag_type;
     typedef std::reverse_iterator<const_diag_type>                      const_reverse_diag_type;
 
-    typedef std::reverse_iterator<cross_diag_type>                      reverse_cross_diag_type;
-    typedef std::reverse_iterator<const_cross_diag_type>                const_reverse_cross_diag_type;
+    typedef std::reverse_iterator<anti_diag_type>                      reverse_anti_diag_type;
+    typedef std::reverse_iterator<const_anti_diag_type>                const_reverse_anti_diag_type;
 
     //range iterators
     typedef matrix_range_iterator<row_type>                             row_range_type;
@@ -186,13 +186,14 @@ private:
         col_ = rhs.col();
         data_.assign(rhs.begin(), rhs.end());
     }
-
+#if 0
     void do_copy( const self_type& rhs )
     {
         row_ = rhs.row();
         col_ = rhs.col();
         data_.assign( rhs.begin(), rhs.end() );
     }
+#endif
 
 public:
     size_type 
@@ -202,9 +203,21 @@ public:
     }
 
     size_type 
+    rows() const
+    {
+        return row();
+    }
+
+    size_type 
     col() const
     {
         return col_;
+    }
+
+    size_type 
+    cols() const
+    {
+        return col();
     }
 
     size_type 
@@ -694,237 +707,237 @@ public:
     }
 
 public:
-    cross_diag_type
-    upper_cross_diag_begin( const size_type index = 0 ) 
+    anti_diag_type
+    upper_anti_diag_begin( const size_type index = 0 ) 
     {
-        return cross_diag_type( begin() + col() - index - 1, col() - 1);
+        return anti_diag_type( begin() + col() - index - 1, col() - 1);
     }
 
-    cross_diag_type
-    upper_cross_diag_end( const size_type index = 0 ) 
+    anti_diag_type
+    upper_anti_diag_end( const size_type index = 0 ) 
     {
         size_type depth = col() - index;
         if ( row() < depth )
             depth = row();
-        return upper_cross_diag_begin(index) + depth;
+        return upper_anti_diag_begin(index) + depth;
     }
 
-    const_cross_diag_type
-    upper_cross_diag_begin( const size_type index = 0 )  const
+    const_anti_diag_type
+    upper_anti_diag_begin( const size_type index = 0 )  const
     {
-        return const_cross_diag_type( begin() + col() - index - 1, col() - 1);
+        return const_anti_diag_type( begin() + col() - index - 1, col() - 1);
     }
 
-    const_cross_diag_type
-    upper_cross_diag_end( const size_type index = 0 )  const
+    const_anti_diag_type
+    upper_anti_diag_end( const size_type index = 0 )  const
     {
         size_type depth = col() - index;
         if ( row() < depth )
             depth = row();
-        return upper_cross_diag_begin(index) + depth;
+        return upper_anti_diag_begin(index) + depth;
     }
 
-    const_cross_diag_type
-    upper_cross_diag_cbegin( const size_type index = 0 )  const
+    const_anti_diag_type
+    upper_anti_diag_cbegin( const size_type index = 0 )  const
     {
-        return upper_cross_diag_begin(index);
+        return upper_anti_diag_begin(index);
     }
 
-    const_cross_diag_type
-    upper_cross_diag_cend( const size_type index = 0 )  const
+    const_anti_diag_type
+    upper_anti_diag_cend( const size_type index = 0 )  const
     {
-        return upper_cross_diag_end(index);
+        return upper_anti_diag_end(index);
     }
 
 public:
-    reverse_cross_diag_type
-    upper_cross_diag_rbegin( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    upper_anti_diag_rbegin( const size_type index = 0 ) 
     {
-        return reverse_cross_diag_type(upper_cross_diag_end(index));
+        return reverse_anti_diag_type(upper_anti_diag_end(index));
     }
 
-    reverse_cross_diag_type
-    upper_cross_diag_rend( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    upper_anti_diag_rend( const size_type index = 0 ) 
     {
-        return reverse_cross_diag_type(upper_cross_diag_begin(index));
+        return reverse_anti_diag_type(upper_anti_diag_begin(index));
     }
 
-    const_reverse_cross_diag_type
-    upper_cross_diag_rbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    upper_anti_diag_rbegin( const size_type index = 0 )  const
     {
-        return const_reverse_cross_diag_type(upper_cross_diag_end(index));
+        return const_reverse_anti_diag_type(upper_anti_diag_end(index));
     }
 
-    const_reverse_cross_diag_type
-    upper_cross_diag_rend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    upper_anti_diag_rend( const size_type index = 0 )  const
     {
-        return const_reverse_cross_diag_type(upper_cross_diag_begin(index));
+        return const_reverse_anti_diag_type(upper_anti_diag_begin(index));
     }
 
-    const_reverse_cross_diag_type
-    upper_cross_diag_crbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    upper_anti_diag_crbegin( const size_type index = 0 )  const
     {
-        return upper_cross_diag_rbegin(index);
+        return upper_anti_diag_rbegin(index);
     }
 
-    const_reverse_cross_diag_type
-    upper_cross_diag_crend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    upper_anti_diag_crend( const size_type index = 0 )  const
     {
-        return upper_cross_diag_rend(index);
-    }
-
-public:
-    cross_diag_type
-    cross_diag_begin()
-    {
-        return upper_cross_diag_begin(0);
-    }
-
-    cross_diag_type
-    cross_diag_end()
-    {
-        return upper_cross_diag_end(0);
-    }
-
-    const_cross_diag_type
-    cross_diag_begin() const
-    {
-        return upper_cross_diag_begin(0);
-    }
-
-    const_cross_diag_type
-    cross_diag_end() const
-    {
-        return upper_cross_diag_end(0);
-    }
-
-    const_cross_diag_type
-    cross_diag_cbegin() const
-    {
-        return upper_cross_diag_cbegin(0);
-    }
-
-    const_cross_diag_type
-    cross_diag_cend() const
-    {
-        return upper_cross_diag_cend(0);
+        return upper_anti_diag_rend(index);
     }
 
 public:
-    reverse_cross_diag_type
-    cross_diag_rbegin()
+    anti_diag_type
+    anti_diag_begin()
     {
-        return upper_cross_diag_rbegin(0);
+        return upper_anti_diag_begin(0);
     }
 
-    reverse_cross_diag_type
-    cross_diag_rend()
+    anti_diag_type
+    anti_diag_end()
     {
-        return upper_cross_diag_rend(0);
+        return upper_anti_diag_end(0);
     }
 
-    const_reverse_cross_diag_type
-    cross_diag_rbegin() const
+    const_anti_diag_type
+    anti_diag_begin() const
     {
-        return upper_cross_diag_rbegin(0);
+        return upper_anti_diag_begin(0);
     }
 
-    const_reverse_cross_diag_type
-    cross_diag_rend() const
+    const_anti_diag_type
+    anti_diag_end() const
     {
-        return upper_cross_diag_rend(0);
+        return upper_anti_diag_end(0);
     }
 
-    const_reverse_cross_diag_type
-    cross_diag_crbegin() const
+    const_anti_diag_type
+    anti_diag_cbegin() const
     {
-        return upper_cross_diag_rbegin(0);
+        return upper_anti_diag_cbegin(0);
     }
 
-    const_reverse_cross_diag_type
-    cross_diag_crend() const
+    const_anti_diag_type
+    anti_diag_cend() const
     {
-        return upper_cross_diag_rend(0);
+        return upper_anti_diag_cend(0);
     }
 
 public:
-    cross_diag_type
-    lower_cross_diag_begin( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    anti_diag_rbegin()
     {
-        return cross_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
+        return upper_anti_diag_rbegin(0);
     }
 
-    cross_diag_type
-    lower_cross_diag_end( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    anti_diag_rend()
+    {
+        return upper_anti_diag_rend(0);
+    }
+
+    const_reverse_anti_diag_type
+    anti_diag_rbegin() const
+    {
+        return upper_anti_diag_rbegin(0);
+    }
+
+    const_reverse_anti_diag_type
+    anti_diag_rend() const
+    {
+        return upper_anti_diag_rend(0);
+    }
+
+    const_reverse_anti_diag_type
+    anti_diag_crbegin() const
+    {
+        return upper_anti_diag_rbegin(0);
+    }
+
+    const_reverse_anti_diag_type
+    anti_diag_crend() const
+    {
+        return upper_anti_diag_rend(0);
+    }
+
+public:
+    anti_diag_type
+    lower_anti_diag_begin( const size_type index = 0 ) 
+    {
+        return anti_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
+    }
+
+    anti_diag_type
+    lower_anti_diag_end( const size_type index = 0 ) 
     {
         size_type depth = row() - index;
         if ( col() < depth )
             depth = col();
-        return lower_cross_diag_begin(index) + depth;
+        return lower_anti_diag_begin(index) + depth;
     }
 
-    const_cross_diag_type
-    lower_cross_diag_begin( const size_type index = 0 )  const
+    const_anti_diag_type
+    lower_anti_diag_begin( const size_type index = 0 )  const
     {
-        return const_cross_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
+        return const_anti_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
     }
 
-    const_cross_diag_type
-    lower_cross_diag_end( const size_type index = 0 )  const
+    const_anti_diag_type
+    lower_anti_diag_end( const size_type index = 0 )  const
     {
         size_type depth = row() - index;
         if ( col() < depth )
             depth = col();
-        return lower_cross_diag_begin(index) + depth;
+        return lower_anti_diag_begin(index) + depth;
     }
 
-    const_cross_diag_type
-    lower_cross_diag_cbegin( const size_type index = 0 )  const
+    const_anti_diag_type
+    lower_anti_diag_cbegin( const size_type index = 0 )  const
     {
-        return lower_cross_diag_begin(index);
+        return lower_anti_diag_begin(index);
     }
 
-    const_cross_diag_type
-    lower_cross_diag_cend( const size_type index = 0 )  const
+    const_anti_diag_type
+    lower_anti_diag_cend( const size_type index = 0 )  const
     {
-        return lower_cross_diag_end(index);
+        return lower_anti_diag_end(index);
     }
 
 public:
-    reverse_cross_diag_type
-    lower_cross_diag_rbegin( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    lower_anti_diag_rbegin( const size_type index = 0 ) 
     {
-        return reverse_cross_diag_type(lower_cross_diag_end(index));
+        return reverse_anti_diag_type(lower_anti_diag_end(index));
     }
 
-    reverse_cross_diag_type
-    lower_cross_diag_rend( const size_type index = 0 ) 
+    reverse_anti_diag_type
+    lower_anti_diag_rend( const size_type index = 0 ) 
     {
-        return reverse_cross_diag_type(lower_cross_diag_begin(index));
+        return reverse_anti_diag_type(lower_anti_diag_begin(index));
     }
 
-    const_reverse_cross_diag_type
-    lower_cross_diag_rbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    lower_anti_diag_rbegin( const size_type index = 0 )  const
     {
-        return const_reverse_cross_diag_type(lower_cross_diag_end(index));
+        return const_reverse_anti_diag_type(lower_anti_diag_end(index));
     }
 
-    const_reverse_cross_diag_type
-    lower_cross_diag_rend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    lower_anti_diag_rend( const size_type index = 0 )  const
     {
-        return const_reverse_cross_diag_type(lower_cross_diag_begin(index));
+        return const_reverse_anti_diag_type(lower_anti_diag_begin(index));
     }
 
-    const_reverse_cross_diag_type
-    lower_cross_diag_crbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    lower_anti_diag_crbegin( const size_type index = 0 )  const
     {
-        return lower_cross_diag_rbegin(index);
+        return lower_anti_diag_rbegin(index);
     }
 
-    const_reverse_cross_diag_type
-    lower_cross_diag_crend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type
+    lower_anti_diag_crend( const size_type index = 0 )  const
     {
-        return lower_cross_diag_rend(index);
+        return lower_anti_diag_rend(index);
     }
 
 public:
