@@ -10,10 +10,11 @@ namespace one_of_private
 {
 
     template< typename Predicate, typename First_Input_Iterator, typename ... Rest_Input_Iterators >
-    std::size_t _one_of_count( Predicate predict, First_Input_Iterator first, First_Input_Iterator last, Rest_Input_Iterators ... rest )
+    std::size_t _one_of_count( Predicate predict, First_Input_Iterator first_, First_Input_Iterator last_, Rest_Input_Iterators ... rest_ )
     {
-        if ( first == last ) return 0;
-        return ( predict( *first++, *rest++...) ? 1 : 0 ) + _one_of_count( predict, first, last, rest... );
+        if ( first_ == last_ ) return 0;
+        return ( predict( *first_++, *rest_++...) ? 1 : 0 ) + 
+               _one_of_count( predict, first_, last_, rest_...);
     }
 
     struct dummy{};

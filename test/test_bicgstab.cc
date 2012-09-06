@@ -18,7 +18,7 @@ int main()
     matrix<double> x_(N,1); 
 
     std::copy( v.begin(), v.begin()+N*N, A.begin() );
-    //std::copy( V.begin(), V.begin()+N, A.diag_begin() );
+    std::copy( V.begin(), V.begin()+N, A.diag_begin() );
     std::copy( v.begin(), v.begin()+N, x.begin() );
 
     matrix<double> b = A * x;
@@ -27,7 +27,7 @@ int main()
     double xx = std::inner_product( x.begin(), x.end(), x.begin(), double(0) );
     double xx_ = std::inner_product( x_.begin(), x_.end(), x_.begin(), double(0) );
 
-    std::cout << xx << "\t" <<xx_ << "\n" << xx - xx_;
+    std::cout << xx << " - " <<xx_ << " = " << xx - xx_;
 
     //std::cout << "\n" << x.transpose() << "\n" << x_.transpose() << "\n";
 

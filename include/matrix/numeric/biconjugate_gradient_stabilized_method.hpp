@@ -2,7 +2,8 @@
 #define _BICONJUGATE_GRADIENT_STABLIZED_METHOD_INCLUDED_FSDOJIIOSFADKLJOIRSDFKJSFOIJSDFOI489UVJKFUFF
 
 #include <matrix/matrix.hpp>
-#include <matrix/functional.hpp>
+
+#include <algorithm.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -44,6 +45,7 @@ namespace feng
         //if no initial guess of x, then set its initial guess to b
         if ( ( n != x.row() ) || ( 1 != x.col() ) || ( 0 == std::count_if( x.begin(), x.end(), []( T2 const v ) { return v != T2( 0 ); } ) ) )
             x = b;
+
         auto r = b - A * x;
         auto const r_ = r;
         auto p = r;
@@ -53,32 +55,41 @@ namespace feng
         auto new_r = r;
         auto rem = r;
         auto const EPS = eps * n;
+        std::size_t loops = 0;
+        value_type const zero = value_type(0);
 
-        for ( std::size_t i = 0; i != max_loops; ++i )
+        for ( std::size_t loops = 0; loops != max_loops; ++loops )
         {
             ap = A * p;
+
             auto const alpha = dot(r, r_) / dot( ap, r_ );
-            if ( std::isinf(alpha) || std::isnan(alpha) ) return i;
+
+            if ( zero == alpha )
+            {
+                assert( !"Biconjugate Gradient Stablized Method FAILED to solve the equation!" );
+            }
+
+            if ( std::isinf(alpha) || std::isnan(alpha) ) break;
 
             s = r - alpha * ap;
             as = A * s;
             auto const omega = dot( as, s) / dot( as, as );
-            if ( std::isinf(omega) || std::isnan(omega) ) return i;
+            if ( std::isinf(omega) || std::isnan(omega) ) break;
 
             x += alpha * p + omega * s;
             new_r = s - omega * as;
             auto const beta = dot( new_r, r_ ) * alpha / dot(r, r_) / omega;
-            if ( std::isinf(beta) || std::isnan(beta) ) return i;
+            if ( std::isinf(beta) || std::isnan(beta) ) break;
             
             r = new_r;
             p = r + beta * ( p - omega * ap );
 
             rem = A * x - b;
-            if ( dot(rem, rem) <= EPS )
-                return i;
+
+            if ( dot(rem, rem) <= EPS ) break;
         }
 
-        return max_loops;
+        return loops;
     }
 
     //
