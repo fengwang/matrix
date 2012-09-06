@@ -9,6 +9,7 @@
 #include <numeric>
 #include <iterator>
 #include <valarray>
+#include <iterator>
 
 namespace feng
 {
@@ -32,7 +33,7 @@ namespace feng
      *          _f      end position of funciton array f[m]
      *          a_      begin positon of the fitted parameters array a[m]
      */
-    template< typename T, typename II1, typename II2, typename II3, typename II4, typename OI >
+    template< /*typename T,*/ typename II1, typename II2, typename II3, typename II4, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
@@ -52,7 +53,7 @@ namespace feng
      *          _f      end position of funciton array f[m]
      *          a_      begin positon of the fitted parameters array a[m]
      */
-    template< typename T, typename II1, typename II2, typename II3, typename OI >
+    template< /*typename T,*/ typename II1, typename II2, typename II3, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
@@ -63,7 +64,7 @@ namespace feng
     // Implementation
     ///////////////////////////////////////////////////////////////////////////////
 
-    template< typename T, typename II1, typename II2, typename II3, typename II4, typename OI >
+    template< /*typename T,*/ typename II1, typename II2, typename II3, typename II4, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                             II2 y_,          // y[n]
@@ -71,7 +72,8 @@ namespace feng
                             II4 f_, II4 _f,  // f[m]
                             OI  a_ )         // a[m]
     {
-        typedef T value_type;
+        //typedef T value_type;
+        typedef typename std::iterator_traits<II1>::value_type value_type;
         auto const n = std::distance( x_, _x );
         auto const m = std::distance( f_, _f );
         assert( n >= m );
@@ -109,14 +111,15 @@ namespace feng
         return std::copy( ans_b.begin(), ans_b.end(), a_ );
     }
             
-    template< typename T, typename II1, typename II2, typename II3, typename OI >
+    template< /*typename T,*/ typename II1, typename II2, typename II3, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
                              II3 f_, II3 _f, // f[m]
                              OI  a_ )       // a[m]
     {
-        typedef T value_type;
+        //typedef T value_type;
+        typedef typename std::iterator_traits<II1>::value_type value_type;
         auto const n = std::distance( x_, _x );
         auto const m = std::distance( f_, _f );
         assert( n >= m );

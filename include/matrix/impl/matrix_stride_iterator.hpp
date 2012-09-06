@@ -28,7 +28,8 @@ public:
     typedef typename std::iterator_traits<Iterator_Type>::reference 				reference;
     typedef typename std::iterator_traits<Iterator_Type>::difference_type 			difference_type;
     typedef typename std::iterator_traits<Iterator_Type>::pointer 					pointer;
-    typedef std::random_access_iterator_tag 										iterator_category;
+    typedef typename std::iterator_traits<Iterator_Type>::iterator_category         iterator_category;
+    //typedef std::random_access_iterator_tag 										iterator_category;
     typedef matrix_stride_iterator 			        								self_type;
 
 	//	default ctor.

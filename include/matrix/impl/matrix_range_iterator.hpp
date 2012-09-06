@@ -20,7 +20,7 @@ struct matrix_range_iterator
     public:
 
         typedef Iterator_Type                           value_type;
-        typedef matrix_range_iterator           self_type;
+        typedef matrix_range_iterator                   self_type;
         typedef self_type&                              reference;
         typedef self_type&                              pointer;
         typedef const self_type&                        const_reference;
@@ -47,7 +47,7 @@ struct matrix_range_iterator
         matrix_range_iterator( self_type&& ) = default;
 
         self_type& 
-		operator = ( const self_type& other )
+        operator = ( const self_type& other )
         {
             do_copy( other );
             return *this;
@@ -56,13 +56,13 @@ struct matrix_range_iterator
         self_type& operator = ( self_type&& ) = default; 
 
         reference 
-		operator*()
+        operator*()
         {
             return *this;
         }
 
         const_reference 
-		operator*() const
+        operator*() const
         {
             return *this;
         }
@@ -197,7 +197,7 @@ struct matrix_range_iterator
         operator - ( const self_type& lhs, const self_type& rhs )
         {
             
-			assert( std::distance( lhs.first_, lhs.last_ ) ==
+            assert( std::distance( lhs.first_, lhs.last_ ) ==
                     std::distance( rhs.first_, rhs.last_ )
                   );
             assert( lhs.step_ == rhs.step_ );
@@ -279,8 +279,8 @@ struct matrix_range_iterator
             while ( first__ <= last__ )
                 {
                     *target_first_ = *first__;
-					++target_first_;
-					++first__;
+                    ++target_first_;
+                    ++first__;
                 }
         }
 

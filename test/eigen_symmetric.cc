@@ -9,7 +9,7 @@ int main()
 {
     using namespace feng;
 
-    unsigned int const n = 100;
+    unsigned int const n = 13;
     vg::variate_generator<double> v;
     matrix<double> A(n, n);
     matrix<double> V(n, n);
@@ -20,11 +20,6 @@ int main()
 
     for ( unsigned int i = 1; i != n; ++i )
         std::copy( A.upper_diag_begin(i), A.upper_diag_end(i), A.lower_diag_begin(i) );
-
-
-    //householder( A, Q, D );
-    //std::cout << "iteration is " << eigen_jacobi( D, V, L );
-    //V = Q*V;
 
     eigen_real_symmetric(A, V, L);
 
@@ -38,6 +33,10 @@ int main()
     std::cout << "\nA=\n" << A << "\n";
     std::cout << "\nV=\n" << V << "\n";
     std::cout << "\nL=\n" << L << "\n";
+
+
+    std::cout << "\nexpm(A)-V*exp(L)*V^t=\n" << expm(A) - (V * exp(L)*(V.inverse())) << "\n";
+
 
     return 0;
 }
