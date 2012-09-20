@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -90,6 +90,10 @@ test_bicgstab: test/test_bicgstab.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_bicgstab.o test/test_bicgstab.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_bicgstab $(OBJECTS_DIR)/test_bicgstab.o
 
+test_cgs: test/test_cgs.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_cgs.o test/test_cgs.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_cgs $(OBJECTS_DIR)/test_cgs.o
+
 complex_jacobi: test/complex_jacobi.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/complex_jacobi.o test/complex_jacobi.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/complex_jacobi $(OBJECTS_DIR)/complex_jacobi.o
@@ -117,3 +121,11 @@ test_diag: test/test_diag.cc
 test_blkdiag: test/test_blkdiag.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_blkdiag.o test/test_blkdiag.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_blkdiag $(OBJECTS_DIR)/test_blkdiag.o
+
+test_bs: test/test_bs.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_bs.o test/test_bs.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_bs $(OBJECTS_DIR)/test_bs.o
+
+test_lus: test/test_lus.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_lus.o test/test_lus.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_lus $(OBJECTS_DIR)/test_lus.o

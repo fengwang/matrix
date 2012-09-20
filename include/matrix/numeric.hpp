@@ -1,17 +1,20 @@
 #ifndef _NUMERIC_HPP_INCLUDED_SOIFU43989898RWEOIRWEUOSFDIKJFSDXKDJKJDKDJSFDKIUEIERYRE9843988977987989789789879987SFDDSEDF
 #define _NUMERIC_HPP_INCLUDED_SOIFU43989898RWEOIRWEUOSFDIKJFSDXKDJKJDKDJSFDKIUEIERYRE9843988977987989789789879987SFDDSEDF
 
+#include <matrix/numeric/backward_substitution.hpp>
 #include <matrix/numeric/biconjugate_gradient_stabilized_method.hpp>
-#include <matrix/numeric/conjugate_gradient_squared.hpp>
 #include <matrix/numeric/cholesky_decomposition.hpp>
+#include <matrix/numeric/conjugate_gradient_squared.hpp>
 #include <matrix/numeric/eigen_hermitian.hpp>
 #include <matrix/numeric/eigen_jacobi.hpp>
 #include <matrix/numeric/eigen_power_iteration.hpp>
 #include <matrix/numeric/eigen_real_symmetric.hpp>
 #include <matrix/numeric/expm.hpp>
+#include <matrix/numeric/forward_substitution.hpp>
 #include <matrix/numeric/gauss_jordan_elimination.hpp>
 #include <matrix/numeric/householder.hpp>
 #include <matrix/numeric/lu_decomposition.hpp>
+#include <matrix/numeric/lu_solver.hpp>
 #include <matrix/numeric/math.hpp>
 #include <matrix/numeric/norm.hpp>
 #include <matrix/numeric/singular_value_decomposition.hpp>

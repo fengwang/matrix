@@ -25,10 +25,12 @@ namespace feng
     //          eps     :       precision control, default is 1.0e-5
     // Returns:
     //          iterations consumed
+    //          0       --      success
+    //          1       --      failed
     //
     // TODO: opmtimize this algorithm to get rid of round-offs, and test it with more data
     template< typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
-    std::size_t
+    int
     biconjugate_gradient_stablized_method( const matrix<T1, D1, A1>&     A,
                                            matrix<T2, D2, A2>&           x,
                                            const matrix<T3, D3, A3>&     b,
@@ -55,7 +57,6 @@ namespace feng
         auto new_r = r;
         auto rem = r;
         auto const EPS = eps * n;
-        std::size_t loops = 0;
         value_type const zero = value_type(0);
 
         for ( std::size_t loops = 0; loops != max_loops; ++loops )
@@ -64,34 +65,43 @@ namespace feng
 
             auto const alpha = dot(r, r_) / dot( ap, r_ );
 
-            if ( zero == alpha )
-            {
-                assert( !"Biconjugate Gradient Stablized Method FAILED to solve the equation!" );
-            }
+            if ( zero == alpha ) return 1;
 
-            if ( std::isinf(alpha) || std::isnan(alpha) ) break;
+            if ( std::isinf(alpha) || std::isnan(alpha) ) return 1;
 
             s = r - alpha * ap;
             as = A * s;
             auto const omega = dot( as, s) / dot( as, as );
-            if ( std::isinf(omega) || std::isnan(omega) ) break;
+            if ( std::isinf(omega) || std::isnan(omega) ) return 1;
 
             x += alpha * p + omega * s;
             new_r = s - omega * as;
             auto const beta = dot( new_r, r_ ) * alpha / dot(r, r_) / omega;
-            if ( std::isinf(beta) || std::isnan(beta) ) break;
+            if ( std::isinf(beta) || std::isnan(beta) ) return 1;
             
             r = new_r;
             p = r + beta * ( p - omega * ap );
 
             rem = A * x - b;
 
-            if ( dot(rem, rem) <= EPS ) break;
+            if ( dot(rem, rem) <= EPS )  return 0;
         }
 
-        return loops;
+        return 0;
     }
 
+    template< typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
+    int
+    bicgstab(  const matrix<T1, D1, A1>&     A,
+               matrix<T2, D2, A2>&           x,
+               const matrix<T3, D3, A3>&     b,
+               const std::size_t           max_loops = 100,
+               const T1                    eps = 1.0e-10 )
+    {
+        return biconjugate_gradient_stablized_method( A, x, b, max_loops, eps );
+    }
+
+#if 0
     //
     // Comment:
     //          Using Biconjugate Gradient Stablized Method to solve equation
@@ -127,6 +137,7 @@ namespace feng
     {
         return biconjugate_gradient_stablized_method( A, iix_, IIb_, loops, eps );
     }
+#endif
 
 }//namespace feng
 

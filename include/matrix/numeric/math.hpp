@@ -11,6 +11,28 @@
 
 namespace feng
 {
+#if 0
+    namespace math_private
+    {
+
+        struct non_complex_tag{};
+        struct complex_tag{};
+
+        template<typename T>
+        struct tag
+        {
+            typedef non_complex_tag result_tag;
+        };
+
+        template<typename T>
+        struct tag<std::complex<T> >
+        {
+            typedef complex_tag result_tag;
+        };
+
+    }//namespace math_private
+#endif
+
 //complex cases
 #define GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION( f_name )  \
     template< typename T, std::size_t N, typename A > \
@@ -29,7 +51,6 @@ GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(arg);
 GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION(norm);
 
 #undef GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION
-
 
 //complex only functions
 #define GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION( f_name )  \

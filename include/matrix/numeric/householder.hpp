@@ -29,8 +29,9 @@ namespace feng
     template< typename Matrix1, typename Matrix2, typename Matrix3 >
     void householder( const Matrix1& A, Matrix2& Q, Matrix3& D )
     {
-        typedef typename Matrix1::value_type value_type;
-        typedef typename Matrix1::size_type  size_type;
+        typedef Matrix1                             matrix_type;
+        typedef typename matrix_type::value_type    value_type;
+        typedef typename matrix_type::size_type     size_type;
 
         assert( A.row() == A.col() );
 
@@ -65,22 +66,22 @@ namespace feng
             std::fill( x.begin(), x.begin()+i+1, zero ); 
             std::copy( D.col_begin(i)+i+1, D.col_end(i), x.begin()+i+1 );
             //2)
-            auto const delta = std::sqrt(std::inner_product(x.begin(), x.end(), x.begin(), zero));
+            value_type const delta = std::sqrt(std::inner_product(x.begin(), x.end(), x.begin(), zero));
             if ( zero == delta ) continue; //fix for zero lines
             //3)
             if ( x[i+1][0] > zero ) x[i+1][0] += delta;
             else x[i+1][0] -= delta;
             //4)
-            auto const H = std::inner_product( x.begin(), x.end(), x.begin(), zero ) / two;
+            value_type const H = std::inner_product( x.begin(), x.end(), x.begin(), zero ) / two;
             //5)
             P = I - (x * x.transpose()) / H;
             if ( zero == H ) continue; //fix for zero lines
             //6) 
             //D = P * D * P;
             //optimized version of D - P*D*P;
-            auto const p = D*x/H;
-            auto const k = std::inner_product( x.begin(), x.end(), p.begin(), zero ) / ( H+H );
-            auto const q = p - k*x;
+            matrix_type const p = D*x/H;
+            value_type  const k = std::inner_product( x.begin(), x.end(), p.begin(), zero ) / ( H+H );
+            matrix_type const q = p - k*x;
             D -= q * x.transpose() + x * q.transpose();
             //7) 
             //!!Q *= P;

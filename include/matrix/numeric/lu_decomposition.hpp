@@ -6,63 +6,43 @@
 #include <cstddef>
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 namespace feng
 {
 
-    // Example:
-    //          matrix<double> m( 100, 100 );
-    //          lu_decompositon ld(m);
-    //          auto l = ld.lower();
-    //          auto u = ld.upper();
-    //
-    template < typename Matrix_Type >
-    struct  lu_decomposition
+    // LU decomposition
+    // return
+    //          0       --       success
+    //          1       --       failed
+    template<typename T1, std::size_t D1, typename A1, 
+             typename T2, std::size_t D2, typename A2,
+             typename T3, std::size_t D3, typename A3>
+    int lu_decomposition( const matrix<T1,D1,A1>& A, matrix<T2,D2,A2>& L, matrix<T3,D3,A3>& U )
     {
-        typedef Matrix_Type                         matrix_type;
-        typedef typename matrix_type::value_type    value_type;
+        typedef T1 value_type;
+        assert( A.row() == A.col() );
+        const std::size_t n = A.row();
+        L.resize( n, n );
+        U.resize( n, n );
+        std::fill( L.diag_begin(), L.diag_end(), value_type( 1 ) );
 
-        const matrix_type& a_;
-        matrix_type l_;
-        matrix_type u_;
-
-        lu_decomposition( const matrix_type& a ) :
-            a_( a ),
-            l_( a.row(), a.col() ),
-            u_( a.row(), a.col() )
+        for ( std::size_t j = 0; j < n; ++j )
         {
-            assert( a.row() == a.col() );
-            do_decomposition();
+            for ( std::size_t i = 0; i < j + 1; ++i )
+                { U[i][j] = A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() ); }
+
+            for ( std::size_t i = j + 1; i < n; ++i )
+                { 
+                    L[i][j] = ( A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j]; 
+                    if ( std::isinf(L[i][j]) || std::isnan(L[i][j]) ) return 1;
+                }
         }
+        
+        return 0;
+    }
 
-        const matrix_type
-        lower() const
-        { return l_; }
-
-        const matrix_type
-        upper() const
-        { return u_; }
-
-    private:
-        void
-        do_decomposition()
-        {
-            const std::size_t n = a_.row();
-            std::fill( l_.diag_begin(), l_.diag_end(), value_type( 1 ) );
-
-            for ( std::size_t j = 0; j < n; ++j )
-            {
-                for ( std::size_t i = 0; i < j + 1; ++i )
-                    { u_[i][j] = a_[i][j] - std::inner_product( l_.row_begin( i ), l_.row_begin( i ) + i, u_.col_begin( j ), value_type() ); }
-
-                for ( std::size_t i = j + 1; i < n; ++i )
-                    { l_[i][j] = ( a_[i][j] - std::inner_product( l_.row_begin( i ), l_.row_begin( i ) + j, u_.col_begin( j ), value_type() ) ) / u_[j][j]; }
-            }
-        }
-
-    };
-
-}//namespace sm
+}//namespace feng
 
 #endif//_LU_DECOMPOSITION_HPP_INCLUDED_AIE98U3OIAFD9812894LKJSFDLKJSOI83OAIP8D81
 

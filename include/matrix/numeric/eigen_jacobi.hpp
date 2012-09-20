@@ -4,7 +4,6 @@
 #include <matrix/matrix.hpp>
 #include <matrix/functional.hpp>
 #include <matrix/numeric/math.hpp>
-//#include <matrix/sparse_matrix.hpp>
 
 #include <cassert>
 #include <cstddef>
