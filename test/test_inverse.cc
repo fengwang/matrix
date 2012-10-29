@@ -8,8 +8,8 @@ int main()
 {
     using namespace feng;
 
-    vg::variate_generator<double> v;
-    vg::variate_generator<unsigned int> N(1, 1000);
+    vg::vg<double> v;
+    vg::vg<unsigned int> N(1, 1000);
     matrix<double> m;
     for ( unsigned int i = 0; i < 1; ++i )
     {

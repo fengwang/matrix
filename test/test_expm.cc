@@ -13,7 +13,7 @@ int main()
     matrix<double> m;
     matrix<double> a, a_, lambda;
 
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
 #if 0
     for ( unsigned int i = 0; i != N; ++i )
     {

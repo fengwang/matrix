@@ -233,49 +233,45 @@ private:
         col_ = rhs.col();
         data_.assign(rhs.begin(), rhs.end());
     }
-#if 0
-    void do_copy( const self_type& rhs )
-    {
-        row_ = rhs.row();
-        col_ = rhs.col();
-        data_.assign( rhs.begin(), rhs.end() );
-    }
-#endif
 
 public:
-    size_type 
-    row() const
+    size_type row() const
     {
         return row_;
     }
 
-    size_type 
-    rows() const
+    size_type rows() const
     {
         return row();
     }
 
-    size_type 
-    col() const
+    size_type size1() const
+    {
+        return row();
+    }
+
+    size_type col() const
     {
         return col_;
     }
 
-    size_type 
-    cols() const
+    size_type cols() const
     {
         return col();
     }
 
-    size_type 
-    size() const
+    size_type size2() const
+    {
+        return col();
+    }
+
+    size_type size() const
     {
         return data_.size();
     }
 
 public:
-    self_type&
-    resize( const size_type new_row, const size_type new_col )
+    self_type& resize( const size_type new_row, const size_type new_col )
     {
         if ( ( row_ == new_row ) && ( col_ == new_col ) )
             return *this;
@@ -292,236 +288,198 @@ public:
     }
 
 public:
-    iterator 
-    begin()
+    iterator begin()
     {
         return data_.begin();
     }
 
-    iterator 
-    end()
+    iterator end()
     {
         return data_.end();
     }
 
-    const_iterator 
-    begin() const
+    const_iterator begin() const
     {
         return data_.begin();
     }
 
-    const_iterator 
-    end() const
+    const_iterator end() const
     {
         return data_.end();
     }
 
-    const_iterator 
-    cbegin() const
+    const_iterator cbegin() const
     {
         return data_.begin();
     }
 
-    const_iterator 
-    cend() const
+    const_iterator cend() const
     {
         return data_.end();
     }
 
 public:
-    reverse_iterator 
-    rbegin()
+    reverse_iterator rbegin()
     {
         return reverse_iterator( end() );
     }
 
-    reverse_iterator 
-    rend()
+    reverse_iterator rend()
     {
         return reverse_iterator( begin() );
     }
 
-    const_reverse_iterator 
-    rbegin() const
+    const_reverse_iterator rbegin() const
     {
         return const_reverse_iterator( end() );
     }
 
-    const_reverse_iterator 
-    rend() const
+    const_reverse_iterator rend() const
     {
         return const_reverse_iterator( begin() );
     }
 
-    const_reverse_iterator 
-    crbegin() const
+    const_reverse_iterator crbegin() const
     {
         return const_reverse_iterator( end() );
     }
 
-    const_reverse_iterator 
-    crend() const
+    const_reverse_iterator crend() const
     {
         return const_reverse_iterator( begin() );
     }
 
 public:
-    row_type 
-    row_begin(const size_type index = 0)
+    row_type row_begin(const size_type index = 0)
     {
         return row_type(begin() + index * col(), 1);
     }
 
-    row_type 
-    row_end(const size_type index = 0)
+    row_type row_end(const size_type index = 0)
     {
         return row_begin(index) + col();
     }
 
-    const_row_type 
-    row_begin(const size_type index = 0) const
+    const_row_type row_begin(const size_type index = 0) const
     {
         return const_row_type(begin() + index * col(), 1);
     }
 
-    const_row_type 
-    row_end(const size_type index = 0) const
+    const_row_type row_end(const size_type index = 0) const
     {
         return row_begin(index) + col();
     }
 
-    const_row_type 
-    row_cbegin(const size_type index = 0) const
+    const_row_type row_cbegin(const size_type index = 0) const
     {
         return const_row_type(begin() + index * col(), 1);
     }
 
-    const_row_type 
-    row_cend(const size_type index = 0) const
+    const_row_type row_cend(const size_type index = 0) const
     {
         return row_begin(index) + col();
     }
 
 public:
-    reverse_row_type 
-    row_rbegin( const size_type index = 0 )
+    reverse_row_type row_rbegin( const size_type index = 0 )
     {
         return reverse_row_type( row_end( index ) );
     }
 
-    reverse_row_type 
-    row_rend( const size_type index = 0 )
+    reverse_row_type row_rend( const size_type index = 0 )
     {
         return reverse_row_type( row_begin( index ) );
     }
 
-    const_reverse_row_type 
-    row_rbegin( const size_type index = 0 ) const
+    const_reverse_row_type row_rbegin( const size_type index = 0 ) const
     {
         return const_reverse_row_type( row_end( index ) );
     }
 
-    const_reverse_row_type 
-    row_rend( const size_type index = 0 ) const
+    const_reverse_row_type row_rend( const size_type index = 0 ) const
     {
         return const_reverse_row_type( row_begin( index ) );
     }
 
-    const_reverse_row_type 
-    row_crbegin( const size_type index = 0 ) const
+    const_reverse_row_type row_crbegin( const size_type index = 0 ) const
     {
         return const_reverse_row_type( row_end( index ) );
     }
 
-    const_reverse_row_type 
-    row_crend( const size_type index = 0 ) const
+    const_reverse_row_type row_crend( const size_type index = 0 ) const
     {
         return const_reverse_row_type( row_begin( index ) );
     }
 
 public:
-    col_type 
-    col_begin(const size_type index)
+    col_type col_begin(const size_type index)
     {
         return col_type(begin() + index, col());
     }
 
-    col_type 
-    col_end(const size_type index)
+    col_type col_end(const size_type index)
     {
         return col_begin(index) + row();
     }
 
-    const_col_type 
-    col_begin(const size_type index) const
+    const_col_type col_begin(const size_type index) const
     {
         return const_col_type(begin() + index, col());
     }
 
-    const_col_type 
-    col_end(const size_type index) const
+    const_col_type col_end(const size_type index) const
     {
         return col_begin(index) + row();
     }
 
-    const_col_type 
-    col_cbegin(const size_type index) const
+    const_col_type col_cbegin(const size_type index) const
     {
         return const_col_type(begin() + index, col());
     }
 
-    const_col_type 
-    col_cend(const size_type index) const
+    const_col_type col_cend(const size_type index) const
     {
         return col_begin(index) + row();
     }
 
 public:
-    reverse_col_type 
-    col_rbegin( const size_type index = 0 )
+    reverse_col_type col_rbegin( const size_type index = 0 )
     {
         return reverse_col_type( col_end( index ) );
     }
 
-    reverse_col_type 
-    col_rend( const size_type index = 0 )
+    reverse_col_type col_rend( const size_type index = 0 )
     {
         return reverse_col_type( col_begin( index ) );
     }
 
-    const_reverse_col_type 
-    col_rbegin( const size_type index = 0 ) const
+    const_reverse_col_type col_rbegin( const size_type index = 0 ) const
     {
         return const_reverse_col_type( col_end( index ) );
     }
 
-    const_reverse_col_type 
-    col_rend( const size_type index = 0 ) const
+    const_reverse_col_type col_rend( const size_type index = 0 ) const
     {
         return const_reverse_col_type( col_begin( index ) );
     }
 
-    const_reverse_col_type 
-    col_crbegin( const size_type index = 0 ) const
+    const_reverse_col_type col_crbegin( const size_type index = 0 ) const
     {
         return const_reverse_col_type( col_end( index ) );
     }
 
-    const_reverse_col_type 
-    col_crend( const size_type index = 0 ) const
+    const_reverse_col_type col_crend( const size_type index = 0 ) const
     {
         return const_reverse_col_type( col_begin( index ) );
     }
 
 public:
-    diag_type 
-    upper_diag_begin(const size_type index)
+    diag_type upper_diag_begin(const size_type index)
     {
         return diag_type(begin() + index, col() + 1);
     }
 
-    diag_type 
-    upper_diag_end(const size_type index)
+    diag_type upper_diag_end(const size_type index)
     {
         size_type depth = col() - index;
         if (row() < depth)
@@ -529,14 +487,12 @@ public:
         return upper_diag_begin(index) + depth;
     }
 
-    const_diag_type 
-    upper_diag_begin(const size_type index) const
+    const_diag_type upper_diag_begin(const size_type index) const
     {
         return const_diag_type(begin() + index, col() + 1);
     }
 
-    const_diag_type 
-    upper_diag_end(const size_type index) const 
+    const_diag_type upper_diag_end(const size_type index) const 
     {
         size_type depth = col() - index;
         if (row() < depth)
@@ -544,14 +500,12 @@ public:
         return upper_diag_begin(index) + depth;
     }
 
-    const_diag_type 
-    upper_diag_cbegin(const size_type index) const
+    const_diag_type upper_diag_cbegin(const size_type index) const
     {
         return const_diag_type(cbegin() + index, col() + 1);
     }
 
-    const_diag_type 
-    upper_diag_cend(const size_type index) const 
+    const_diag_type upper_diag_cend(const size_type index) const 
     {
         size_type depth = col() - index;
         if (row() < depth)
@@ -597,14 +551,12 @@ public:
     }
 
 public:
-    diag_type 
-    lower_diag_begin(const size_type index)
+    diag_type lower_diag_begin(const size_type index)
     {
         return diag_type(begin() + index * col(), col() + 1);
     }
 
-    diag_type 
-    lower_diag_end(const size_type index)
+    diag_type lower_diag_end(const size_type index)
     {
         size_type depth = row() - index;
         if (col() < depth)
@@ -612,14 +564,12 @@ public:
         return lower_diag_begin(index) + depth;
     }
 
-    const_diag_type 
-    lower_diag_begin(const size_type index) const
+    const_diag_type lower_diag_begin(const size_type index) const
     {
         return const_diag_type(begin() + index * col(), col() + 1);
     }
 
-    const_diag_type 
-    lower_diag_end(const size_type index) const
+    const_diag_type lower_diag_end(const size_type index) const
     {
         size_type depth = row() - index;
         if (col() < depth)
@@ -627,14 +577,12 @@ public:
         return lower_diag_begin(index) + depth;
     }
 
-    const_diag_type 
-    lower_diag_cbegin(const size_type index) const
+    const_diag_type lower_diag_cbegin(const size_type index) const
     {
         return const_diag_type(begin() + index * col(), col() + 1);
     }
 
-    const_diag_type 
-    lower_diag_cend(const size_type index) const
+    const_diag_type lower_diag_cend(const size_type index) const
     {
         size_type depth = row() - index;
         if (col() < depth)
@@ -643,219 +591,117 @@ public:
     }
 
 public:
-    reverse_lower_diag_type 
-    lower_diag_rbegin( const size_type index = 0 )
+    reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 )
     {
         return reverse_lower_diag_type( lower_diag_end( index ) );
     }
 
-    reverse_lower_diag_type 
-    lower_diag_rend( const size_type index = 0 )
+    reverse_lower_diag_type lower_diag_rend( const size_type index = 0 )
     {
         return reverse_lower_diag_type( lower_diag_begin( index ) );
     }
 
-    const_reverse_lower_diag_type 
-    lower_diag_rbegin( const size_type index = 0 ) const
+    const_reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) const
     {
         return const_reverse_lower_diag_type( lower_diag_end( index ) );
     }
 
-    const_reverse_lower_diag_type 
-    lower_diag_rend( const size_type index = 0 ) const
+    const_reverse_lower_diag_type lower_diag_rend( const size_type index = 0 ) const
     {
         return const_reverse_lower_diag_type( lower_diag_begin( index ) );
     }
 
-    const_reverse_lower_diag_type 
-    lower_diag_crbegin( const size_type index = 0 ) const
+    const_reverse_lower_diag_type lower_diag_crbegin( const size_type index = 0 ) const
     {
         return const_reverse_lower_diag_type( lower_diag_end( index ) );
     }
 
-    const_reverse_lower_diag_type 
-    lower_diag_crend( const size_type index = 0 ) const
+    const_reverse_lower_diag_type lower_diag_crend( const size_type index = 0 ) const
     {
         return const_reverse_lower_diag_type( lower_diag_begin( index ) );
     }
 
-#if 0
-
 public:
-    diag_type 
-    diag_begin()
-    {
-        return lower_diag_begin(0);
-    }
-
-    diag_type 
-    diag_end()
-    {
-        return lower_diag_end(0);
-    }
-
-    const_diag_type 
-    diag_begin() const
-    {
-        return lower_diag_begin(0);
-    }
-
-    const_diag_type 
-    diag_end() const
-    {
-        return lower_diag_end(0);
-    }
-
-    const_diag_type 
-    diag_cbegin() const
-    {
-        return lower_diag_begin(0);
-    }
-
-    const_diag_type 
-    diag_cend() const
-    {
-        return lower_diag_end(0);
-    }
-
-public:
-    reverse_diag_type 
-    diag_rbegin()
-    {
-        return reverse_diag_type( diag_end() );
-    }
-
-    reverse_diag_type 
-    diag_rend()
-    {
-        return reverse_diag_type( diag_begin() );
-    }
-
-    const_reverse_diag_type 
-    diag_rbegin() const
-    {
-        return const_reverse_diag_type( diag_end() );
-    }
-
-    const_reverse_diag_type 
-    diag_rend() const
-    {
-        return const_reverse_diag_type( diag_begin() );
-    }
-
-    const_reverse_diag_type 
-    diag_crbegin() const
-    {
-        return const_reverse_diag_type( diag_end() );
-    }
-
-    const_reverse_diag_type 
-    diag_crend() const
-    {
-        return const_reverse_diag_type( diag_begin() );
-    }
-
-#endif
-
-#if 1
-
-public:
-    diag_type 
-    diag_begin( const difference_type index = 0 )
+    diag_type diag_begin( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_diag_begin( index );
         return lower_diag_begin( -index );
     }
     
-    diag_type 
-    diag_end( const difference_type index = 0 )
+    diag_type diag_end( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_diag_end( index );
         return lower_diag_end( -index );
     }
 
-    const_diag_type 
-    diag_begin( const difference_type index = 0 ) const
+    const_diag_type diag_begin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_begin( index );
         return lower_diag_begin( -index );
     }
     
-    const_diag_type 
-    diag_end( const difference_type index = 0 ) const
+    const_diag_type diag_end( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_end( index );
         return lower_diag_end( -index );
     }
 
-    const_diag_type 
-    diag_cbegin( const difference_type index = 0 ) const
+    const_diag_type diag_cbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_cbegin( index );
         return lower_diag_cbegin( -index );
     }
     
-    const_diag_type 
-    diag_cend( const difference_type index = 0 ) const
+    const_diag_type diag_cend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_cend( index );
         return lower_diag_cend( -index );
     }
 
 public:
-    reverse_diag_type 
-    diag_rbegin( const difference_type index = 0 )
+    reverse_diag_type diag_rbegin( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_diag_rbegin( index );
         return lower_diag_rbegin( -index );
     }
     
-    reverse_diag_type 
-    diag_rend( const difference_type index = 0 )
+    reverse_diag_type diag_rend( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_diag_rend( index );
         return lower_diag_rend( -index );
     }
 
-    const_reverse_diag_type 
-    diag_rbegin( const difference_type index = 0 ) const
+    const_reverse_diag_type diag_rbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_rbegin( index );
         return lower_diag_rbegin( -index );
     }
     
-    const_reverse_diag_type 
-    diag_rend( const difference_type index = 0 ) const
+    const_reverse_diag_type diag_rend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_rend( index );
         return lower_diag_rend( -index );
     }
 
-    const_reverse_diag_type 
-    diag_crbegin( const difference_type index = 0 ) const
+    const_reverse_diag_type diag_crbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_crbegin( index );
         return lower_diag_crbegin( -index );
     }
     
-    const_reverse_diag_type 
-    diag_crend( const difference_type index = 0 ) const
+    const_reverse_diag_type diag_crend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_diag_crend( index );
         return lower_diag_crend( -index );
     }
 
-#endif
-
 public:
-    anti_diag_type
-    upper_anti_diag_begin( const size_type index = 0 ) 
+    anti_diag_type upper_anti_diag_begin( const size_type index = 0 ) 
     {
         return anti_diag_type( begin() + col() - index - 1, col() - 1);
     }
 
-    anti_diag_type
-    upper_anti_diag_end( const size_type index = 0 ) 
+    anti_diag_type upper_anti_diag_end( const size_type index = 0 ) 
     {
         size_type depth = col() - index;
         if ( row() < depth )
@@ -863,14 +709,12 @@ public:
         return upper_anti_diag_begin(index) + depth;
     }
 
-    const_anti_diag_type
-    upper_anti_diag_begin( const size_type index = 0 )  const
+    const_anti_diag_type upper_anti_diag_begin( const size_type index = 0 )  const
     {
         return const_anti_diag_type( begin() + col() - index - 1, col() - 1);
     }
 
-    const_anti_diag_type
-    upper_anti_diag_end( const size_type index = 0 )  const
+    const_anti_diag_type upper_anti_diag_end( const size_type index = 0 )  const
     {
         size_type depth = col() - index;
         if ( row() < depth )
@@ -878,142 +722,54 @@ public:
         return upper_anti_diag_begin(index) + depth;
     }
 
-    const_anti_diag_type
-    upper_anti_diag_cbegin( const size_type index = 0 )  const
+    const_anti_diag_type upper_anti_diag_cbegin( const size_type index = 0 )  const
     {
         return upper_anti_diag_begin(index);
     }
 
-    const_anti_diag_type
-    upper_anti_diag_cend( const size_type index = 0 )  const
+    const_anti_diag_type upper_anti_diag_cend( const size_type index = 0 )  const
     {
         return upper_anti_diag_end(index);
     }
 
 public:
-    reverse_anti_diag_type
-    upper_anti_diag_rbegin( const size_type index = 0 ) 
+    reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 ) 
     {
         return reverse_anti_diag_type(upper_anti_diag_end(index));
     }
 
-    reverse_anti_diag_type
-    upper_anti_diag_rend( const size_type index = 0 ) 
+    reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 ) 
     {
         return reverse_anti_diag_type(upper_anti_diag_begin(index));
     }
 
-    const_reverse_anti_diag_type
-    upper_anti_diag_rbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 )  const
     {
         return const_reverse_anti_diag_type(upper_anti_diag_end(index));
     }
 
-    const_reverse_anti_diag_type
-    upper_anti_diag_rend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 )  const
     {
         return const_reverse_anti_diag_type(upper_anti_diag_begin(index));
     }
 
-    const_reverse_anti_diag_type
-    upper_anti_diag_crbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type upper_anti_diag_crbegin( const size_type index = 0 )  const
     {
         return upper_anti_diag_rbegin(index);
     }
 
-    const_reverse_anti_diag_type
-    upper_anti_diag_crend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type upper_anti_diag_crend( const size_type index = 0 )  const
     {
         return upper_anti_diag_rend(index);
     }
 
-#if 0
-
 public:
-    anti_diag_type
-    anti_diag_begin()
-    {
-        return upper_anti_diag_begin(0);
-    }
-
-    anti_diag_type
-    anti_diag_end()
-    {
-        return upper_anti_diag_end(0);
-    }
-
-    const_anti_diag_type
-    anti_diag_begin() const
-    {
-        return upper_anti_diag_begin(0);
-    }
-
-    const_anti_diag_type
-    anti_diag_end() const
-    {
-        return upper_anti_diag_end(0);
-    }
-
-    const_anti_diag_type
-    anti_diag_cbegin() const
-    {
-        return upper_anti_diag_cbegin(0);
-    }
-
-    const_anti_diag_type
-    anti_diag_cend() const
-    {
-        return upper_anti_diag_cend(0);
-    }
-
-public:
-    reverse_anti_diag_type
-    anti_diag_rbegin()
-    {
-        return upper_anti_diag_rbegin(0);
-    }
-
-    reverse_anti_diag_type
-    anti_diag_rend()
-    {
-        return upper_anti_diag_rend(0);
-    }
-
-    const_reverse_anti_diag_type
-    anti_diag_rbegin() const
-    {
-        return upper_anti_diag_rbegin(0);
-    }
-
-    const_reverse_anti_diag_type
-    anti_diag_rend() const
-    {
-        return upper_anti_diag_rend(0);
-    }
-
-    const_reverse_anti_diag_type
-    anti_diag_crbegin() const
-    {
-        return upper_anti_diag_rbegin(0);
-    }
-
-    const_reverse_anti_diag_type
-    anti_diag_crend() const
-    {
-        return upper_anti_diag_rend(0);
-    }
-
-#endif
-
-public:
-    anti_diag_type
-    lower_anti_diag_begin( const size_type index = 0 ) 
+    anti_diag_type lower_anti_diag_begin( const size_type index = 0 ) 
     {
         return anti_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
     }
 
-    anti_diag_type
-    lower_anti_diag_end( const size_type index = 0 ) 
+    anti_diag_type lower_anti_diag_end( const size_type index = 0 ) 
     {
         size_type depth = row() - index;
         if ( col() < depth )
@@ -1021,14 +777,12 @@ public:
         return lower_anti_diag_begin(index) + depth;
     }
 
-    const_anti_diag_type
-    lower_anti_diag_begin( const size_type index = 0 )  const
+    const_anti_diag_type lower_anti_diag_begin( const size_type index = 0 )  const
     {
         return const_anti_diag_type( begin()+(col()*(index+1))-1, col() - 1 );
     }
 
-    const_anti_diag_type
-    lower_anti_diag_end( const size_type index = 0 )  const
+    const_anti_diag_type lower_anti_diag_end( const size_type index = 0 )  const
     {
         size_type depth = row() - index;
         if ( col() < depth )
@@ -1036,381 +790,321 @@ public:
         return lower_anti_diag_begin(index) + depth;
     }
 
-    const_anti_diag_type
-    lower_anti_diag_cbegin( const size_type index = 0 )  const
+    const_anti_diag_type lower_anti_diag_cbegin( const size_type index = 0 )  const
     {
         return lower_anti_diag_begin(index);
     }
 
-    const_anti_diag_type
-    lower_anti_diag_cend( const size_type index = 0 )  const
+    const_anti_diag_type lower_anti_diag_cend( const size_type index = 0 )  const
     {
         return lower_anti_diag_end(index);
     }
 
 public:
-    reverse_anti_diag_type
-    lower_anti_diag_rbegin( const size_type index = 0 ) 
+    reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 ) 
     {
         return reverse_anti_diag_type(lower_anti_diag_end(index));
     }
 
-    reverse_anti_diag_type
-    lower_anti_diag_rend( const size_type index = 0 ) 
+    reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 ) 
     {
         return reverse_anti_diag_type(lower_anti_diag_begin(index));
     }
 
-    const_reverse_anti_diag_type
-    lower_anti_diag_rbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 )  const
     {
         return const_reverse_anti_diag_type(lower_anti_diag_end(index));
     }
 
-    const_reverse_anti_diag_type
-    lower_anti_diag_rend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 )  const
     {
         return const_reverse_anti_diag_type(lower_anti_diag_begin(index));
     }
 
-    const_reverse_anti_diag_type
-    lower_anti_diag_crbegin( const size_type index = 0 )  const
+    const_reverse_anti_diag_type lower_anti_diag_crbegin( const size_type index = 0 )  const
     {
         return lower_anti_diag_rbegin(index);
     }
 
-    const_reverse_anti_diag_type
-    lower_anti_diag_crend( const size_type index = 0 )  const
+    const_reverse_anti_diag_type lower_anti_diag_crend( const size_type index = 0 )  const
     {
         return lower_anti_diag_rend(index);
     }
 
-#if 1
-
 public:
-    anti_diag_type 
-    anti_diag_begin( const difference_type index = 0 )
+    anti_diag_type anti_diag_begin( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_anti_diag_begin( index );
         return lower_anti_diag_begin( -index );
     }
     
-    anti_diag_type 
-    anti_diag_end( const difference_type index = 0 )
+    anti_diag_type anti_diag_end( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_anti_diag_end( index );
         return lower_anti_diag_end( -index );
     }
 
-    const_anti_diag_type 
-    anti_diag_begin( const difference_type index = 0 ) const
+    const_anti_diag_type anti_diag_begin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_begin( index );
         return lower_anti_diag_begin( -index );
     }
     
-    const_anti_diag_type 
-    anti_diag_end( const difference_type index = 0 ) const
+    const_anti_diag_type anti_diag_end( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_end( index );
         return lower_anti_diag_end( -index );
     }
 
-    const_anti_diag_type 
-    anti_diag_cbegin( const difference_type index = 0 ) const
+    const_anti_diag_type anti_diag_cbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_cbegin( index );
         return lower_anti_diag_cbegin( -index );
     }
     
-    const_anti_diag_type 
-    anti_diag_cend( const difference_type index = 0 ) const
+    const_anti_diag_type anti_diag_cend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_cend( index );
         return lower_anti_diag_cend( -index );
     }
 
 public:
-    reverse_anti_diag_type 
-    anti_diag_rbegin( const difference_type index = 0 )
+    reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_anti_diag_rbegin( index );
         return lower_anti_diag_rbegin( -index );
     }
     
-    reverse_anti_diag_type 
-    anti_diag_rend( const difference_type index = 0 )
+    reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 )
     {
         if ( index > 0 ) return upper_anti_diag_rend( index );
         return lower_anti_diag_rend( -index );
     }
 
-    const_reverse_anti_diag_type 
-    anti_diag_rbegin( const difference_type index = 0 ) const
+    const_reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_rbegin( index );
         return lower_anti_diag_rbegin( -index );
     }
     
-    const_reverse_anti_diag_type 
-    anti_diag_rend( const difference_type index = 0 ) const
+    const_reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_rend( index );
         return lower_anti_diag_rend( -index );
     }
 
-    const_reverse_anti_diag_type 
-    anti_diag_crbegin( const difference_type index = 0 ) const
+    const_reverse_anti_diag_type anti_diag_crbegin( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_crbegin( index );
         return lower_anti_diag_crbegin( -index );
     }
     
-    const_reverse_anti_diag_type 
-    anti_diag_crend( const difference_type index = 0 ) const
+    const_reverse_anti_diag_type anti_diag_crend( const difference_type index = 0 ) const
     {
         if ( index > 0 ) return upper_anti_diag_crend( index );
         return lower_anti_diag_crend( -index );
     }
-#endif
 
 public:
-    row_range_type
-    row_range( const_row_type begin, const_row_type end )
+    row_range_type row_range( const_row_type begin, const_row_type end )
     {
         return row_range_type ( begin, end - 1, col());
     }
 
-    const_row_range_type
-    row_range( const_row_type begin, const_row_type end ) const
+    const_row_range_type row_range( const_row_type begin, const_row_type end ) const
     {
         return const_row_range_type ( begin, end - 1, col());
     }
 
 public:
-    row_range_type
-    row_range_begin( const size_type first, const size_type last )
+    row_range_type row_range_begin( const size_type first, const size_type last )
     {
         return row_range_type ( row_begin(first), row_begin(last), col());
     }
 
-    row_range_type
-    row_range_end( const size_type first, const size_type last )
+    row_range_type row_range_end( const size_type first, const size_type last )
     {
         return row_range_type ( row_end(first), row_end(last), col());
     }
 
-    const_row_range_type
-    row_range_begin( const size_type first, const size_type last ) const
+    const_row_range_type row_range_begin( const size_type first, const size_type last ) const
     {
         return const_row_range_type ( row_begin(first), row_begin(last), col());
     }
 
-    const_row_range_type
-    row_range_end( const size_type first, const size_type last ) const
+    const_row_range_type row_range_end( const size_type first, const size_type last ) const
     {
         return const_row_range_type ( row_end(first), row_end(last), col());
     }
 
 public:
-    col_range_type
-    col_range( const_col_type begin, const_col_type end )
+    col_range_type col_range( const_col_type begin, const_col_type end )
     {
         return col_range_type ( begin, end - 1, 1);
     }
 
-    const_col_range_type
-    col_range( const_col_type begin, const_col_type end ) const
+    const_col_range_type col_range( const_col_type begin, const_col_type end ) const
     {
         return const_col_range_type ( begin, end - 1, 1);
     }
 
 public:
-    col_range_type
-    col_range_begin( const size_type first, const size_type last )
+    col_range_type col_range_begin( const size_type first, const size_type last )
     {
         return col_range_type ( col_begin(first), col_begin(last), 1);
     }
 
-    col_range_type
-    col_range_end( const size_type first, const size_type last )
+    col_range_type col_range_end( const size_type first, const size_type last )
     {
         return col_range_type ( col_end(first), col_end(last), 1);
     }
 
-    const_col_range_type
-    col_range_begin( const size_type first, const size_type last ) const
+    const_col_range_type col_range_begin( const size_type first, const size_type last ) const
     {
         return const_col_range_type ( col_begin(first), col_begin(last), 1);
     }
 
-    const_col_range_type
-    col_range_end( const size_type first, const size_type last ) const
+    const_col_range_type col_range_end( const size_type first, const size_type last ) const
     {
         return const_col_range_type ( col_end(first), col_end(last), 1);
     }
 
 public:
-    reverse_row_range_type
-    row_range_rbegin( const size_type first, const size_type last )
+    reverse_row_range_type row_range_rbegin( const size_type first, const size_type last )
     {
         return reverse_row_range_type( row_range_end(first,last) );
     }
 
-    reverse_row_range_type
-    row_range_rend( const size_type first, const size_type last )
+    reverse_row_range_type row_range_rend( const size_type first, const size_type last )
     {
         return reverse_row_range_type( row_range_begin(first,last) );
     }
     
-    const_reverse_row_range_type
-    row_range_rbegin( const size_type first, const size_type last ) const
+    const_reverse_row_range_type row_range_rbegin( const size_type first, const size_type last ) const
     {
         return reverse_row_range_type( row_range_end(first,last) );
     }
 
-    const_reverse_row_range_type
-    row_range_rend( const size_type first, const size_type last ) const
+    const_reverse_row_range_type row_range_rend( const size_type first, const size_type last ) const
     {
         return reverse_row_range_type( row_range_begin(first,last) );
     }
 
 public:
-    reverse_row_range_type
-    row_range( const_reverse_row_type begin, const_reverse_row_type end )
+    reverse_row_range_type row_range( const_reverse_row_type begin, const_reverse_row_type end )
     {
         return reverse_row_range_type( row_range_end(begin,end) );
     }
 
-    const_reverse_row_range_type
-    row_range( const_reverse_row_type  begin, const_reverse_row_type  end ) const
+    const_reverse_row_range_type row_range( const_reverse_row_type  begin, const_reverse_row_type  end ) const
     {
         return reverse_row_range_type( row_range_end(begin,end) );
     }
 
 public:
-    reverse_col_range_type
-    col_range_rbegin( const size_type first, const size_type last )
+    reverse_col_range_type col_range_rbegin( const size_type first, const size_type last )
     {
         return reverse_col_range_type( col_range_end(first,last) );
     }
     
-    const_reverse_col_range_type
-    col_range_rbegin( const size_type first, const size_type last ) const
+    const_reverse_col_range_type col_range_rbegin( const size_type first, const size_type last ) const
     {
         return reverse_col_range_type( col_range_end(first,last) );
     }
     
-    reverse_col_range_type
-    col_range_rend( const size_type first, const size_type last )
+    reverse_col_range_type col_range_rend( const size_type first, const size_type last )
     {
         return reverse_col_range_type( col_range_begin(first,last) );
     }
     
-    const_reverse_col_range_type
-    col_range_rend( const size_type first, const size_type last ) const
+    const_reverse_col_range_type col_range_rend( const size_type first, const size_type last ) const
     {
         return reverse_col_range_type( col_range_begin(first,last) );
     }
 
 public:
-    reverse_col_range_type
-    col_range( const_reverse_col_type begin, const_reverse_col_type end )
+    reverse_col_range_type col_range( const_reverse_col_type begin, const_reverse_col_type end )
     {
         return reverse_col_range_type( col_range_end(begin,end) );
     }
     
-    const_reverse_col_range_type
-    col_range( const_reverse_col_type  begin, const_reverse_col_type  end ) const
+    const_reverse_col_range_type col_range( const_reverse_col_type  begin, const_reverse_col_type  end ) const
     {
         return reverse_col_range_type( col_range_end(begin,end) );
     }
     
 public:
-    row_type 
-    operator[](const size_type index)
+    row_type operator[](const size_type index)
     {
         return row_begin(index);
     }
 
-    const_row_type 
-    operator[](const size_type index) const
+    const_row_type operator[](const size_type index) const
     {
         return row_begin(index);
     }
 
 public:
-    value_type&
-    operator()( const size_type r = 0, const size_type c = 0 )
+    value_type& operator()( const size_type r = 0, const size_type c = 0 )
     {
         return *(row_begin(r)+c);
     }
 
-    value_type
-    operator()( const size_type r = 0, const size_type c = 0 ) const 
+    value_type operator()( const size_type r = 0, const size_type c = 0 ) const 
     {
         return *(row_cbegin(r)+c);
     }
 
 public:
-    const self_type 
-    operator-() const
+    const self_type operator-() const
     {
         self_type ans(*this);
         std::transform(ans.begin(), ans.end(), ans.begin(), std::negate<value_type>());
         return ans;
     }
 
-    const self_type 
-    operator+() const
+    const self_type operator+() const
     {
         self_type ans(*this);
         return ans;
     }
 
-    const self_type 
-    operator~() const
+    const self_type operator~() const
     {
         return transpose();
     }
 
-    const self_type 
-    operator!() const
+    const self_type operator!() const
     {
         return inverse();
     }
 
 public:
-    self_type & 
-    operator +=(const value_type& rhs)
+    self_type & operator +=(const value_type& rhs)
     {
         std::transform(begin(), end(), begin(), std::bind1st(std::plus<value_type > (), rhs));
         return *this;
     }
 
-    self_type & 
-    operator +=(const self_type& rhs)
+    self_type & operator +=(const self_type& rhs)
     {
         std::transform(begin(), end(), rhs.begin(), begin(), std::plus<value_type > ());
         return *this;
     }
 
-    self_type & 
-    operator -=(const value_type& rhs)
+    self_type & operator -=(const value_type& rhs)
     {
         std::transform(begin(), end(), begin(), std::bind1st(std::minus<value_type > (), rhs));
         return *this;
     }
 
-    self_type & 
-    operator -=(const self_type& rhs)
+    self_type & operator -=(const self_type& rhs)
     {
         std::transform(begin(), end(), rhs.begin(), begin(), std::minus<value_type > ());
         return *this;
     }
 
-    self_type & 
-    operator *=(const value_type& rhs)
+    self_type & operator *=(const value_type& rhs)
     {
         std::transform(begin(), end(), begin(), std::bind1st(std::multiplies<value_type > (), rhs));
         return *this;
@@ -1542,20 +1236,17 @@ public:
 
 private:
 
-    size_type
-    max_dim() const
+    size_type max_dim() const
     {
         return std::max( row(), col() );
     }
 
-    size_type 
-    min_dim() const
+    size_type min_dim() const
     {
         return std::min( row(), col() );
     }
 
-    self_type&
-    direct_multiply( const self_type& other )
+    self_type& direct_multiply( const self_type& other )
     {
         self_type tmp(row(), other.col());
         for (size_type i = 0; i < row(); ++i)
@@ -1580,8 +1271,7 @@ private:
                     [ ans <- new_ans ]  
             }
 #endif 
-    self_type&
-    rr1( const self_type& other )
+    self_type& rr1( const self_type& other )
     {
         const self_type new_this = *this && value_type(0);
 
@@ -1615,8 +1305,7 @@ private:
         }
 #endif
 
-    self_type&
-    rr2( const self_type& other )
+    self_type& rr2( const self_type& other )
     {
         const self_type new_this(   *this, range_type( 0, row()-1 ), range_type( 0, col() ));
 
@@ -1649,8 +1338,7 @@ private:
             //<2>
             else {...}
 #endif
-    self_type&
-    cc1( const self_type& other )
+    self_type& cc1( const self_type& other )
     {
         const self_type 
         new_this = *this || value_type(0);
@@ -1686,8 +1374,7 @@ private:
                     [ans <- new_ans + res_col_row] [R,OC]
             }
 #endif
-    self_type&
-    cc2( const self_type& other )
+    self_type& cc2( const self_type& other )
     {   
         //[new_this <- this] [R,C-1]
         const self_type new_this(   *this, range_type( 0, row() ), range_type( 0, col()-1 ));
@@ -1726,8 +1413,7 @@ private:
             else {...}
         }
 #endif
-    self_type&
-    oc1( const self_type& other )
+    self_type& oc1( const self_type& other )
     {
         //[new_other <- other] [C,OC+1]
         const self_type new_other = other || value_type(0);
@@ -1761,8 +1447,7 @@ private:
             }
         }
 #endif
-    self_type&
-    oc2( const self_type& other )
+    self_type& oc2( const self_type& other )
     {
         const self_type new_other(  other, range_type(0,other.row()), range_type(0, other.col()-1));
 
@@ -1801,47 +1486,22 @@ private:
         }
 #endif
 
-    self_type&
-    strassen_multiply( const self_type& other )
+    self_type& strassen_multiply( const self_type& other )
     {
         const size_type R_2 = row() >> 1;          
         const size_type C_2 = col() >> 1;
         const size_type OR_2 = C_2;
         const size_type OC_2 = other.col() >> 1;
 
-        const self_type a_00(   *this, 
-                                range_type( 0, R_2 ),
-                                range_type( 0, C_2 )
-                            );
-        const self_type a_01(   *this,
-                                range_type( 0, R_2 ),
-                                range_type( C_2, col() ) 
-                            );
-        const self_type a_10(   *this,
-                                range_type( R_2, row() ),
-                                range_type( 0, C_2 )
-                            );
-        const self_type a_11(   *this,
-                                range_type( R_2, row() ),
-                                range_type( C_2, col() )
-                            );
+        const self_type a_00(   *this, range_type( 0, R_2 ), range_type( 0, C_2 ));
+        const self_type a_01(   *this, range_type( 0, R_2 ), range_type( C_2, col() ) );
+        const self_type a_10(   *this, range_type( R_2, row() ), range_type( 0, C_2 ));
+        const self_type a_11(   *this, range_type( R_2, row() ), range_type( C_2, col() ));
 
-        const self_type b_00(   other, 
-                                range_type( 0, OR_2 ),
-                                range_type( 0, OC_2 )
-                            );
-        const self_type b_01(   other,
-                                range_type( 0, OR_2 ),
-                                range_type( OC_2, other.col() ) 
-                            );
-        const self_type b_10(   other,
-                                range_type( OR_2, other.row() ),
-                                range_type( 0, OC_2 )
-                            );
-        const self_type b_11(   other,
-                                range_type( OR_2, other.row() ),
-                                range_type( OC_2, other.col() )
-                            );
+        const self_type b_00(   other, range_type( 0, OR_2 ), range_type( 0, OC_2 ));
+        const self_type b_01(   other, range_type( 0, OR_2 ), range_type( OC_2, other.col() ) );
+        const self_type b_10(   other, range_type( OR_2, other.row() ), range_type( 0, OC_2 ));
+        const self_type b_11(   other, range_type( OR_2, other.row() ), range_type( OC_2, other.col() ));
 
 
         const self_type Q_0 = ( a_00 + a_11 ) * ( b_00 + b_11 );
@@ -1865,8 +1525,7 @@ private:
 
 
 public:
-    self_type&
-    operator *= ( const self_type& other )
+    self_type& operator *= ( const self_type& other )
     {
         assert( col() == other.row() );
         
@@ -1912,22 +1571,19 @@ public:
         return strassen_multiply( other );
     }
 
-    self_type & 
-    operator /=(const value_type& rhs)
+    self_type & operator /=(const value_type& rhs)
     {
         std::transform(begin(), end(), begin(), std::bind2nd(std::divides<value_type > (), rhs));
         return *this;
     }
 
-    self_type & 
-    operator /=(const self_type& rhs)
+    self_type & operator /=(const self_type& rhs)
     {
         return operator*=(!rhs);
     }
 
     template<typename T_>
-    self_type &
-    operator /= ( const T_& rhs )
+    self_type & operator /= ( const T_& rhs )
     {
         std::for_each( begin(), end(), [&rhs](value_type& v) { v /= rhs; } );
         return *this;
@@ -1945,8 +1601,7 @@ public:
     }
 
     public:
-    const self_type
-    inverse() const
+    const self_type inverse() const
     {
         assert( row() == col() );
 
@@ -2011,8 +1666,7 @@ public:
     // i) R'[n,m] = -sR*P'
     // j) S'[n,n] = s + sR * P' * Qs
     //
-    const self_type 
-    direct_inverse() const
+    const self_type direct_inverse() const
     {
 
         self_type ans(row(), col());
@@ -2083,8 +1737,7 @@ public:
     // B:   merge   c_11 c_12
     //              c_21 c_22
     //      to generate the reverse matrix.
-    const self_type 
-    strassen_inverse() const
+    const self_type strassen_inverse() const
     {
         const size_type n = row();
         const size_type n_2 = n >> 1;
@@ -2130,8 +1783,7 @@ public:
     //\det A =
     // \det P * \det (S - R*P^{-1}*Q)
     //
-    const value_type 
-    det() const
+    const value_type det() const
     {
         assert( row() == col() );
 
@@ -2154,23 +1806,20 @@ public:
     }
 
 public:
-    const value_type 
-    tr() const 
+    const value_type tr() const 
     {
         return std::accumulate( diag_begin(), diag_end(), value_type() );
     }
 
 public:
-    const std::vector<value_type, Allocator>
-    to_vector() const 
+    const std::vector<value_type, Allocator> to_vector() const 
     {
         std::vector<value_type, Allocator> ans( row() * col() );
         std::copy( begin(), end(), ans.begin() );
         return ans;
     }
 
-    const std::valarray<value_type>
-    to_valarray() const 
+    const std::valarray<value_type> to_valarray() const 
     {
         std::valarray<value_type> ans( row() * col() );
         std::copy( begin(), end(), &ans[0] );
@@ -2186,8 +1835,7 @@ private:
 
 
 template<typename T, std::size_t D, typename A>
-std::ostream & 
-operator <<(std::ostream& lhs, const matrix<T, D, A>& rhs)
+std::ostream & operator <<(std::ostream& lhs, const matrix<T, D, A>& rhs)
 {
     typedef typename matrix<T>::size_type size_type;
     typedef typename matrix<T>::value_type value_type;

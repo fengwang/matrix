@@ -8,12 +8,11 @@ int main()
 {
     using namespace feng;
     using namespace std;
-    using namespace vg;
 
     const unsigned long n = 35;
     matrix<double> A( n, n );
 
-    variate_generator<double> v(-1.0, 1.0);
+    vg::vg<double> v(-1.0, 1.0);
     copy( v.begin(), v.begin()+n*n, A.begin() );
     for( unsigned long i = 1; i < n; ++i )
         copy( A.upper_diag_begin(i), A.upper_diag_end(i), A.lower_diag_begin(i) );

@@ -10,7 +10,7 @@ int main()
     using namespace feng;
 
     unsigned int const n = 15;
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
     matrix<double> A(n, n);
     matrix<double> V(n, n);
     std::valarray<double> Lambda(n);

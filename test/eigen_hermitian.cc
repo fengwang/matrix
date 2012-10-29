@@ -11,7 +11,7 @@ int main()
     using namespace feng;
 
     unsigned int const n = 40;
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
     matrix<std::complex<double> > A(n, n);
     matrix<std::complex<double> > V(n, n);
     matrix<double> L(n, n);

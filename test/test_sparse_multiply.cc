@@ -11,7 +11,7 @@ int main()
     using namespace feng;
 
     unsigned int const n = 7;
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
     matrix<double> A(n, n);
     matrix<double> B(n, n);
     matrix<double> C(n, n);
@@ -20,7 +20,7 @@ int main()
     std::copy( v.begin(), v.begin()+n*n, A.begin() );
     std::copy( v.begin(), v.begin()+n*n, B.begin() );
 
-    vg::variate_generator<int> N( 0, n );
+    vg::vg<int> N( 0, n );
 
     for ( std::size_t i = 0; i < 4; ++i )
     {
