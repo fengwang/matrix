@@ -11,16 +11,16 @@
 
 namespace feng
 {
-    //solving   Ax = b      -- A is a upper triangular matrix
+    //solving   Ax = b      -- A is an upper triangular matrix
     //
     //return
     //          0    --     success
     //          1    --     failed
     template<typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
     int
-    backward_substitution( const matrix<T1,D1,A1>&           A, 
-                           matrix<T2,D2,A2>&                 x, 
-                           const matrix<T3,D3,A3>&           b )
+    backward_substitution( const matrix<T1,D1,A1>&           A,  //A[n][n] is an upper triangular matrix
+                           matrix<T2,D2,A2>&                 x,  //x[n]  
+                           const matrix<T3,D3,A3>&           b ) //b[n]
     {
         typedef matrix<T1,D1,A1>                 matrix_type;
         typedef typename matrix_type::value_type value_type;

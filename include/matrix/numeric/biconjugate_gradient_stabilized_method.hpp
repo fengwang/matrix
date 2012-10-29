@@ -18,7 +18,7 @@ namespace feng
     //          Using Biconjugate Gradient Stablized Method to solve equation
     //                  A x = b
     // Inputs:
-    //          A       :       square matrix A [n,]
+    //          A       :       square matrix A [n,n]
     //          x       :       unknown vector x [n,1]
     //          b       :       vector b [n,1]
     //          loops   :       max iterations, default is 100
@@ -31,9 +31,9 @@ namespace feng
     // TODO: opmtimize this algorithm to get rid of round-offs, and test it with more data
     template< typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
     int
-    biconjugate_gradient_stablized_method( const matrix<T1, D1, A1>&     A,
-                                           matrix<T2, D2, A2>&           x,
-                                           const matrix<T3, D3, A3>&     b,
+    biconjugate_gradient_stablized_method( const matrix<T1, D1, A1>&     A, //A[n][n]
+                                           matrix<T2, D2, A2>&           x, //x[n]
+                                           const matrix<T3, D3, A3>&     b, //b[n]
                                            const std::size_t           max_loops = 100,
                                            const T1                    eps = 1.0e-10 )
     {
@@ -92,9 +92,9 @@ namespace feng
 
     template< typename T1, std::size_t D1, typename A1, typename T2, std::size_t D2, typename A2, typename T3, std::size_t D3, typename A3>
     int
-    bicgstab(  const matrix<T1, D1, A1>&     A,
-               matrix<T2, D2, A2>&           x,
-               const matrix<T3, D3, A3>&     b,
+    bicgstab(  const matrix<T1, D1, A1>&     A, //A[n][n]
+               matrix<T2, D2, A2>&           x, //x[n]
+               const matrix<T3, D3, A3>&     b, //b[n]
                const std::size_t           max_loops = 100,
                const T1                    eps = 1.0e-10 )
     {

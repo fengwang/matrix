@@ -109,6 +109,7 @@ int main()
 
     //try to fit using levenberg marquardt algorithm
     feng::nonlinear_least_square_fit( x, x+1000, y, w, fy, py.begin(), py.end(), a_fit, feng::levenberg_marquardt<double>() );
+    //feng::nonlinear_least_square_fit( x, x+1000, y, fy, py.begin(), py.end(), a_fit, feng::levenberg_marquardt<double>() );
 
     //out put fit result
     std::cout << "\nfitted parameters: \n";

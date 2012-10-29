@@ -8,8 +8,6 @@
 #include <cassert>
 #include <valarray>
 
-#include <iostream>
-
 namespace feng
 {
 
@@ -49,7 +47,6 @@ namespace feng
         Matrix1 P(n, n);
 
         if ( n < 3 ) { return; }
-
 
         // for step i, 
         // 1) vector x is set to be the ith column of matrix A'(or D), without first n+1 th elements,

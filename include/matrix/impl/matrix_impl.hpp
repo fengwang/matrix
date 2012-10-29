@@ -28,10 +28,8 @@
 namespace feng
 {
 
-template<   typename Type, 
-            std::size_t Default = 256,
+template<   typename Type, std::size_t Default = 256,
             class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
-            //class Allocator = feng::matrix_allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
         >
 class matrix
 {
@@ -49,6 +47,7 @@ public:
     typedef range                                                       range_type;
 
     //stride iterators
+    typedef matrix_stride_iterator<value_type*>                         stride_iterator;
     typedef matrix_stride_iterator<value_type*>                         row_type;
     typedef matrix_stride_iterator<const value_type*>                   const_row_type;
     
@@ -65,6 +64,8 @@ public:
     typedef std::reverse_iterator<iterator>                             reverse_iterator;
     typedef std::reverse_iterator<const_iterator>                       const_reverse_iterator;
 
+    typedef std::reverse_iterator<stride_iterator>                      reverse_stride_iterator;
+
     typedef std::reverse_iterator<row_type>                             reverse_row_type;
     typedef std::reverse_iterator<const_row_type>                       const_reverse_row_type;
     
@@ -80,8 +81,8 @@ public:
     typedef std::reverse_iterator<diag_type>                            reverse_diag_type;
     typedef std::reverse_iterator<const_diag_type>                      const_reverse_diag_type;
 
-    typedef std::reverse_iterator<anti_diag_type>                      reverse_anti_diag_type;
-    typedef std::reverse_iterator<const_anti_diag_type>                const_reverse_anti_diag_type;
+    typedef std::reverse_iterator<anti_diag_type>                       reverse_anti_diag_type;
+    typedef std::reverse_iterator<const_anti_diag_type>                 const_reverse_anti_diag_type;
 
     //range iterators
     typedef matrix_range_iterator<row_type>                             row_range_type;
@@ -168,6 +169,110 @@ public:
     
         for ( size_type i = rr.first; i < rr.second; ++i )
             std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
+    }
+
+public:
+    template< typename Type1, typename... Types >
+    self_type& import( iterator it, const Type1& value1, const Types&... values ) 
+    {
+        import( it++, value1 );
+        return import( it, values... );
+    }
+    
+    self_type& import( iterator )
+    {
+        return *this;
+    }
+
+    template< typename Type1 >
+    self_type& import( iterator it, const Type1& value1 )
+    {
+        *it = value1;
+        return *this;
+    }
+
+    template< typename Type1, typename... Types >
+    self_type& import( reverse_iterator it, const Type1& value1, const Types&... values ) 
+    {
+        import( it++, value1 );
+        return import( it, values... );
+    }
+    
+    self_type& import( reverse_iterator )
+    {
+        return *this;
+    }
+
+    template< typename Type1 >
+    self_type& import( reverse_iterator it, const Type1& value1 )
+    {
+        *it = value1;
+        return *this;
+    }
+
+    template< typename Type1, typename... Types >
+    self_type& import( stride_iterator it, const Type1& value1, const Types&... values ) 
+    {
+        import( it++, value1 );
+        return import( it, values... );
+    }
+    
+    self_type& import( stride_iterator )
+    {
+        return *this;
+    }
+
+    template< typename Type1 >
+    self_type& import( stride_iterator it, const Type1& value1 )
+    {
+        *it = value1;
+        return *this;
+    }
+
+    template< typename Type1, typename... Types >
+    self_type& import( reverse_stride_iterator it, const Type1& value1, const Types&... values ) 
+    {
+        import( it++, value1 );
+        return import( it, values... );
+    }
+    
+    self_type& import( reverse_stride_iterator )
+    {
+        return *this;
+    }
+
+    template< typename Type1 >
+    self_type& import( reverse_stride_iterator it, const Type1& value1 )
+    {
+        *it = value1;
+        return *this;
+    }
+
+    template< typename... Types >
+    self_type& import( const Types&... values ) 
+    {
+        return import( begin(), values... );
+    }
+
+public:
+    template< typename Iterator, typename Type1, typename... Types >
+    self_type& p_import( Iterator it, const Type1& value1, const Types&... values ) 
+    {
+        p_import( it++, value1 );
+        return p_import( it, values... );
+    }
+    
+    template< typename Iterator>
+    self_type& p_import( Iterator )
+    {
+        return *this;
+    }
+
+    template< typename Iterator, typename Type1 >
+    self_type& p_import( Iterator it, const Type1& value1 )
+    {
+        *it = value1;
+        return *this;
     }
 
 public:
