@@ -171,101 +171,12 @@ public:
             std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
     }
 
-public:
-    template< typename Type1, typename... Types >
-    self_type& import( iterator it, const Type1& value1, const Types&... values ) 
-    {
-        import( it++, value1 );
-        return import( it, values... );
-    }
-    
-    self_type& import( iterator )
-    {
-        return *this;
-    }
-
-    template< typename Type1 >
-    self_type& import( iterator it, const Type1& value1 )
-    {
-        *it = value1;
-        return *this;
-    }
-
-    template< typename Type1, typename... Types >
-    self_type& import( reverse_iterator it, const Type1& value1, const Types&... values ) 
-    {
-        import( it++, value1 );
-        return import( it, values... );
-    }
-    
-    self_type& import( reverse_iterator )
-    {
-        return *this;
-    }
-
-    template< typename Type1 >
-    self_type& import( reverse_iterator it, const Type1& value1 )
-    {
-        *it = value1;
-        return *this;
-    }
-
-    template< typename Type1, typename... Types >
-    self_type& import( stride_iterator it, const Type1& value1, const Types&... values ) 
-    {
-        import( it++, value1 );
-        return import( it, values... );
-    }
-    
-    self_type& import( stride_iterator )
-    {
-        return *this;
-    }
-
-    template< typename Type1 >
-    self_type& import( stride_iterator it, const Type1& value1 )
-    {
-        *it = value1;
-        return *this;
-    }
-
-    template< typename Type1, typename... Types >
-    self_type& import( reverse_stride_iterator it, const Type1& value1, const Types&... values ) 
-    {
-        import( it++, value1 );
-        return import( it, values... );
-    }
-    
-    self_type& import( reverse_stride_iterator )
-    {
-        return *this;
-    }
-
-    template< typename Type1 >
-    self_type& import( reverse_stride_iterator it, const Type1& value1 )
-    {
-        *it = value1;
-        return *this;
-    }
-
-    template< typename... Types >
-    self_type& import( const Types&... values ) 
-    {
-        return import( begin(), values... );
-    }
-
-public:
+private:
     template< typename Iterator, typename Type1, typename... Types >
     self_type& p_import( Iterator it, const Type1& value1, const Types&... values ) 
     {
         p_import( it++, value1 );
         return p_import( it, values... );
-    }
-    
-    template< typename Iterator>
-    self_type& p_import( Iterator )
-    {
-        return *this;
     }
 
     template< typename Iterator, typename Type1 >
@@ -273,6 +184,37 @@ public:
     {
         *it = value1;
         return *this;
+    }
+
+public:
+    template< typename... Types >
+    self_type& import( iterator it, const Types&... values ) 
+    {
+        return p_import( it, values... );
+    }
+
+    template< typename... Types >
+    self_type& import( reverse_iterator it, const Types&... values ) 
+    {
+        return p_import( it, values... );
+    }
+
+    template< typename... Types >
+    self_type& import( stride_iterator it, const Types&... values ) 
+    {
+        return p_import( it, values... );
+    }
+
+    template< typename... Types >
+    self_type& import( reverse_stride_iterator it, const Types&... values ) 
+    {
+        return p_import( it, values... );
+    }
+
+    template< typename... Types >
+    self_type& import( const Types&... values ) 
+    {
+        return import( begin(), values... );
     }
 
 public:
