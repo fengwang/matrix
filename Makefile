@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus test_import test_data
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus test_import test_data test_apply
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -137,4 +137,8 @@ test_import: test/test_import.cc
 test_data: test/test_data.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_data.o test/test_data.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_data $(OBJECTS_DIR)/test_data.o
+
+test_apply: test/test_apply.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_apply.o test/test_apply.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_apply $(OBJECTS_DIR)/test_apply.o
 

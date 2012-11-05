@@ -1840,6 +1840,17 @@ public:
         return data_.data();
     }
 
+public:
+    template <typename Function>
+    self_type const apply( const Function& f ) const 
+    {
+        self_type ans( row(), col() );
+
+        std::transform( begin(), end(), ans.begin(), f );
+
+        return ans;
+    }
+
 private:
 
     size_type row_;
