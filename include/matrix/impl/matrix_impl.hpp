@@ -46,6 +46,9 @@ public:
     typedef std::ptrdiff_t                                              difference_type;
     typedef range                                                       range_type;
 
+    typedef typename Allocator::pointer                                 pointer;
+    typedef typename Allocator::const_pointer                           const_pointer;
+
     //stride iterators
     typedef matrix_stride_iterator<value_type*>                         stride_iterator;
     typedef matrix_stride_iterator<value_type*>                         row_type;
@@ -1824,6 +1827,17 @@ public:
         std::valarray<value_type> ans( row() * col() );
         std::copy( begin(), end(), &ans[0] );
         return ans;
+    }
+
+public:
+    pointer data()
+    {
+        return data_.data();
+    }
+
+    const_pointer data() const 
+    {
+        return data_.data();
     }
 
 private:

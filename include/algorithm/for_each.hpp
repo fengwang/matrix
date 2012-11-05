@@ -3,7 +3,9 @@
 
 namespace feng
 {
-
+/*
+    parallel_for_each ????
+*/
 namespace for_each_impl_private
 {
     template< typename F, typename InputIterator1, typename ... InputIteratorn >

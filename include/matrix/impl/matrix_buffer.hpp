@@ -372,6 +372,17 @@ public:
         return *this;
     }
 
+public:
+    pointer data()
+    {
+        return buffer_;
+    }
+
+    const_pointer data() const
+    {
+        return buffer_;
+    }
+
 private:
     // stack buffer
     value_type internal_[var_length];
