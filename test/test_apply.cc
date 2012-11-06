@@ -13,5 +13,7 @@ int main()
 
     std::cout << "\napplying sin to matrix: \n" << m.apply( [](double d){ return std::sin(d); } );
 
+    std::cout << "\n\nand the difference with sin(m):\n" << feng::sin(m) - m.apply( [](double d){ return std::sin(d); } ) << "\n";
+
     return 0; 
 }

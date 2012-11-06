@@ -127,13 +127,13 @@ public:
     template<typename T, size_type D, typename A>
     matrix(const matrix<T,D,A>& rhs)
     {
-        operator=<T,D,A>(rhs);
+        operator=(rhs);
     }
 
     template<typename T, size_type D, typename A>
     self_type & operator=(const matrix<T,D,A>& rhs)
     {
-        do_copy<T,D,A> (rhs);
+        do_copy(rhs);
         return *this;
     }
 
@@ -149,20 +149,9 @@ public:
     }
 
 public:
-    matrix (    const self_type& other, const range_type& rr, const range_type& rc )
-        :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
-    {
-        assert( rr.second > rr.first ); 
-        assert( rc.second > rc.first );
-        assert( rr.second <= other.row() );
-        assert( rc.second <= other.col() );
-    
-        for ( size_type i = rr.first; i < rr.second; ++i )
-            std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
-    }
 
     template< typename T, size_type D, typename A >
-    matrix ( const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
+    matrix( const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
         :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
         assert( rr.second > rr.first ); 
@@ -172,6 +161,18 @@ public:
     
         for ( size_type i = rr.first; i < rr.second; ++i )
             std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
+    }
+
+    template< typename T, size_type D, typename A >
+    matrix( const matrix<T,D,A>& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 )
+        :   row_( r1-r0 ), col_( c1-c0 ), data_(storage_type((r1-r0)*(c1-c0))) 
+    {
+        assert( r1 > r0 );
+        assert( c1 > c0 );
+
+        for ( size_type i = r0; i != r1; ++i )
+            std::copy( other.row_begin(i)+c0, other.row_begin(i)+c1, row_begin(i-r0) );
+
     }
 
 private:
@@ -1606,7 +1607,7 @@ public:
     public:
     const self_type inverse() const
     {
-        assert( row() == col() );
+        assert( row() == col() && size() != 0 );
 
         if (1 == size())
         {
@@ -1790,6 +1791,9 @@ public:
     {
         assert( row() == col() );
 
+        if (0 == size())
+            return value_type();
+
         if (1 == size())
             return *begin();
 
@@ -1849,6 +1853,26 @@ public:
         std::transform( begin(), end(), ans.begin(), f );
 
         return ans;
+    }
+
+public:
+    value_type max() const 
+    {
+        assert( 0 != size() );
+
+        return *std::max_element( begin(), end() );
+    }
+
+    value_type min() const 
+    {
+        assert( 0 != size() );
+
+        return *std::min_element( begin(), end() );
+    }
+
+    value_type sum() const 
+    {
+        return std::accumulate( begin(), end(), value_type() );
     }
 
 private:
