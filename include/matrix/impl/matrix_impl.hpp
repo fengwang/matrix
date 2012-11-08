@@ -16,11 +16,14 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef> 
+#include <fstream>
 #include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <memory>
 #include <numeric>
+#include <string>
+#include <sstream>
 #include <utility>
 #include <valarray>
 #include <vector>
@@ -154,10 +157,10 @@ public:
     matrix( const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
         :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
-        assert( rr.second > rr.first ); 
-        assert( rc.second > rc.first );
-        assert( rr.second < other.row() );
-        assert( rc.second < other.col() );
+        assert( rr.second >= rr.first ); 
+        assert( rc.second >= rc.first );
+        assert( rr.second <= other.row() );
+        assert( rc.second <= other.col() );
     
         for ( size_type i = rr.first; i < rr.second; ++i )
             std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
@@ -167,8 +170,10 @@ public:
     matrix( const matrix<T,D,A>& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 )
         :   row_( r1-r0 ), col_( c1-c0 ), data_(storage_type((r1-r0)*(c1-c0))) 
     {
-        assert( r1 > r0 );
-        assert( c1 > c0 );
+        assert( r1 >= r0 );
+        assert( c1 >= c0 );
+        assert( r1 <= other.row() );
+        assert( c1 <= other.col() );
 
         for ( size_type i = r0; i != r1; ++i )
             std::copy( other.row_begin(i)+c0, other.row_begin(i)+c1, row_begin(i-r0) );
@@ -219,6 +224,91 @@ public:
     self_type& import( const Types&... values ) 
     {
         return import( begin(), values... );
+    }
+
+public:
+    bool save_as( const char* const file_name ) const
+    {
+        std::ofstream ofs( file_name );
+        if ( !ofs ) return false;
+
+        ofs << *this;
+        ofs.close();
+        return true;
+    }
+
+    bool save_as( const std::string& file_name ) const 
+    {
+        return save_as( file_name.c_str() );
+    }
+
+    bool save_to( const char* const file_name ) const 
+    {
+        return save_as( file_name );
+    }
+
+    bool save_to( const std::string& file_name ) const 
+    {
+        return save_as( file_name.c_str() );
+    }
+
+    bool save( const char* const file_name ) const 
+    {
+        return save_as( file_name );
+    }
+
+    bool save( const std::string& file_name ) const 
+    {
+        return save_as( file_name.c_str() );
+    }
+
+public:
+    bool load( const char* const file_name )
+    {
+        return load_ascii( file_name ); 
+    }
+
+    bool load( const std::string& file_name ) 
+    {
+        return load( file_name.c_str() );
+    }
+
+    bool load_from( const char* const file_name )
+    {
+        return load( file_name ); 
+    }
+
+    bool load_from( const std::string& file_name ) 
+    {
+        return load( file_name.c_str() );
+    }
+
+private:
+    bool load_ascii( const char* const file_name )
+    {
+        std::ifstream ifs(file_name,  std::ios::in|std::ios::binary);
+        if ( !ifs ) return false;
+
+        std::stringstream iss;
+        std::copy( std::istreambuf_iterator<char>( ifs ), std::istreambuf_iterator<char>(), std::ostreambuf_iterator<char>(iss) );
+        
+        std::vector<value_type> buff;
+        buff.reserve( row()*col() );
+        std::copy( std::istream_iterator<value_type>(iss), std::istream_iterator<value_type>(), std::back_inserter(buff) );
+
+        if ( buff.size() != size() ) //size not match
+            return false;
+
+        std::copy( buff.begin(), buff.end(), begin() );
+
+        ifs.close();
+        return true; 
+    }
+
+    //TODO: read matlab file format and impl here
+    bool load_mat( const char* const file_name )
+    {
+        return true; 
     }
 
 public:
@@ -1893,7 +1983,7 @@ std::ostream & operator <<(std::ostream& lhs, const matrix<T, D, A>& rhs)
     {
         std::copy(rhs.row_begin(i), rhs.row_end(i),
                   std::ostream_iterator<value_type > (lhs, " \t "));
-        lhs << "\n";
+        if ( (i+1) != rhs.row() ) lhs << "\n";//skip the last "\n"
     }
 
     return lhs;
