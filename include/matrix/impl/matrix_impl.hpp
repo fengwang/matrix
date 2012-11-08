@@ -22,8 +22,8 @@
 #include <iterator>
 #include <memory>
 #include <numeric>
-#include <string>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <valarray>
 #include <vector>
@@ -265,6 +265,15 @@ public:
 public:
     bool load( const char* const file_name )
     {
+        /*
+         * TODO:
+         * 1) trim right of file name
+         * 2) if file name with '.mat' extension
+         *        call load_mat
+         * 3) else
+         *        call load_ascii
+         */
+
         return load_ascii( file_name ); 
     }
 
@@ -296,8 +305,7 @@ private:
         buff.reserve( row()*col() );
         std::copy( std::istream_iterator<value_type>(iss), std::istream_iterator<value_type>(), std::back_inserter(buff) );
 
-        if ( buff.size() != size() ) //size not match
-            return false;
+        if ( buff.size() != size() ) return false;
 
         std::copy( buff.begin(), buff.end(), begin() );
 
@@ -309,6 +317,21 @@ private:
     bool load_mat( const char* const file_name )
     {
         return true; 
+    }
+
+public:
+    // TODO:
+    //compress and store
+    bool store( const char* const file_name ) const 
+    {
+        return true;
+    }
+
+    // TODO:
+    //restore from a compressed file
+    bool restore( const char* const file_name ) 
+    {
+        return true;
     }
 
 public:
