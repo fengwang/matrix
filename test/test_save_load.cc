@@ -12,7 +12,7 @@ int main()
 
     M.save_as("m.matrix");
 
-    feng::matrix<double> N( m, n );
+    feng::matrix<double> N;//( m, n );
 
     N.load( "m.matrix" );
 
@@ -31,7 +31,7 @@ int main()
 
     cm.save_as( "cm.matrix" );
 
-    feng::matrix<std::complex<double> > dm( n, n );
+    feng::matrix<std::complex<double> > dm;//( n, n );
 
     dm.load( "cm.matrix" );
 

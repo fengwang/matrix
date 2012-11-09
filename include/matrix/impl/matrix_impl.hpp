@@ -231,7 +231,7 @@ public:
     {
         std::ofstream ofs( file_name );
         if ( !ofs ) return false;
-        ofs.precision(15);
+        ofs.precision(16);
         ofs << *this;
         ofs.close();
         return true;
@@ -298,8 +298,14 @@ private:
         std::ifstream ifs(file_name,  std::ios::in|std::ios::binary);
         if ( !ifs ) return false;
 
+        //read the file content into a string stream
         std::stringstream iss;
         std::copy( std::istreambuf_iterator<char>( ifs ), std::istreambuf_iterator<char>(), std::ostreambuf_iterator<char>(iss) );
+
+        const std::string& stream_buff = iss.str();
+        size_type const r = std::count( stream_buff.begin(), stream_buff.end(), '\n' );
+        size_type const c = std::count( stream_buff.begin(), std::find( stream_buff.begin(), stream_buff.end(), '\n' ), '\t' );
+        resize( r, c );
         
         std::vector<value_type> buff;
         buff.reserve( row()*col() );
@@ -2004,9 +2010,8 @@ std::ostream & operator <<(std::ostream& lhs, const matrix<T, D, A>& rhs)
 
     for (size_type i = 0; i < rhs.row(); ++i)
     {
-        std::copy(rhs.row_begin(i), rhs.row_end(i),
-                  std::ostream_iterator<value_type > (lhs, " \t "));
-        if ( (i+1) != rhs.row() ) lhs << "\n";//skip the last "\n"
+        std::copy(rhs.row_begin(i), rhs.row_end(i), std::ostream_iterator<value_type > (lhs, " \t "));
+        lhs << "\n";
     }
 
     return lhs;
