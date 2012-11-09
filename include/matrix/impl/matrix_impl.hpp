@@ -231,7 +231,7 @@ public:
     {
         std::ofstream ofs( file_name );
         if ( !ofs ) return false;
-
+        ofs.precision(15);
         ofs << *this;
         ofs.close();
         return true;
