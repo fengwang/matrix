@@ -27,19 +27,24 @@
 #include <utility>
 #include <valarray>
 #include <vector>
+#include <type_traits> //std::remove_cv
 
 namespace feng
 {
 
 template<   typename Type, std::size_t Default = 256,
-            class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            //class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
+            //class Allocator = std::allocator<typename std::remove_reference<typename std::remove_cv<Type>::type>::type>
+            class Allocator = std::allocator<typename std::decay<Type>::type>
         >
 class matrix
 {
 
 public:
-    typedef typename remove_reference<Type>::result_type                value_type1;
-    typedef typename remove_const<value_type1>::result_type             value_type;
+    //typedef typename remove_reference<Type>::result_type                value_type1;
+    //typedef typename remove_const<value_type1>::result_type             value_type;
+    //typedef typename std::remove_reference<typename std::remove_cv<Type>::type>::type value_type;
+    typedef typename std::decay<Type>::type                             value_type;
     typedef matrix                                                      self_type;
     typedef value_type*                                                 iterator;
     typedef const value_type*                                           const_iterator;
@@ -394,12 +399,12 @@ public:
     }
 
 public:
-    self_type& resize( const size_type new_row, const size_type new_col )
+    self_type& resize( const size_type new_row, const size_type new_col, const value_type v = value_type(0) )
     {
         if ( ( row_ == new_row ) && ( col_ == new_col ) )
             return *this;
 
-        self_type ans(new_row, new_col);
+        self_type ans(new_row, new_col, v);
         const size_type the_row_to_copy = std::min(row_, new_row);
         const size_type the_col_to_copy = std::min(col_, new_col);
 
