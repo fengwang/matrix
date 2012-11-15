@@ -182,7 +182,6 @@ public:
 
         for ( size_type i = r0; i != r1; ++i )
             std::copy( other.row_begin(i)+c0, other.row_begin(i)+c1, row_begin(i-r0) );
-
     }
 
 private:
@@ -1645,7 +1644,8 @@ private:
         const self_type c_01 = Q_2 + Q_4;
         const self_type c_11 = Q_0 - Q_1 +Q_2 + Q_5;
 
-        const self_type ans = ( c_00 || c_01 ) && ( c_10 || c_11 );
+        const self_type ans = ( c_00 || c_01 ) && 
+                              ( c_10 || c_11 );
 
         *this = ans;
         return *this;
@@ -1775,8 +1775,13 @@ public:
 
     private:
     //
-    //A=[P Q, R S], where P is m*m, Q is m*n, R is n*m and S is n*n
-    //suppose the inverse is A'=[P' Q', R' S'],
+    //A=[P Q] 
+    //  [R S]
+    //where P is m*m, Q is m*n, R is n*m and S is n*n
+    //
+    //suppose the inverse is 
+    //A'=[P' Q'] 
+    //   [R' S']
     //then we could get :
     //  P' = (P-Q*S^{-1}*R)^{-1}
     //  Q' = -(P-Q*S^{-1}*R)^{-1} * (Q*S^{-1})
@@ -1796,23 +1801,11 @@ public:
     //
     const self_type direct_inverse() const
     {
-
-        self_type ans(row(), col());
-
         const size_type m = row() >> 1;
-        const size_type n = row() - m;
-        self_type P(m, m), Q(m, n), R(n, m), S(n, n);
+        const size_type n = row();
 
-        for (size_type i = 0; i < m; ++i)
-        {
-            std::copy(row_begin(i), row_begin(i) + m, P.row_begin(i));
-            std::copy(row_begin(i) + m, row_end(i), Q.row_begin(i));
-        }
-        for (size_type i = m; i < row(); ++i)
-        {
-            std::copy(row_begin(i), row_begin(i) + m, R.row_begin(i - m));
-            std::copy(row_begin(i) + m, row_end(i), S.row_begin(i - m));
-        }
+        const self_type P( *this, 0, m, 0, m ); const self_type Q( *this, 0, m, m, n );
+        const self_type R( *this, m, n, 0, m ); const self_type S( *this, m, n, m, n );
 
         // a)
         const self_type s = S.inverse();
@@ -1835,18 +1828,8 @@ public:
         // j)
         const self_type S_ = s - R_ * Qs;
 
-        for (size_type i = 0; i < m; ++i)
-        {
-            std::copy(P_.row_begin(i), P_.row_end(i), ans.row_begin(i));
-            std::copy(Q_.row_begin(i), Q_.row_end(i), ans.row_begin(i) + m);
-        }
-        for (size_type i = 0; i < n; ++i)
-        {
-            std::copy(R_.row_begin(i), R_.row_end(i), ans.row_begin(i + m));
-            std::copy(S_.row_begin(i), S_.row_end(i), ans.row_begin(i + m) + m);
-        }
-
-        return ans;
+        return ( P_ || Q_ ) &&
+               ( R_ || S_ );
     }
 
     // A:   suppose the matrices (a_11 a_12, a_21 a_22) and (c_11 c_12, c_21 c_22) are inverses of each other.
@@ -1871,10 +1854,8 @@ public:
         const size_type n_2 = n >> 1;
 
         //A
-        const self_type a_11( *this, range_type(0, n_2), range_type(0, n_2) );
-        const self_type a_12( *this, range_type(0, n_2), range_type(n_2, n) );
-        const self_type a_21( *this, range_type(n_2, n), range_type(0, n_2) );
-        const self_type a_22( *this, range_type(n_2, n), range_type(n_2, n) );
+        const self_type a_11( *this, range_type(0, n_2), range_type(0, n_2) ); const self_type a_12( *this, range_type(0, n_2), range_type(n_2, n) );
+        const self_type a_21( *this, range_type(n_2, n), range_type(0, n_2) ); const self_type a_22( *this, range_type(n_2, n), range_type(n_2, n) );
         
         //1
         const self_type R1 = a_11.inverse();
@@ -1899,9 +1880,8 @@ public:
         //11
         const self_type c_22 = -R6;
         //B
-        const self_type ans = (c_11 || c_12) && (c_21 || c_22);
-
-        return ans;
+        return (c_11 || c_12) && 
+               (c_21 || c_22);
     }
 
 public:
