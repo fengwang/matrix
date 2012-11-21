@@ -7,7 +7,7 @@
 #ifndef _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED
 #define _DYNAMIC_MATRIX_IMPL_HPP_INCLUDED
 
-#include <matrix/impl/matrix_allocator.hpp>
+//#include <matrix/impl/matrix_allocator.hpp>
 #include <matrix/impl/matrix_buffer.hpp>
 #include <matrix/impl/matrix_range_iterator.hpp>
 #include <matrix/impl/matrix_stride_iterator.hpp>
@@ -255,6 +255,7 @@ public:
     matrix( const matrix<T,D,A>& other, const range_type& rr, const range_type& rc )
         :   row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type((rr.second-rr.first)*(rc.second-rc.first))) 
     {
+        /*
         assert( rr.second >= rr.first ); 
         assert( rc.second >= rc.first );
         assert( rr.second <= other.row() );
@@ -262,12 +263,15 @@ public:
     
         for ( size_type i = rr.first; i < rr.second; ++i )
             std::copy(  other.row_begin(i)+rc.first, other.row_begin(i)+rc.second, row_begin(i-rr.first));
+        */
+        clone( other, rr.first, rr.second, rc.first, rc.second );
     }
 
     template< typename T, size_type D, typename A >
     matrix( const matrix<T,D,A>& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 )
         :   row_( r1-r0 ), col_( c1-c0 ), data_(storage_type((r1-r0)*(c1-c0))) 
     {
+        /*
         assert( r1 >= r0 );
         assert( c1 >= c0 );
         assert( r1 <= other.row() );
@@ -275,6 +279,23 @@ public:
 
         for ( size_type i = r0; i != r1; ++i )
             std::copy( other.row_begin(i)+c0, other.row_begin(i)+c1, row_begin(i-r0) );
+        */
+        clone( other, r0, r1, c0, c1 );
+    }
+
+public:
+    template< typename T, size_type D, typename A >
+    self_type& clone( const matrix<T,D,A>& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 )
+    {
+        assert( r1 > r0 );
+        assert( c1 > c0 );
+
+        resize( r1-r0, c1-c0 );
+
+        for ( size_type i = r0; i != r1; ++i )
+            std::copy( other.row_begin(i)+c0, other.row_begin(i)+c1, row_begin(i-r0) );
+        
+        return *this;
     }
 
 private:
@@ -453,6 +474,8 @@ private:
         col_ = rhs.col();
         data_.assign(rhs.begin(), rhs.end());
     }
+
+
 
 public:
     size_type row() const
@@ -1463,7 +1486,8 @@ private:
             for (size_type j = 0; j < other.col(); ++j)
                 tmp[i][j] = std::inner_product( row_begin(i), row_end(i), other.col_begin(j), value_type(0)); 
 
-        *this = tmp;
+        clone( tmp, 0, row(), 0, other.col() );
+        //*this = tmp;
         return *this;   
     }
 
@@ -1487,9 +1511,10 @@ private:
 
         const self_type new_ans = new_this * other;
 
-        const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
+        //const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
 
-        *this = ans;
+        clone( new_ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
@@ -1526,7 +1551,8 @@ private:
         
         const self_type ans = new_ans && last_row_ans;
 
-        *this = ans;
+        clone( ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
@@ -1558,7 +1584,8 @@ private:
 
         const self_type ans = new_this * new_other;
 
-        *this = ans;
+        clone( ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
@@ -1602,7 +1629,8 @@ private:
 
         const self_type ans = new_ans + res_col_row;
 
-        *this = ans;
+        clone( ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 #if 0
@@ -1630,9 +1658,10 @@ private:
 
         const self_type new_ans = *this * new_other;
 
-        const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ) );
+        //const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ) );
 
-        *this = ans;
+        clone( new_ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
@@ -1669,7 +1698,8 @@ private:
 
         const self_type ans = new_ans || last_col_ans;
 
-        *this = ans;
+        clone( ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
@@ -1730,7 +1760,8 @@ private:
         const self_type ans = ( c_00 || c_01 ) && 
                               ( c_10 || c_11 );
 
-        *this = ans;
+        clone( ans, 0, row(), 0, other.col() );
+        //*this = ans;
         return *this;
     }
 
