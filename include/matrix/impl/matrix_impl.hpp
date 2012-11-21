@@ -108,6 +108,99 @@ public:
     typedef std::reverse_iterator<col_range_type>                       reverse_col_range_type;
     typedef std::reverse_iterator<const_col_range_type>                 const_reverse_col_range_type;
 
+#if 0
+    //for mul and div only
+    struct parasite_matrix
+    {
+        typedef parasite_matrix                                         self_type;
+        typedef matrix&                                                 host_matrix_type;
+        typedef typename matrix::value_type                             value_type; 
+        typedef typename matrix::iterator                               iterator;
+        typedef typename matrix::const_iterator                         const_iterator;
+        typedef typename matrix::pointer                                pointer;
+        typedef typename matrix::const_pointerl                         const_pointer;
+        typedef typename matrix::size_type                              size_type;
+        typedef typename matrix::difference_type                        difference_type;
+
+        parasite_matrix( const self_type& ) = default;
+        parasite_matrix( self_type&& ) = default;
+        self_type& operator = ( const self_type& ) = default;
+        self_type& operator = ( self_type&& ) = default;
+
+        parasite_matrix( host_matrix_type host, size_type const r0, size_type const r1, size_type const c0, size_type const c1 )
+            : host_(host), r0_(r0), r1_(r1), c0_(c0), c1_(c1)
+        {
+            assert( r1 > r0 );
+            assert( c1 > c0 );
+        }
+
+        parasite_matrix( const self_type& other, const size_type r0, const size_type r1, const size_type c0, const size_type c1 )
+            : host_( other.host ), r0_( other.r0_+r0 ), r1_( other.r0_+r1 ), c0_( other.c0_+c0 ), c1_( other.c0_+c1 )
+        {
+            assert( r1 > r0 );
+            assert( c1 > c0 );
+        }
+
+        size_type row() const { return r1_ - r0_; }
+        size_type col() const { return c1_ - c0_; }
+
+        value_type operator()( const size_type r, const size_type c ) const 
+        {
+            if ( ( r0_+r ) >= host_.row() ) return value_type();
+            if ( ( r1_+r ) >= host_.col() ) return value_type();
+            return host_[r0_+r][c0_+c];
+        }
+
+        value_type& operator()( const size_type r, const size_type c )
+        {
+            assert( r0_+r < host_.row() );
+            assert( c0_+c < host_.col() );
+            return host_[r0_+r][c0_+c];
+        }
+
+        friend void p_plus( self_type& a, const self_type& x, const self_type& y )
+        {
+            assert( a.row() == x.row() );
+            assert( a.col() == x.col() );
+            assert( a.row() == y.row() );
+            assert( a.col() == y.col() );
+
+            for ( size_type r = 0; r != a.row(); ++r )
+                for ( size_type c = 0; c != a.col(); ++c )
+                    a(r,c) = x(r,c) + y(r,c);
+        }
+
+        friend void p_minus( self_type& a, const self_type& x, const self_type& y )
+        {
+            assert( a.row() == x.row() );
+            assert( a.col() == x.col() );
+            assert( a.row() == y.row() );
+            assert( a.col() == y.col() );
+
+            for ( size_type r = 0; r != a.row(); ++r )
+                for ( size_type c = 0; c != a.col(); ++c )
+                    a(r,c) = x(r,c) - y(r,c);
+        }
+
+        friend void p_multiply( self_type& a, const self_type& x, const self_type& y )
+        {
+            assert( a.row() == x.row() );
+            assert( x.col() == y.row() );
+            assert( a.col() == y.col() );
+            
+
+        }
+
+
+    private:
+        host_matrix_type    host_;
+        size_type           r0_;
+        size_type           r1_;
+        size_type           c0_;
+        size_type           c1_;
+    };//struct parasite_matrix 
+#endif
+
 public:
     explicit matrix( const size_type r = 0, const size_type c = 0, const value_type v = value_type() ) 
     : row_(r), col_(c), data_(storage_type(r*c)) 
@@ -1363,16 +1456,6 @@ public:
 
 private:
 
-    size_type max_dim() const
-    {
-        return std::max( row(), col() );
-    }
-
-    size_type min_dim() const
-    {
-        return std::min( row(), col() );
-    }
-
     self_type& direct_multiply( const self_type& other )
     {
         self_type tmp(row(), other.col());
@@ -1402,10 +1485,9 @@ private:
     {
         const self_type new_this = *this && value_type(0);
 
-        const self_type 
-        new_ans = new_this * other;
+        const self_type new_ans = new_this * other;
 
-        const self_type ans(    new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
+        const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
 
         *this = ans;
         return *this;
@@ -1434,9 +1516,9 @@ private:
 
     self_type& rr2( const self_type& other )
     {
-        const self_type new_this(   *this, range_type( 0, row()-1 ), range_type( 0, col() ));
+        const self_type new_this( *this, range_type( 0, row()-1 ), range_type( 0, col() ));
 
-        const self_type last_row(   *this, range_type( row()-1, row() ), range_type( 0, col() ));
+        const self_type last_row( *this, range_type( row()-1, row() ), range_type( 0, col() ));
         
         const self_type new_ans = new_this * other;
         
@@ -1467,11 +1549,12 @@ private:
 #endif
     self_type& cc1( const self_type& other )
     {
-        const self_type 
-        new_this = *this || value_type(0);
-
+        const self_type new_this = *this || value_type(0);
+/*
         self_type new_other( col()+1, other.col() );
         std::copy( other.begin(), other.end(), new_other.begin() );
+*/
+        const self_type new_other = other && value_type(0);
 
         const self_type ans = new_this * new_other;
 
@@ -1504,18 +1587,18 @@ private:
     self_type& cc2( const self_type& other )
     {   
         //[new_this <- this] [R,C-1]
-        const self_type new_this(   *this, range_type( 0, row() ), range_type( 0, col()-1 ));
+        const self_type new_this( *this, range_type( 0, row() ), range_type( 0, col()-1 ));
         //[last_col <- this] [R,1]
-        const self_type last_col(   *this, range_type( 0, row() ), range_type( col()-1, col() ));
+        const self_type last_col( *this, range_type( 0, row() ), range_type( col()-1, col() ));
 
         //[new_other <- other] [C-1,OC]
-        const self_type new_other(  other, range_type( 0, other.row()-1 ), range_type( 0, other.col() ));
+        const self_type new_other( other, range_type( 0, other.row()-1 ), range_type( 0, other.col() ));
                     
         //[last_row <- other]  [1, OC]
-        const self_type last_row(   other, range_type( other.row()-1, other.row() ), range_type( 0, other.col() ));
+        const self_type last_row( other, range_type( other.row()-1, other.row() ), range_type( 0, other.col() ));
 
-        self_type new_ans = new_this * new_other;
-        self_type res_col_row = last_col * last_row;
+        const self_type new_ans = new_this * new_other;
+        const self_type res_col_row = last_col * last_row;
 
         const self_type ans = new_ans + res_col_row;
 
@@ -1576,9 +1659,9 @@ private:
 #endif
     self_type& oc2( const self_type& other )
     {
-        const self_type new_other(  other, range_type(0,other.row()), range_type(0, other.col()-1));
+        const self_type new_other( other, range_type(0,other.row()), range_type(0, other.col()-1));
 
-        const self_type last_col(   other, range_type(0, other.row()), range_type(other.col()-1, other.col()) );
+        const self_type last_col( other, range_type(0, other.row()), range_type(other.col()-1, other.col()) );
 
         const self_type new_ans = (*this) * new_other;
         
@@ -1620,15 +1703,15 @@ private:
         const size_type OR_2 = C_2;
         const size_type OC_2 = other.col() >> 1;
 
-        const self_type a_00(   *this, range_type( 0, R_2 ), range_type( 0, C_2 ));
-        const self_type a_01(   *this, range_type( 0, R_2 ), range_type( C_2, col() ) );
-        const self_type a_10(   *this, range_type( R_2, row() ), range_type( 0, C_2 ));
-        const self_type a_11(   *this, range_type( R_2, row() ), range_type( C_2, col() ));
+        const self_type a_00( *this, range_type( 0, R_2 ), range_type( 0, C_2 ));
+        const self_type a_01( *this, range_type( 0, R_2 ), range_type( C_2, col() ) );
+        const self_type a_10( *this, range_type( R_2, row() ), range_type( 0, C_2 ));
+        const self_type a_11( *this, range_type( R_2, row() ), range_type( C_2, col() ));
 
-        const self_type b_00(   other, range_type( 0, OR_2 ), range_type( 0, OC_2 ));
-        const self_type b_01(   other, range_type( 0, OR_2 ), range_type( OC_2, other.col() ) );
-        const self_type b_10(   other, range_type( OR_2, other.row() ), range_type( 0, OC_2 ));
-        const self_type b_11(   other, range_type( OR_2, other.row() ), range_type( OC_2, other.col() ));
+        const self_type b_00( other, range_type( 0, OR_2 ), range_type( 0, OC_2 ));
+        const self_type b_01( other, range_type( 0, OR_2 ), range_type( OC_2, other.col() ) );
+        const self_type b_10( other, range_type( OR_2, other.row() ), range_type( 0, OC_2 ));
+        const self_type b_11( other, range_type( OR_2, other.row() ), range_type( OC_2, other.col() ));
 
 
         const self_type Q_0 = ( a_00 + a_11 ) * ( b_00 + b_11 );
@@ -1659,8 +1742,10 @@ public:
         
         static const size_type threshold = 17;
 
-        const size_type max_dims = std::max( max_dim(), other.max_dim() );
-        const size_type min_dims = std::min( min_dim(), other.min_dim() );
+        //const size_type max_dims = std::max( max_dim(), other.max_dim() );
+        const size_type max_dims = std::max( std::max( row(), col() ), other.col() );
+        //const size_type min_dims = std::min( min_dim(), other.min_dim() );
+        const size_type min_dims = std::min( std::min( row(), col() ), other.col() );
 
         //0
         if ( (max_dims < threshold)  || (min_dims == 1) )
