@@ -64,13 +64,13 @@ namespace feng
     // Implementation
     ///////////////////////////////////////////////////////////////////////////////
 
-    template< /*typename T,*/ typename II1, typename II2, typename II3, typename II4, typename OI >
+    template< typename II1, typename II2, typename II3, typename II4, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
-                            II2 y_,          // y[n]
-                            II3 w_,          // w[n]
-                            II4 f_, II4 _f,  // f[m]
-                            OI  a_ )         // a[m]
+                             II2 y_,          // y[n]
+                             II3 w_,          // w[n]
+                             II4 f_, II4 _f,  // f[m]
+                             OI  a_ )         // a[m]
     {
         //typedef T value_type;
         typedef typename std::iterator_traits<II1>::value_type value_type;
@@ -111,12 +111,12 @@ namespace feng
         return std::copy( ans_b.begin(), ans_b.end(), a_ );
     }
             
-    template< /*typename T,*/ typename II1, typename II2, typename II3, typename OI >
+    template< typename II1, typename II2, typename II3, typename OI >
     OI
     linear_lease_square_fit( II1 x_, II1 _x, // x[n]
                              II2 y_,         // y[n]
                              II3 f_, II3 _f, // f[m]
-                             OI  a_ )       // a[m]
+                             OI  a_ )        // a[m]
     {
         //typedef T value_type;
         typedef typename std::iterator_traits<II1>::value_type value_type;
@@ -128,6 +128,48 @@ namespace feng
         for ( auto i = 0; i < m; ++i )
             for ( auto j = 0; j < n; ++j )
                 fx[i][j] = (*(f_+i))(*(x_+j));
+
+        //\alpha_{i,j} = \sum^{n-1}_{k=0} fx_{i,k} * fx_{j,k}
+        matrix<value_type> alpha( m, m );
+        for ( auto i = 0; i < m; ++i )
+            for ( auto j = 0; j < m; ++j )
+                alpha[i][j] = std::inner_product( fx.row_begin(i), fx.row_end(i), 
+                                                  fx.row_begin(j), value_type() );
+
+        //beta_{i} = \sum_{j=0]^{n-1} y_j * fx_{i,j}
+        std::valarray<value_type> beta( m );
+        for ( auto i = 0; i < m; ++i )
+            beta[i] = std::inner_product( fx.row_begin(i), fx.row_end(i), y_, value_type() );
+
+        // solve \alpha b = \beta
+        //      using SVD
+        //              \alpha      = u w v^{T}
+        //              \alpha^{-1} = v w^{-1} u^{T}
+        //      get
+        //              b = v * w^{-1} * u^{T} * beta
+        matrix<value_type> u;
+        matrix<value_type> w;
+        matrix<value_type> v;
+        singular_value_decomposition( alpha, u, w, v );
+        std::for_each( w.diag_begin(), w.diag_end(), [](value_type& v){ v = value_type(1)/v; } );
+        auto const ans_b = v * w * (~u) * beta;
+        return std::copy( ans_b.begin(), ans_b.end(), a_ );
+    }
+            
+    // the model to fit
+    //  y = a x
+    template< typename T, std::size_t D, typename A, typename II, typename OI >
+    OI
+    linear_lease_square_fit( const matrix<T,D,A>& x, // x[n][m]
+                             II y_,                  // y[n]
+                             OI a_ )                 // a[m]
+    {
+        typedef T value_type;
+        auto const n = x.row();
+        auto const m = x.col();
+        assert( n >= m );
+
+        auto& fx = x;
 
         //\alpha_{i,j} = \sum^{n-1}_{k=0} fx_{i,k} * fx_{j,k}
         matrix<value_type> alpha( m, m );
