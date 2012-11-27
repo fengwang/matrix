@@ -15,8 +15,7 @@ namespace feng
     //              c   ----    col of the return matrix
     // Return
     //          a matrix with size (r,c), and every element s.t. U(0,1)
-    template<typename T = double,
-             std::size_t D = 256,
+    template<typename T = double, std::size_t D = 256,
              typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
     matrix<T,D,A> const rand( const std::size_t r, const std::size_t c )
     {
@@ -28,18 +27,37 @@ namespace feng
         return ans;
     }
 
-    template<typename T = double,
-             std::size_t D = 256,
+    template<typename T = double, std::size_t D = 256,
              typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
     matrix<T,D,A> const rand( const std::size_t n )
     {
         return rand<T,D,A>( n, n );
     }
 
-    template<typename T = double,
-             std::size_t D = 256,
+    template<typename T = double, std::size_t D = 256,
              typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
     matrix<T,D,A> const rand( const matrix<T,D,A>& m )
+    {
+        return rand<T,D,A>( m.row(), m.col() );
+    }
+
+    template<typename T = double, std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const ran( const std::size_t r, const std::size_t c )
+    {
+        return rand<T, D, A>( r, c );
+    }
+
+    template<typename T = double, std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const ran( const std::size_t n )
+    {
+        return rand<T, D, A>( n );
+    }
+
+    template<typename T = double, std::size_t D = 256,
+             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type> >
+    matrix<T,D,A> const ran( const matrix<T,D,A>& m )
     {
         return rand<T,D,A>( m.row(), m.col() );
     }

@@ -8,8 +8,6 @@ int main()
 {
     using namespace feng;
     using namespace std;
-    using namespace vg;
-
 
     const unsigned long n = 110;
     const unsigned long m = 60;
@@ -18,7 +16,7 @@ int main()
     matrix<double> w;
     matrix<double> v;
 
-    variate_generator<double> vg(-10.0, 10.0);
+    vg::vg<double> vg(-10.0, 10.0);
     copy( vg.begin(), vg.begin()+n*m, A.begin() );
 
     singular_value_decomposition( A, x, w, v);

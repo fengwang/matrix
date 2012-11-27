@@ -1,12 +1,12 @@
 ####### Compiler, tools and options
 #CC            = gcc
 #CXX           = g++
-DEFINES       = -Wall -std=c++11  -g -O0 -p
+#DEFINES       = -Wall -std=c++11  -g -O0 -p
 #CFLAGS        = $(DEFINES)
 #CXXFLAGS        = $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include  -I/Users/feng/include
 LINK          = $(CXX)
-#LFLAGS        = -pg
+LFLAGS        = -pg
 DEL_FILE      = rm -f
 DEL_DIR       = rmdir
 MOVE          = mv -f
@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus test_import test_data test_apply test_construct test_save_load
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -129,3 +129,24 @@ test_bs: test/test_bs.cc
 test_lus: test/test_lus.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_lus.o test/test_lus.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_lus $(OBJECTS_DIR)/test_lus.o
+
+test_import: test/test_import.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_import.o test/test_import.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_import $(OBJECTS_DIR)/test_import.o
+
+test_data: test/test_data.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_data.o test/test_data.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_data $(OBJECTS_DIR)/test_data.o
+
+test_apply: test/test_apply.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_apply.o test/test_apply.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_apply $(OBJECTS_DIR)/test_apply.o
+
+test_construct: test/test_construct.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_construct.o test/test_construct.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_construct $(OBJECTS_DIR)/test_construct.o
+
+test_save_load: test/test_save_load.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_save_load.o test/test_save_load.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_save_load $(OBJECTS_DIR)/test_save_load.o
+

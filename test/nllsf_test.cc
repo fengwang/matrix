@@ -64,7 +64,7 @@ double py5( double x, const std::vector<double>& a )
 int main()
 {
     //randomly generate a[] ~ U(1.0, 2.0)
-    vg::variate_generator<double, vg::uniform> a_g( -1.0, 1.0 );
+    vg::vg<double, vg::uniform> a_g( -1.0, 1.0 );
     std::vector<double> a(6);
     std::copy( a_g.begin(), a_g.begin()+6, a.begin() );
     a[2] *= 2;
@@ -81,9 +81,9 @@ int main()
     std::fill( w, w+1000, 1.0 );
 
     //Gaussian random number generator ~ N( 0.0, 2.0 )
-    vg::variate_generator<double, vg::gaussian> n_g( 0.0, 1.0e-1);
+    vg::vg<double, vg::gaussian> n_g( 0.0, 1.0e-1);
     //Unofirm random number generator ~ U( -10, 10 )
-    vg::variate_generator<double, vg::uniform> x_g( -10.0, 10.0);
+    vg::vg<double, vg::uniform> x_g( -10.0, 10.0);
     for( std::size_t i = 0; i < 1000; ++i )
     {
         //generate white noise for a[] 
@@ -109,6 +109,7 @@ int main()
 
     //try to fit using levenberg marquardt algorithm
     feng::nonlinear_least_square_fit( x, x+1000, y, w, fy, py.begin(), py.end(), a_fit, feng::levenberg_marquardt<double>() );
+    //feng::nonlinear_least_square_fit( x, x+1000, y, fy, py.begin(), py.end(), a_fit, feng::levenberg_marquardt<double>() );
 
     //out put fit result
     std::cout << "\nfitted parameters: \n";

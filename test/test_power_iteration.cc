@@ -10,7 +10,7 @@ int main()
     using namespace feng;
 
     unsigned int const n = 120;
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
     matrix<double> A(n, n);
     matrix<double> V(n, 1);
     std::copy( v.begin(), v.begin()+n*n, A.begin() );

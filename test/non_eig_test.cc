@@ -10,7 +10,7 @@ int main()
 
     const unsigned int n = 4;
 
-    vg::variate_generator<double> vg;
+    vg::vg<double> vg;
 
     matrix<double> V( n, n );
     matrix<double> L( n, n );

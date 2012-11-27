@@ -10,7 +10,6 @@
 
 using namespace feng;
 using namespace std;
-using namespace vg;
 
 int main()
 {
@@ -24,13 +23,13 @@ int main()
     vector<double> b(m);
 
     // y = a0 + a1 * cos(x) + a2 * sin(x) + a3 * tan(x) + a4 * exp(x);
-    variate_generator<double> vvgg(-10.0, 10.0);
-    variate_generator<double,normal> vgg;
-    variate_generator<double> vg(1.0, 10.0);
+    vg::vg<double> vvgg(-10.0, 10.0);
+    vg::vg<double,vg::normal> vgg;
+    vg::vg<double> vg1(1.0, 10.0);
 
     copy( vvgg.begin(), vvgg.begin()+n, x.begin() );
     copy( vgg.begin(), vgg.begin()+m, a.begin() );
-    copy( vg.begin(), vg.begin()+n, w.begin() );
+    copy( vg1.begin(), vg1.begin()+n, w.begin() );
 
     f.push_back( [](double x) -> double{ return 1.0; } );
     f.push_back( [](double x) -> double{ return x; } );

@@ -300,7 +300,6 @@ public:
 
         if (!is_internal_alloc())
         {
-            //buffer_ = static_cast<pointer>(Allocator::deallocate(items_));
             Allocator::deallocate( buffer_, items_ );
         }
         items_ = dis;
@@ -347,19 +346,41 @@ public:
 
 public:
 
-    matrix_buffer( self_type&& other )
+    matrix_buffer( self_type&& other ) : Allocator(std::move(other)), buffer_(other.buffer_), items_(other.items_)
     {
-        std::copy( other.internal_, other.internal_+var_length, internal_ );
-        buffer_ = other.buffer_;
-        items_ = other.items_;
+        if ( is_internal_alloc() )
+        {
+            std::copy( other.internal_, other.internal_+var_length, internal_ );
+            buffer_ = &internal_[0];
+        }
+        other.buffer_ = nullptr;
+        other.items_ = 0;
     }
 
     self_type& operator = ( self_type&& other )
     {
-        std::copy( other.internal_, other.internal_+var_length, internal_ );
+        Allocator::operator=(std::move(other));
         buffer_ = other.buffer_;
         items_ = other.items_;
+        if ( is_internal_alloc() )
+        {
+            std::copy( other.internal_, other.internal_+var_length, internal_ );
+            buffer_ = &internal_[0];
+        }
+        other.buffer_ = nullptr;
+        other.items_ = 0;
         return *this;
+    }
+
+public:
+    pointer data()
+    {
+        return buffer_;
+    }
+
+    const_pointer data() const
+    {
+        return buffer_;
     }
 
 private:

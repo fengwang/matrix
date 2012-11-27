@@ -12,7 +12,7 @@ int main()
     typedef std::complex<double> doublecomplex;
 
     unsigned int const n = 35;
-    vg::variate_generator<double> v;
+    vg::vg<double> v;
     matrix<doublecomplex> A(n, n);
     matrix<doublecomplex> V(n, n);
     std::valarray<doublecomplex> Lambda(n);

@@ -7,13 +7,12 @@ int main()
 {
     using namespace feng;
     using namespace std;
-    using namespace vg;
 
     const unsigned long n = 3;
     const unsigned long m = 3;
     matrix<double> A( n, m );
 
-    variate_generator<double> v(0.0, 1.0);
+    vg::vg<double> v(0.0, 1.0);
     copy( v.begin(), v.begin()+n*m, A.begin() );
 
     std::cout << "\nA= \n" << A;

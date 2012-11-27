@@ -7,14 +7,13 @@ int main()
 {
     using namespace feng;
     using namespace std;
-    using namespace vg;
 
     const unsigned long n = 13;
     matrix<double> A( n, n );
     matrix<double> L( n, n );
     matrix<double> U( n, n );
 
-    variate_generator<double> v(-1.0, 1.0);
+    vg::vg<double> v(-1.0, 1.0);
     copy( v.begin(), v.begin()+n*n, A.begin() );
 
     cout << "\nA= \n" << A;
