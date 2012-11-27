@@ -167,14 +167,13 @@ namespace feng
         auto const m = x.col();
         assert( n >= m );
 
-        auto& fx = x;
+        auto fx = transpose(x);
 
         //\alpha_{i,j} = \sum^{n-1}_{k=0} fx_{i,k} * fx_{j,k}
         matrix<value_type> alpha( m, m );
         for ( auto i = 0; i < m; ++i )
             for ( auto j = 0; j < m; ++j )
-                alpha[i][j] = std::inner_product( fx.row_begin(i), fx.row_end(i), 
-                                                  fx.row_begin(j), value_type() );
+                alpha[i][j] = std::inner_product( fx.row_begin(i), fx.row_end(i), fx.row_begin(j), value_type() );
 
         //beta_{i} = \sum_{j=0]^{n-1} y_j * fx_{i,j}
         std::valarray<value_type> beta( m );
