@@ -16,8 +16,9 @@ int main()
     matrix<double> w;
     matrix<double> v;
 
-    vg::vg<double> vg(-10.0, 10.0);
-    copy( vg.begin(), vg.begin()+n*m, A.begin() );
+    //vg::vg<double> vg(-10.0, 10.0);
+    //copy( vg.begin(), vg.begin()+n*m, A.begin() );
+    generate( A.begin(), A.end(), vg::variate_generator<double>( -10.0, 10.0 ) );
 
     singular_value_decomposition( A, x, w, v);
 

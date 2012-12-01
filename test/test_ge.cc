@@ -15,9 +15,11 @@ int main()
     matrix<double> x( n, m );
     matrix<double> b( n, m );
 
-    vg::vg<double> v(-1.0, 1.0);
-    copy( v.begin(), v.begin()+n*n, A.begin() );
-    copy( v.begin(), v.begin()+n*m, x.begin() );
+    vg::variate_generator<double> v(-1.0, 1.0);
+    //copy( v.begin(), v.begin()+n*n, A.begin() );
+    //copy( v.begin(), v.begin()+n*m, x.begin() );
+    generate( A.begin(), A.end(), v );
+    generate( x.begin(), x.end(), v );
     b = A * x;
 
     cout << "\nA= \n" << A;
