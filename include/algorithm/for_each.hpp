@@ -1,43 +1,89 @@
 #ifndef _FOR_EACH_HPP_INCLUDED_SDFOIU498USDFLKIHJR3HFSDLKJHVCKJBNSDFKJHASLKJHSDAFKJHCVIHUJFSDIUHSFDKJHSFDIUHFDSIUHTGIUHFD
 #define _FOR_EACH_HPP_INCLUDED_SDFOIU498USDFLKIHJR3HFSDLKJHVCKJBNSDFKJHASLKJHSDAFKJHCVIHUJFSDIUHSFDKJHSFDIUHFDSIUHTGIUHFD
 
+#if 0
+    Proto Type:
+         Funciton for_each( Iterator1 first1, Iterator1 last1, [Iterator2 first2, Iterator3 first3, ..., IteratorN firstN,] Funciton f );
+    Return:
+        F
+    Comement:
+        Applies the given function object f to the result of dereferencing every iterator in the range.
+#endif
+
 namespace feng
 {
-/*
-    parallel_for_each ????
-*/
-namespace for_each_impl_private
-{
-    template< typename F, typename InputIterator1, typename ... InputIteratorn >
-    F _for_each( F f, InputIterator1 begin1, InputIterator1 end1, InputIteratorn ... beginn )
+    namespace for_each_impl_private
     {
-        while ( begin1 != end1 )
-            f( *begin1++, *beginn++... );
-        return f;
-    }
 
-    struct dummy {};
+        template<std::size_t Index, typename Type, typename ... Types>
+        struct extract_type_forward
+        {
+            typedef typename extract_type_forward<Index-1, Types...>::result_type result_type;
+        };
 
-    template< typename S, typename ... T >
-    void rotate_then_impl( S s, T ... t )
+        template<typename Type, typename ... Types>
+        struct extract_type_forward<1, Type, Types...>
+        {
+            typedef Type result_type;
+        };
+
+        template<typename Type, typename ... Types>
+        struct extract_type_forward<0, Type, Types...>
+        {
+            struct index_parameter_for_extract_type_forwrod_should_not_be_0;
+
+            typedef index_parameter_for_extract_type_forwrod_should_not_be_0 result_type;
+        };
+
+        template<std::size_t Index, typename ... Types>
+        struct extract_type_backward
+        {
+            typedef typename extract_type_forward<sizeof ...(Types) - Index + 1, Types...>::result_type result_type;
+        };
+
+        template<std::size_t Index, typename ... Types>
+        struct extract_type
+        {
+            typedef typename extract_type_forward<Index, Types...>::result_type result_type;
+        };
+
+        template< typename Function, typename InputIterator1, typename ... InputIteratorn >
+        Function _for_each( Function f, InputIterator1 begin1, InputIterator1 end1, InputIteratorn ... beginn )
+        {
+            while ( begin1 != end1 )
+                f( *begin1++, *beginn++... );
+            return f;
+        }
+
+        struct dummy {};
+
+        template< typename ... Types_N >
+        struct for_each_impl_with_dummy
+        {   
+            typedef typename extract_type_backward<1, Types_N...>::result_type return_type;
+
+            template<typename Predict, typename ... Types>
+            Predict impl( Predict p, dummy, Types ... types) const 
+            {
+                return _for_each( p, types...); 
+            }
+
+            template<typename S, typename ... Types>
+            return_type impl( S s, Types ... types ) const
+            {
+                return impl( types..., s );
+            }
+        };
+
+    }//namespace for_each_impl_private
+
+    template< typename ... Types >
+    typename for_each_impl_private::extract_type_backward<1, Types...>::result_type
+    for_each( Types ... types )
     {
-        rotate_then_impl( t..., s );
+        static_assert( sizeof ... ( types ) > 2, "feng::for_each requires at least 3 arguments" );
+        return for_each_impl_private::for_each_impl_with_dummy<Types...>().impl( types..., for_each_impl_private::dummy() );
     }
-
-    template< typename S, typename ... T>
-    void rotate_then_impl( S s, dummy, T ... t )
-    {
-        _for_each( s, t... );
-    }
-
-}//namespace for_each_impl_private
-
-template< typename ... T >
-void for_each( T ... t )
-{
-    static_assert( sizeof ... ( t ) > 2, "feng::for_each requires at least 3 arguments" );
-    for_each_impl_private::rotate_then_impl( t..., for_each_impl_private::dummy() );
-}
 
 }//namespace feng
 

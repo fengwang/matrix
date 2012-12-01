@@ -13,6 +13,12 @@
 #include <matrix/impl/matrix_stride_iterator.hpp>
 #include <matrix/impl/misc.hpp>
 
+// blas macro and heads
+
+// cublas macro and heads
+
+// culablas macro and heads
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef> 
@@ -33,17 +39,12 @@ namespace feng
 {
 
 template<   typename Type, std::size_t Default = 256,
-            //class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
-            //class Allocator = std::allocator<typename std::remove_reference<typename std::remove_cv<Type>::type>::type>
             class Allocator = std::allocator<typename std::decay<Type>::type>
         >
 class matrix
 {
 
 public:
-    //typedef typename remove_reference<Type>::result_type                value_type1;
-    //typedef typename remove_const<value_type1>::result_type             value_type;
-    //typedef typename std::remove_reference<typename std::remove_cv<Type>::type>::type value_type;
     typedef typename std::decay<Type>::type                             value_type;
     typedef matrix                                                      self_type;
     typedef value_type*                                                 iterator;

@@ -13,7 +13,7 @@ namespace feng
         return std::count( first, last, v );
     }
 
-};
+}//namespace feng
 
 #endif//_COUNT_HPP_INCLUDED_DSFOIJWOIHJASFLJHASFKJHSFDKAJHIUHRASLFKHJSAFKDJASFKJHASFKHFSDAKJHFSADKJH
 
