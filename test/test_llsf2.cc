@@ -23,6 +23,7 @@ int main()
     vector<double> b(m);
 
     // y = a0 + a1 * cos(x) + a2 * sin(x) + a3 * tan(x) + a4 * exp(x);
+    /*
     vg::vg<double> vvgg(-10.0, 10.0);
     vg::vg<double,vg::normal> vgg;
     vg::vg<double> vg1(1.0, 10.0);
@@ -30,6 +31,11 @@ int main()
     copy( vvgg.begin(), vvgg.begin()+n, x.begin() );
     copy( vgg.begin(), vgg.begin()+m, a.begin() );
     copy( vg1.begin(), vg1.begin()+n, w.begin() );
+    */
+    generate( x.begin(), x.end(), vg::variate_generator<double>( -10, 10 ) );
+    generate( a.begin(), a.end(), vg::variate_generator<double, vg::normal>() );
+    generate( w.begin(), w.end(), vg::variate_generator<double>( 1, 10 ) );
+    
 
     f.push_back( [](double x) -> double{ return 1.0; } );
     f.push_back( [](double x) -> double{ return x; } );
@@ -44,9 +50,6 @@ int main()
 
     for ( unsigned long i = 0; i < m; ++i )
         cout << "\na[" << i << "] = " << a[i] << "<->" << b[i] << "<<>>" << a[i]-b[i]; 
-
-    
-
     
     return 0;
 }

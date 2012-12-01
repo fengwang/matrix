@@ -13,8 +13,10 @@ int main()
     matrix<double> L( n, n );
     matrix<double> U( n, n );
 
-    vg::vg<double> v(-1.0, 1.0);
-    copy( v.begin(), v.begin()+n*n, A.begin() );
+    vg::variate_generator<double> v(-1.0, 1.0);
+    //copy( v.begin(), v.begin()+n*n, A.begin() );
+    //generate( A.begin(), A.end(), v );
+    generate( A.begin(), A.end(), vg::variate_generator<double>( -1.0, 1.0 ) );
 
     cout << "\nA= \n" << A;
     //lu_decomposition<matrix<double> > ld( A );
