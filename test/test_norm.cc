@@ -12,7 +12,7 @@ int main()
     const unsigned long m = 3;
     matrix<double> A( n, m );
 
-    vg::vg<double> v(0.0, 1.0);
+    vg::variate_generator<double> v(0.0, 1.0);
     copy( v.begin(), v.begin()+n*m, A.begin() );
 
     std::cout << "\nA= \n" << A;

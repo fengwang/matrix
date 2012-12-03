@@ -33,18 +33,15 @@ namespace feng
 {
 
 template<   typename Type, std::size_t Default = 256,
-            //class Allocator = std::allocator<typename remove_const<typename remove_reference<Type>::result_type>::result_type>
-            //class Allocator = std::allocator<typename std::remove_reference<typename std::remove_cv<Type>::type>::type>
-            class Allocator = std::allocator<typename std::decay<Type>::type>
+            //class Allocator = std::allocator<typename std::decay<Type>::type>
+            class Allocator = std::allocator<Type>
         >
 class matrix
 {
 
 public:
-    //typedef typename remove_reference<Type>::result_type                value_type1;
-    //typedef typename remove_const<value_type1>::result_type             value_type;
-    //typedef typename std::remove_reference<typename std::remove_cv<Type>::type>::type value_type;
-    typedef typename std::decay<Type>::type                             value_type;
+    //typedef typename std::decay<Type>::type                             value_type;
+    typedef Type                                                        value_type;
     typedef matrix                                                      self_type;
     typedef value_type*                                                 iterator;
     typedef const value_type*                                           const_iterator;
@@ -474,8 +471,6 @@ private:
         col_ = rhs.col();
         data_.assign(rhs.begin(), rhs.end());
     }
-
-
 
 public:
     size_type row() const
@@ -1764,7 +1759,6 @@ private:
         //*this = ans;
         return *this;
     }
-
 
 public:
     self_type& operator *= ( const self_type& other )
