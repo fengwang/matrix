@@ -10,7 +10,7 @@ int main()
 
     unsigned int N = 10;
 
-    vg::vg<double> v;
+    vg::variate_generator<double> v;
 
     matrix<double> A(N,N); 
     matrix<double> x(N,1); 
