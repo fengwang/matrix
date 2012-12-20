@@ -1773,45 +1773,30 @@ public:
         
         static const size_type threshold = 17;
 
-        //const size_type max_dims = std::max( max_dim(), other.max_dim() );
         const size_type max_dims = std::max( std::max( row(), col() ), other.col() );
-        //const size_type min_dims = std::min( min_dim(), other.min_dim() );
         const size_type min_dims = std::min( std::min( row(), col() ), other.col() );
 
-        //0
-        if ( (max_dims < threshold)  || (min_dims == 1) )
-            return direct_multiply( other ); 
+        if ( (max_dims < threshold)  || (min_dims == 1) ) return direct_multiply( other ); 
 
         const size_type R = row();
         const size_type C = col();
         const size_type OC = other.col();
 
-        //1
         if ( R & 1 )
         {
-            //1 <1>
-            if ( R & 2 )
-                return rr1(other);  
-            //1 <2>
+            if ( R & 2 ) return rr1(other);  
             return rr2(other);
         }
-        //2
         if ( C & 1 )
-        {   //2 <1>
-            if ( C & 2 )
-                return cc1(other);
-            //2 <2>
+        {   
+            if ( C & 2 ) return cc1(other);
             return cc2(other);
         }
-        //3
         if ( OC & 1 )
-        {   //3 <1>
-            if ( OC & 2 )
-                return oc1(other);
-            //3 <2>
+        {
+            if ( OC & 2 ) return oc1(other);
             return oc2(other);
         }
-        //4
         return strassen_multiply( other );
     }
 

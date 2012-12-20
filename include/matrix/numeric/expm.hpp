@@ -77,9 +77,7 @@ namespace feng
         auto const _A2 = _A * _A;
         auto const _A4 = _A2 * _A2;
         auto const _A6 = _A2 * _A4;
-        auto const U   = _A * ( _A6 * ( c[14] * _A6 + c[12] * _A4 + c[10] * _A2 ) + c[8] * _A6 + c[6] * _A4 + c[4] * _A2 + c[2] * eye<value_type>( n, n ) );
-        auto const V   = _A6 * ( c[13] * _A6 + c[11] * _A4 + c[9] * _A2 ) + c[7] * _A6 + c[5] * _A4 + c[3] * _A2 + c[1] * eye<value_type>( n, n );
-        auto       F   = ( -U + V ).inverse() * ( U + V );
+        auto       F   = ( V + U ) / ( V - U );
         for ( size_type i = 0; i != s; ++i )
             F *= F;
         return F;
