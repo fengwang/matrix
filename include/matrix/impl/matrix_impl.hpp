@@ -205,7 +205,7 @@ public:
 #endif
 
 public:
-    explicit matrix( const size_type r = 0, const size_type c = 0, const value_type v = value_type() ) 
+    explicit matrix( const size_type r = 0, const size_type c = 0, const value_type& v = value_type() ) 
     : row_(r), col_(c), data_(storage_type(r*c)) 
     { 
         std::fill( begin(), end(), v ); 
@@ -473,6 +473,7 @@ private:
     template<typename T, size_type D, typename A>
     void do_copy(const matrix<T,D,A>& rhs)
     {
+        //resize( rhs.row(), rhs.col() );
         row_ = rhs.row();
         col_ = rhs.col();
         data_.assign(rhs.begin(), rhs.end());
