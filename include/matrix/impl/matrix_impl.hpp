@@ -473,6 +473,7 @@ private:
     template<typename T, size_type D, typename A>
     void do_copy(const matrix<T,D,A>& rhs)
     {
+        //no need to deallocate as 
         //resize( rhs.row(), rhs.col() );
         row_ = rhs.row();
         col_ = rhs.col();
@@ -1327,31 +1328,31 @@ public:
 public:
     self_type & operator +=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(), std::bind1st(std::plus<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind2nd(std::plus<value_type>(), rhs));
         return *this;
     }
 
     self_type & operator +=(const self_type& rhs)
     {
-        std::transform(begin(), end(), rhs.begin(), begin(), std::plus<value_type > ());
+        std::transform(begin(), end(), rhs.begin(), begin(), std::plus<value_type>());
         return *this;
     }
 
     self_type & operator -=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(), std::bind1st(std::minus<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind2nd(std::minus<value_type>(), rhs));
         return *this;
     }
 
     self_type & operator -=(const self_type& rhs)
     {
-        std::transform(begin(), end(), rhs.begin(), begin(), std::minus<value_type > ());
+        std::transform(begin(), end(), rhs.begin(), begin(), std::minus<value_type>());
         return *this;
     }
 
     self_type & operator *=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(), std::bind1st(std::multiplies<value_type > (), rhs));
+        std::transform(begin(), end(), begin(), std::bind2nd(std::multiplies<value_type>(), rhs));
         return *this;
     }
 
