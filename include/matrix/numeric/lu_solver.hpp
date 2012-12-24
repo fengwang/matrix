@@ -26,7 +26,7 @@ namespace feng
                const matrix<T3,D3,A3>&           b )
     {
         typedef matrix<T1,D1,A1>                 matrix_type;
-        typedef typename matrix_type::value_type value_type;
+        //typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type  size_type;
 
         assert( A.row() == A.col() );

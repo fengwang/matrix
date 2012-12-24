@@ -1510,9 +1510,9 @@ private:
 #endif 
     self_type& rr1( const self_type& other )
     {
-        const self_type new_this = *this && value_type(0);
+        const self_type& new_this = *this && value_type(0);
 
-        const self_type new_ans = new_this * other;
+        const self_type& new_ans = new_this * other;
 
         //const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ));
 
@@ -1548,11 +1548,11 @@ private:
 
         const self_type last_row( *this, range_type( row()-1, row() ), range_type( 0, col() ));
         
-        const self_type new_ans = new_this * other;
+        const self_type& new_ans = new_this * other;
         
-        const self_type last_row_ans = last_row * other;
+        const self_type& last_row_ans = last_row * other;
         
-        const self_type ans = new_ans && last_row_ans;
+        const self_type& ans = new_ans && last_row_ans;
 
         clone( ans, 0, row(), 0, other.col() );
         //*this = ans;
@@ -1578,14 +1578,14 @@ private:
 #endif
     self_type& cc1( const self_type& other )
     {
-        const self_type new_this = *this || value_type(0);
+        const self_type& new_this = *this || value_type(0);
 /*
         self_type new_other( col()+1, other.col() );
         std::copy( other.begin(), other.end(), new_other.begin() );
 */
-        const self_type new_other = other && value_type(0);
+        const self_type& new_other = other && value_type(0);
 
-        const self_type ans = new_this * new_other;
+        const self_type& ans = new_this * new_other;
 
         clone( ans, 0, row(), 0, other.col() );
         //*this = ans;
@@ -1627,10 +1627,10 @@ private:
         //[last_row <- other]  [1, OC]
         const self_type last_row( other, range_type( other.row()-1, other.row() ), range_type( 0, other.col() ));
 
-        const self_type new_ans = new_this * new_other;
-        const self_type res_col_row = last_col * last_row;
+        const self_type& new_ans = new_this * new_other;
+        const self_type& res_col_row = last_col * last_row;
 
-        const self_type ans = new_ans + res_col_row;
+        const self_type& ans = new_ans + res_col_row;
 
         clone( ans, 0, row(), 0, other.col() );
         //*this = ans;
@@ -1657,9 +1657,9 @@ private:
     self_type& oc1( const self_type& other )
     {
         //[new_other <- other] [C,OC+1]
-        const self_type new_other = other || value_type(0);
+        const self_type& new_other = other || value_type(0);
 
-        const self_type new_ans = *this * new_other;
+        const self_type& new_ans = *this * new_other;
 
         //const self_type ans( new_ans, range_type( 0, row() ), range_type( 0, other.col() ) );
 
@@ -1695,11 +1695,11 @@ private:
 
         const self_type last_col( other, range_type(0, other.row()), range_type(other.col()-1, other.col()) );
 
-        const self_type new_ans = (*this) * new_other;
+        const self_type& new_ans = (*this) * new_other;
         
-        const self_type last_col_ans = (*this) * last_col;
+        const self_type& last_col_ans = (*this) * last_col;
 
-        const self_type ans = new_ans || last_col_ans;
+        const self_type& ans = new_ans || last_col_ans;
 
         clone( ans, 0, row(), 0, other.col() );
         //*this = ans;
@@ -1747,24 +1747,23 @@ private:
         const self_type b_11( other, range_type( OR_2, other.row() ), range_type( OC_2, other.col() ));
 
 
-        const self_type Q_0 = ( a_00 + a_11 ) * ( b_00 + b_11 );
-        const self_type Q_1 = ( a_10 + a_11 ) * b_00;
-        const self_type Q_2 = a_00 * ( b_01 - b_11 ); 
-        const self_type Q_3 = a_11 * ( -b_00 + b_10 );
-        const self_type Q_4 = ( a_00 + a_01 ) * b_11;
-        const self_type Q_5 = ( -a_00 + a_10 ) * ( b_00 + b_01 );
-        const self_type Q_6 = ( a_01 - a_11 ) * ( b_10 + b_11 );
+        const self_type& Q_0 = ( a_00 + a_11 ) * ( b_00 + b_11 );
+        const self_type& Q_1 = ( a_10 + a_11 ) * b_00;
+        const self_type& Q_2 = a_00 * ( b_01 - b_11 ); 
+        const self_type& Q_3 = a_11 * ( -b_00 + b_10 );
+        const self_type& Q_4 = ( a_00 + a_01 ) * b_11;
+        const self_type& Q_5 = ( -a_00 + a_10 ) * ( b_00 + b_01 );
+        const self_type& Q_6 = ( a_01 - a_11 ) * ( b_10 + b_11 );
 
-        const self_type c_00 = Q_0 + Q_3 - Q_4 +Q_6;
-        const self_type c_10 = Q_1 + Q_3;
-        const self_type c_01 = Q_2 + Q_4;
-        const self_type c_11 = Q_0 - Q_1 +Q_2 + Q_5;
+        const self_type& c_00 = Q_0 + Q_3 - Q_4 +Q_6;
+        const self_type& c_10 = Q_1 + Q_3;
+        const self_type& c_01 = Q_2 + Q_4;
+        const self_type& c_11 = Q_0 - Q_1 +Q_2 + Q_5;
 
-        const self_type ans = ( c_00 || c_01 ) && 
+        const self_type& ans = ( c_00 || c_01 ) && 
                               ( c_10 || c_11 );
 
         clone( ans, 0, row(), 0, other.col() );
-        //*this = ans;
         return *this;
     }
 
@@ -1911,25 +1910,25 @@ public:
         const self_type R( *this, m, n, 0, m ); const self_type S( *this, m, n, m, n );
 
         // a)
-        const self_type s = S.inverse();
+        const self_type& s = S.inverse();
         // b)
-        const self_type p = P.inverse();
+        //const self_type& p = P.inverse();
         // c)
-        const self_type Qs = Q * s;
+        const self_type& Qs = Q * s;
         // d)
-        const self_type sR = s * R;
+        const self_type& sR = s * R;
         // e)
-        const self_type QsR = Q * sR;
+        const self_type& QsR = Q * sR;
         // f)
-        const self_type L = P - QsR;
+        const self_type& L = P - QsR;
         // g)
-        const self_type P_ = L.inverse();
+        const self_type& P_ = L.inverse();
         // h)
-        const self_type Q_ = -P_ * Qs;
+        const self_type& Q_ = -P_ * Qs;
         // i)
-        const self_type R_ = -sR * P_;
+        const self_type& R_ = -sR * P_;
         // j)
-        const self_type S_ = s - R_ * Qs;
+        const self_type& S_ = s - R_ * Qs;
 
         return ( P_ || Q_ ) &&
                ( R_ || S_ );
@@ -1961,27 +1960,27 @@ public:
         const self_type a_21( *this, range_type(n_2, n), range_type(0, n_2) ); const self_type a_22( *this, range_type(n_2, n), range_type(n_2, n) );
         
         //1
-        const self_type R1 = a_11.inverse();
+        const self_type& R1 = a_11.inverse();
         //2
-        const self_type R2 = a_21 * R1;
+        const self_type& R2 = a_21 * R1;
         //3
-        const self_type R3 = R1 * a_12;
+        const self_type& R3 = R1 * a_12;
         //4
-        const self_type R4 = a_21 * R3;
+        const self_type& R4 = a_21 * R3;
         //5
-        const self_type R5 = R4 - a_22;
+        const self_type& R5 = R4 - a_22;
         //6
-        const self_type R6 = R5.inverse();
+        const self_type& R6 = R5.inverse();
         //7
-        const self_type c_12 = R3 * R6;
+        const self_type& c_12 = R3 * R6;
         //8
-        const self_type c_21 = R6 * R2;
+        const self_type& c_21 = R6 * R2;
         //9
-        const self_type R7 = R3 * c_21;
+        const self_type& R7 = R3 * c_21;
         //10
-        const self_type c_11 = R1 - R7;
+        const self_type& c_11 = R1 - R7;
         //11
-        const self_type c_22 = -R6;
+        const self_type& c_22 = -R6;
         //B
         return (c_11 || c_12) && 
                (c_21 || c_22);
@@ -2014,7 +2013,7 @@ public:
         self_type const Q(*this, range_type(0, m), range_type(m, N));
         self_type const R(*this, range_type(m, N), range_type(0, m));
         self_type const S(*this, range_type(m, N), range_type(m, N));
-        auto const tmp = S - ( R * ( P.inverse() ) * Q );
+        const self_type& tmp = S - ( R * ( P.inverse() ) * Q );
 
         return P.det() * tmp.det();
     }

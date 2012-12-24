@@ -19,7 +19,7 @@ namespace feng
         typename Matrix::value_type norm( const Matrix& A )
         {
             typedef typename Matrix::value_type value_type;
-            typedef typename Matrix::size_type  size_type;
+            //typedef typename Matrix::size_type  size_type;
             auto A_ = feng::abs(A);
             std::fill( A_.diag_begin(), A_.diag_end(), value_type(0) ); //diag element set to 0
             auto const max_elem = *( std::max_element( A_.cbegin(), A_.cend() )); //find the max element

@@ -1,9 +1,9 @@
 ####### Compiler, tools and options
 #CC            = gcc
 #CXX           = g++
-#DEFINES       = -Wall -std=c++11  -g -O0 -p
+DEFINES       = -Wall -std=c++11  -g -O0 -p
 #CFLAGS        = $(DEFINES)
-#CXXFLAGS        = $(DEFINES)
+CXXFLAGS        = $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include  -I/Users/feng/include
 LINK          = $(CXX)
 LFLAGS        = -pg

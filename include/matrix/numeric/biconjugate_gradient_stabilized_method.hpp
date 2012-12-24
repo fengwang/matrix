@@ -37,7 +37,7 @@ namespace feng
                                            const std::size_t           max_loops = 100,
                                            const T1                    eps = 1.0e-10 )
     {
-        typedef matrix<T1, D1, A1>     matrix_type;
+        //typedef matrix<T1, D1, A1>     matrix_type;
         typedef T1                   value_type;
         assert( A.row() == A.col() );
         assert( A.row() == b.row() );
