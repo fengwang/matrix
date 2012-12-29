@@ -254,18 +254,21 @@ private:
     template<typename T, std::size_t D, typename A>
     void do_copy(const matrix_buffer<T,D,A>& rhs)
     {
+        assign( rhs.begin(), rhs.end() );
+        /*
         const size_type dis = std::distance(rhs.begin(), rhs.end());
 
         if (!is_internal_alloc())
-        {
-            buffer_ = static_cast<pointer>(Allocator::allocate(items_));
-        }
+            Allocator::deallocate(buffer_, items_);
         items_ = dis;
+
         if (items_ <= var_length)
             buffer_ = &internal_[0];
         else
-        buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+            buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+
         std::copy(rhs.begin(), rhs.end(), begin());
+        */
     }
 
     // Description:
@@ -273,11 +276,12 @@ private:
     //
     void do_copy(const self_type& rhs)
     {
+        assign( rhs.begin(), rhs.end() );
+        /*
         const size_type dis = std::distance(rhs.begin(), rhs.end());
 
         if (!is_internal_alloc())
         {
-            //buffer_ = static_cast<pointer>(Allocator::allocate(items_));
             Allocator::deallocate( buffer_, items_ );
         }
         items_ = dis;
@@ -286,6 +290,7 @@ private:
         else
         buffer_ = static_cast<pointer>(Allocator::allocate(items_));
         memcpy(buffer_, rhs.buffer_, items_*sizeof(Type));
+        */
     }
 
 public:
@@ -298,15 +303,19 @@ public:
     {
         const size_type dis = std::distance(begin_, end_);
 
-        if (!is_internal_alloc())
+        if ( items_ != dis )
         {
-            Allocator::deallocate( buffer_, items_ );
+            if (!is_internal_alloc())
+                Allocator::deallocate( buffer_, items_ );
+
+            items_ = dis;
+
+            if (items_ <= var_length)
+                buffer_ = &internal_[0];
+            else
+                buffer_ = static_cast<pointer>(Allocator::allocate(items_));
         }
-        items_ = dis;
-        if (items_ <= var_length)
-            buffer_ = &internal_[0];
-        else
-            buffer_ = static_cast<pointer>(Allocator::allocate(items_));
+
         std::copy(begin_, end_, begin());
     }
 
