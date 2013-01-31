@@ -1,7 +1,7 @@
 ####### Compiler, tools and options
 #CC            = gcc
 #CXX           = g++
-DEFINES       = -Wall -std=c++11  -g -O0 -p
+DEFINES       = -Wall -std=c++11  -O2
 #CFLAGS        = $(DEFINES)
 CXXFLAGS        = $(DEFINES)
 INCPATH       = -Iinclude  -I/home/feng/include  -I/Users/feng/include
@@ -16,7 +16,7 @@ MAKE_DIR      = mkdir
 OBJECTS_DIR   = ./obj
 BIN_DIR       = ./bin
 
-all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus test_import test_data test_apply test_construct test_save_load llsf3_test
+all: test1 test_ge test_lu test_svd test_magic test_llsf test_llsf2 test_svd nllsf_test test_inverse test_jacobi test_sparse_multiply test_power_iteration test_norm test_expm test_rand test_bicgstab householder eigen_symmetric eigen_hermitian test_anti_diag test_diag test_blkdiag test_cgs test_bs test_lus test_import test_data test_apply test_construct test_save_load llsf3_test test_multiply
 
 clean: 
 	rm -rf $(OBJECTS_DIR)/*
@@ -153,4 +153,13 @@ test_save_load: test/test_save_load.cc
 llsf3_test: test/llsf3_test.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/llsf3_test.o test/llsf3_test.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/llsf3_test $(OBJECTS_DIR)/llsf3_test.o
+
+test_multiply: test/test_multiply.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/test_multiply.o test/test_multiply.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_multiply $(OBJECTS_DIR)/test_multiply.o
+
+test_cexpm: test/expm_test.c
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/expm.o src/expm.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/expm_test.o test/expm_test.c
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/expm $(OBJECTS_DIR)/expm.o $(OBJECTS_DIR)/expm_test.o
 

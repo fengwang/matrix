@@ -34,6 +34,7 @@
 #include <valarray>
 #include <vector>
 #include <type_traits> //std::remove_cv
+#include <iostream>
 
 namespace feng
 {
@@ -417,7 +418,11 @@ private:
     bool load_ascii( const char* const file_name )
     {
         std::ifstream ifs(file_name,  std::ios::in|std::ios::binary);
-        if ( !ifs ) return false;
+        if ( !ifs ) 
+        {
+            std::cerr << "Error: Failed to open file \"" << file_name << "\"\n"; 
+            return false;
+        }
 
         //read the file content into a string stream
         std::stringstream iss;
@@ -432,7 +437,12 @@ private:
         buff.reserve( row()*col() );
         std::copy( std::istream_iterator<value_type>(iss), std::istream_iterator<value_type>(), std::back_inserter(buff) );
 
-        if ( buff.size() != size() ) return false;
+        if ( buff.size() != size() ) 
+        {
+            std::cerr << "Error: Failed to match matrix size.\n \tthe size of matrix stored in file \"" << file_name << "\" is " << buff.size() <<".\n";
+            std::cerr << " \tthe size of the destination matrix is " << size() << ".\n";
+            //return false;
+        }
 
         std::copy( buff.begin(), buff.end(), begin() );
 
@@ -1352,7 +1362,8 @@ public:
 
     self_type & operator *=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(), std::bind2nd(std::multiplies<value_type>(), rhs));
+        std::for_each( begin(), end(), [rhs](value_type& v) { v*=rhs; } );
+        //std::transform(begin(), end(), begin(), std::bind2nd(std::multiplies<value_type>(), rhs));
         return *this;
     }
 
@@ -1803,7 +1814,8 @@ public:
 
     self_type & operator /=(const value_type& rhs)
     {
-        std::transform(begin(), end(), begin(), std::bind2nd(std::divides<value_type > (), rhs));
+        std::for_each( begin(), end(), [rhs](value_type& v) { v/=rhs; } );
+        //std::transform(begin(), end(), begin(), std::bind2nd(std::divides<value_type > (), rhs));
         return *this;
     }
 
@@ -1831,6 +1843,8 @@ public:
     }
 
     public:
+    //TODO :
+    //      fix the bug with complex<float>
     const self_type inverse() const
     {
         assert( row() == col() && size() != 0 );
