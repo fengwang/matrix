@@ -177,6 +177,14 @@ public:
     }
 
     // Description:
+    // Return:      the first element position stroed in matrix_buffer
+    const_iterator 
+    cbegin()const
+    {
+        return &buffer_[0];
+    }
+
+    // Description:
     // Return:      the first position following the stroed in matrix_buffer
     //
     iterator 
@@ -190,6 +198,15 @@ public:
     //
     const_iterator 
     end()const
+    {
+        return begin() + size();
+    }
+
+    // Description:
+    // Return:      the first position following the stroed in matrix_buffer
+    //
+    const_iterator 
+    cend()const
     {
         return begin() + size();
     }
@@ -210,6 +227,14 @@ public:
         return const_reverse_iterator( end() );
     }
     
+    // see begin()
+    //
+    const_reverse_iterator 
+    crbegin() const
+    {
+        return const_reverse_iterator( end() );
+    }
+    
     // see end()
     //
     reverse_iterator 
@@ -222,6 +247,14 @@ public:
     //
     const_reverse_iterator 
     rend() const
+    {
+        return const_reverse_iterator( begin() );
+    }
+    
+    // see end()
+    //
+    const_reverse_iterator 
+    crend() const
     {
         return const_reverse_iterator( begin() );
     }

@@ -13,7 +13,7 @@ namespace feng
 {
     // M = A A^T
     template<typename Matrix1, typename Matrix2>
-    void
+    int
     cholesky_decomposition( const Matrix1& m, Matrix2& a )
     {
         typedef typename Matrix1::value_type value_type;
@@ -25,9 +25,12 @@ namespace feng
             {
                 const value_type sum = a[i][j] - std::inner_product( a.row_begin( i ), a.row_begin( i ) + i, a.row_begin( j ), value_type( 0 ) );
                 a[j][i] = ( i == j ) ? std::sqrt( sum ) : ( sum / a[i][i] );
+                if ( std::isinf(a[j][i]) || std::isnan(a[j][i]) ) return 1; //failed
+                //check inf or nan here
             }
         for ( std::size_t i = 1; i < n; ++i )
             std::fill( a.upper_diag_begin(i), a.upper_diag_end(i), value_type() );
+        return 0;//success
     }
 
 /*
