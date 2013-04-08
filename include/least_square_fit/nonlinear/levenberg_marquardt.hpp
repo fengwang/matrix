@@ -73,6 +73,7 @@ struct levenberg_marquardt
         value_type old_chi = chi_square;
         const value_type chi_chi = std::inner_product( y_, y_+std::distance(x_, _x), y_, value_type() );
         const value_type threshold = chi_chi * eps;
+        unsigned long loops = 100000;
         for (;;)
         {
             update_beta(x_, _x, a, y_, sigma_, f, p_, _p) ;
@@ -101,6 +102,7 @@ struct levenberg_marquardt
                 lambda /= factor;
             }
 
+            if ( loops-- == 0 ) break;
         }
         return std::copy( a.begin(), a.end(), a_ );
     }
