@@ -1,0 +1,40 @@
+#ifndef MFUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
+#define MFUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
+
+#include "../matrix.hpp"
+
+#include"./blkdiag.hpp"
+#include"./ctranspose.hpp"
+#include"./det.hpp"
+#include"./diag.hpp"
+#include"./display.hpp"
+#include"./dot.hpp"
+#include"./eye.hpp"
+#include"./flip.hpp"
+#include"./hilb.hpp"
+#include"./inverse.hpp"
+#include"./is_column.hpp"
+#include"./is_empty.hpp"
+#include"./is_equal.hpp"
+#include"./is_inf.hpp"
+#include"./is_nan.hpp"
+#include"./is_orthogonal.hpp"
+#include"./is_positive_definite.hpp"
+#include"./is_row.hpp"
+#include"./is_symmetric.hpp"
+#include"./magic.hpp"
+#include"./max.hpp"
+#include"./min.hpp"
+#include"./ones.hpp"
+#include"./pinverse.hpp"
+#include"./rand.hpp"
+#include"./repmat.hpp"
+#include"./toeplitz.hpp"
+#include"./tr.hpp"
+#include"./transpose.hpp"
+#include"./tril.hpp"
+#include"./triu.hpp"
+#include"./zeros.hpp"
+
+#endif//_FUNCTIONAL_HPP_INCLUDED_SFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDFDSOIJ
+
