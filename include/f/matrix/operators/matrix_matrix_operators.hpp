@@ -26,137 +26,131 @@ namespace f
 {
 
 
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator + ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	matrix<T1,A1> ans(lhs);
-	ans += rhs;
-	return ans;
-}
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator - ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	matrix<T1,A1> ans(lhs);
-	ans -= rhs;
-	return ans;
-}
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator + ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        matrix<T1, A1> ans( lhs );
+        ans += rhs;
+        return ans;
+    }
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator - ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        matrix<T1, A1> ans( lhs );
+        ans -= rhs;
+        return ans;
+    }
 
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator * ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	matrix<T1,A1> ans(lhs);
-	ans *= rhs;
-	return ans;
-}
-
-
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator / ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	matrix<T1,A1> ans(lhs);
-	ans /= rhs;
-	return ans;
-}
-
-template< typename T1, typename A1, typename T2, typename A2 >
-bool
-operator < ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	assert( lhs.row() == rhs.row() );
-	assert( lhs.col() == rhs.col() );
-
-	return std::lexicographical_compare( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );
-}
-
-template< typename T1, typename A1, typename T2, typename A2 >
-bool
-operator == ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	assert( lhs.row() == rhs.row() );
-	assert( lhs.col() == rhs.col() );
-
-	return std::equal( lhs.begin(), lhs.end(), rhs.begin() );
-}
-
-template< typename T1, typename A1, typename T2, typename A2 >
-bool
-operator > ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	return !( (lhs < rhs) || (lhs == rhs) );
-}
-
-template< typename T1, typename A1, typename T2, typename A2 >
-bool
-operator >= ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	return !( lhs < rhs );
-}
-
-template< typename T1, typename A1, typename T2, typename A2 >
-bool
-operator <= ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-	return !( lhs > rhs );
-}
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator * ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        matrix<T1, A1> ans( lhs );
+        ans *= rhs;
+        return ans;
+    }
 
 
-//x[N][x+y] <- a[N][x] || b[N][y]
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator || ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-    if ( lhs.row() == 0 ) return rhs;
-    if ( rhs.row() == 0 ) return lhs;
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator / ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        matrix<T1, A1> ans( lhs );
+        ans /= rhs;
+        return ans;
+    }
 
-	assert( lhs.row() == rhs.row() );
+    template< typename T1, typename A1, typename T2, typename A2 >
+    bool
+    operator < ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        assert( lhs.row() == rhs.row() );
+        assert( lhs.col() == rhs.col() );
+        return std::lexicographical_compare( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );
+    }
 
-	typedef matrix<T1,A1> matrix_type;
-	typedef typename matrix_type :: size_type size_type;
+    template< typename T1, typename A1, typename T2, typename A2 >
+    bool
+    operator == ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        assert( lhs.row() == rhs.row() );
+        assert( lhs.col() == rhs.col() );
+        return std::equal( lhs.begin(), lhs.end(), rhs.begin() );
+    }
 
-	const size_type row = lhs.row();
-	const size_type col = lhs.col() + rhs.col();
+    template< typename T1, typename A1, typename T2, typename A2 >
+    bool
+    operator > ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        return !( ( lhs < rhs ) || ( lhs == rhs ) );
+    }
 
-	matrix_type ans( row, col );
+    template< typename T1, typename A1, typename T2, typename A2 >
+    bool
+    operator >= ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        return !( lhs < rhs );
+    }
 
-	for ( size_type i = 0; i < row; ++i )
-	{
-		std::copy( lhs.row_begin(i), lhs.row_end(i), ans.row_begin(i));
-		std::copy( rhs.row_begin(i), rhs.row_end(i), ans.row_begin(i)+lhs.col() );
-	}
+    template< typename T1, typename A1, typename T2, typename A2 >
+    bool
+    operator <= ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        return !( lhs > rhs );
+    }
 
-	return ans;
-}
 
-//x[x+y][M] <- a[x][M] && b[y][M]
-template< typename T1, typename A1, typename T2, typename A2 >
-const matrix<T1,A1>
-operator && ( const matrix<T1,A1>& lhs, const matrix<T2,A2>& rhs )
-{
-    if ( lhs.col() == 0 ) return rhs;
-    if ( rhs.col() == 0 ) return lhs;
+    //x[N][x+y] <- a[N][x] || b[N][y]
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator || ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        if ( lhs.row() == 0 ) return rhs;
 
-	assert( lhs.col() == rhs.col() );
+        if ( rhs.row() == 0 ) return lhs;
 
-	typedef matrix<T1,A1> matrix_type;
-	typedef typename matrix_type :: size_type size_type;
+        assert( lhs.row() == rhs.row() );
+        typedef matrix<T1, A1> matrix_type;
+        typedef typename matrix_type :: size_type size_type;
+        const size_type row = lhs.row();
+        const size_type col = lhs.col() + rhs.col();
+        matrix_type ans( row, col );
 
-	const size_type row = lhs.row() + rhs.row();
-	const size_type col = lhs.col();
+        for ( size_type i = 0; i < row; ++i )
+        {
+            std::copy( lhs.row_begin( i ), lhs.row_end( i ), ans.row_begin( i ) );
+            std::copy( rhs.row_begin( i ), rhs.row_end( i ), ans.row_begin( i ) + lhs.col() );
+        }
 
-	matrix_type ans( row, col );
+        return ans;
+    }
 
-	for ( size_type i = 0; i < col; ++i )
-	{
-		std::copy( lhs.col_begin(i), lhs.col_end(i), ans.col_begin(i));
-		std::copy( rhs.col_begin(i), rhs.col_end(i), ans.col_begin(i)+lhs.row() );
-	}
+    //x[x+y][M] <- a[x][M] && b[y][M]
+    template< typename T1, typename A1, typename T2, typename A2 >
+    const matrix<T1, A1>
+    operator && ( const matrix<T1, A1>& lhs, const matrix<T2, A2>& rhs )
+    {
+        if ( lhs.col() == 0 ) return rhs;
 
-	return ans;
-}
+        if ( rhs.col() == 0 ) return lhs;
+
+        assert( lhs.col() == rhs.col() );
+        typedef matrix<T1, A1> matrix_type;
+        typedef typename matrix_type :: size_type size_type;
+        const size_type row = lhs.row() + rhs.row();
+        const size_type col = lhs.col();
+        matrix_type ans( row, col );
+
+        for ( size_type i = 0; i < col; ++i )
+        {
+            std::copy( lhs.col_begin( i ), lhs.col_end( i ), ans.col_begin( i ) );
+            std::copy( rhs.col_begin( i ), rhs.col_end( i ), ans.col_begin( i ) + lhs.row() );
+        }
+
+        return ans;
+    }
 
 }//namespace f
 
