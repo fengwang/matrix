@@ -1,15 +1,12 @@
 #include <f/matrix/matrix.hpp>
-#include <f/variate_generator/variate_generator.hpp>
-#include <f/algorithm/for_each.hpp>
-#include <f/lexical_cast/lexical_cast.hpp>
-#include <f/variate_generator/variate_generator.hpp>
 
 #include <string>
 
 int main()
 {
+    /*
 
-    if ( 1 )
+    if ( 0 )
     {
         f::matrix<double> mt;
         mt.load("./matrix/stone.txt");
@@ -296,11 +293,13 @@ int main()
         a.save_as( "average.txt" );
         a.save_as_bmp( "average" );
     }
+    */
 
-    if ( 0 )
+    if ( 1 )
     {
-        f::matrix<double> mt;
-        mt.load("Si_se_d40t40.txt");
+        auto mt = f::rand<double>( 2048, 2048 );
+        //f::matrix<double> mt;
+        //mt.load("Si_se_d40t40.txt");
         //std::for_each( mt.begin(), mt.end(), [](double& x){ if (x > 1.0e-20) x+= 0.1;} );
         //mt.save_as_bmp( "Si_se_d40t40_revised.bmp" );
         mt.save_as_bmp( "Si_se_d40t40_revised.bmp", "default", "log2" );

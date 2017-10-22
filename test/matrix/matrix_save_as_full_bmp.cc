@@ -1,5 +1,4 @@
 #include <f/matrix/matrix.hpp>
-#include <f/variate_generator/variate_generator.hpp>
 
 int main()
 {
@@ -10,14 +9,14 @@ int main()
         image.save_as_full_bmp( "image" );
     }
 
-    if ( 1 )
+    if ( 0 )
     {
         f::matrix<double> image;
         image.load( "./matlab/display_experimental/rmap.txt" );
         image.save_as_full_bmp( "./matlab/display_experimental/rmap_full" );
     }
 
-    if ( 1 )
+    if ( 0 )
     {
         f::matrix<double> image;
         image.load( "./matlab/display_experimental/imap.txt" );
@@ -26,10 +25,7 @@ int main()
 
     if ( 1 )
     {
-		f::variate_generator<double> vg(0.0, 1.0);
-        f::matrix<double> image{1000, 1000};
-
-		std::generate( image.begin(), image.end(), vg );
+        auto image = f::rand<double>( 1000, 1000 );
 
         image.save_as_full_bmp( "./rand_image" );
     }

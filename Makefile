@@ -76,10 +76,6 @@ matrix_nlsf: test/matrix/matrix_nlsf.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_nlsf.o test/matrix/matrix_nlsf.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_nlsf $(OBJECTS_DIR)/matrix_nlsf.o
 
-exp_nlsf: test/matrix/exp_nlsf.cc
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/exp_nlsf.o test/matrix/exp_nlsf.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/exp_nlsf $(OBJECTS_DIR)/exp_nlsf.o
-
 matrix_backward_substitution: test/matrix/matrix_backward_substitution.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_backward_substitution.o test/matrix/matrix_backward_substitution.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_backward_substitution $(OBJECTS_DIR)/matrix_backward_substitution.o
@@ -131,4 +127,12 @@ matrix_xor: test/matrix/matrix_xor.cc
 matrix_shrink_to_size: test/matrix/matrix_shrink_to_size.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_shrink_to_size.o test/matrix/matrix_shrink_to_size.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_shrink_to_size $(OBJECTS_DIR)/matrix_shrink_to_size.o
+
+matrix_save_as_bmp: test/matrix/matrix_save_as_bmp.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_save_as_bmp.o test/matrix/matrix_save_as_bmp.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_save_as_bmp $(OBJECTS_DIR)/matrix_save_as_bmp.o
+
+matrix_save_as_full_bmp: test/matrix/matrix_save_as_full_bmp.cc
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_save_as_full_bmp.o test/matrix/matrix_save_as_full_bmp.cc
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_save_as_full_bmp $(OBJECTS_DIR)/matrix_save_as_full_bmp.o
 
