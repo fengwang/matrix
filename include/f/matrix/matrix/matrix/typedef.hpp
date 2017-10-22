@@ -1,8 +1,9 @@
 #ifndef TTYPEDEF_HPP_INCLUDED_DFSOPJI389UASFLKJ4JKNMVLJKFAHSD9YU84KLJSAHFUIJH498
 #define TTYPEDEF_HPP_INCLUDED_DFSOPJI389UASFLKJ4JKNMVLJKFAHSD9YU84KLJSAHFUIJH498
 
-#include "../../details/misc.hpp"
-#include "../../details/stride_iterator/stride_iterator.hpp"
+#include "../../details/range.hpp"
+#include "../../details/matrix_allocator.hpp"
+#include "../../details/stride_iterator.hpp"
 
 namespace f
 {
