@@ -44,7 +44,7 @@ namespace f
         {
             zen_type const& zen = static_cast<zen_type const&>( *this );
             //return const_row_type( zen.begin() + index * zen.col(), 1 );
-            return const_row_type( zen.begin() + index * zen.col());
+            return const_row_type( zen.begin() + index * zen.col() );
         }
 
         const_row_type row_cend( const size_type index = 0 ) const

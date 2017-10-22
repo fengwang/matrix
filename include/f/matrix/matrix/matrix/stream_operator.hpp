@@ -15,6 +15,7 @@ namespace f
         friend std::ostream& operator << ( std::ostream& lhs, zen_type const& rhs )
         {
             lhs.precision( 20 );
+
             for ( size_type i = 0; i < rhs.row(); ++i )
             {
                 std::copy( rhs.row_begin( i ), rhs.row_end( i ), std::ostream_iterator<value_type> ( lhs, "\t" ) );
@@ -33,7 +34,10 @@ namespace f
                 row_element.push_back( string_line );
 
             size_type const row = row_element.size();
-            size_type const col = std::count_if( row_element[0].begin(), row_element[0].end(), []( char ch ) { return '\t' == ch; } );
+            size_type const col = std::count_if( row_element[0].begin(), row_element[0].end(), []( char ch )
+            {
+                return '\t' == ch;
+            } );
 
             //error check
             if ( row == 0 || col == 0 )
@@ -47,7 +51,7 @@ namespace f
             for ( size_type r = 0; r != row; ++r )
             {
                 std::istringstream the_row( row_element[r] );
-                std::copy( std::istream_iterator<value_type>( the_row ), std::istream_iterator<value_type>(), rhs.row_begin(r) );
+                std::copy( std::istream_iterator<value_type>( the_row ), std::istream_iterator<value_type>(), rhs.row_begin( r ) );
             }
 
             return is;

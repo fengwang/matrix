@@ -13,9 +13,11 @@ namespace f
         zen_type& operator -=( const value_type& rhs )
         {
             zen_type& zen = static_cast<zen_type&>( *this );
+
             //std::transform( zen.begin(), zen.end(), zen.begin(), std::bind2nd( std::minus<value_type>(), rhs ) );
             for ( auto& v : zen )
                 v -= rhs;
+
             return zen;
         }
 

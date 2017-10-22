@@ -6,12 +6,12 @@ namespace f
 
 #if 0
     template< typename Expression >
-    struct crtp_prefix_plus_expression : matrix_expression< crtp_prefix_plus_expression<Expression> >
+    struct crtp_prefix_plus_expression : matrix_expression< crtp_prefix_plus_expression<Expression>>
     {
         typedef typename Expression::value_type     value_type;
         typedef typename Expression::size_type      size_type;
 
-        crtp_prefix_plus_expression( Expression const& expression_ ) : expression(expression_) {}
+        crtp_prefix_plus_expression( Expression const& expression_ ) : expression( expression_ ) {}
 
         Expression const&   expression;
 
@@ -27,7 +27,7 @@ namespace f
 
         value_type operator()( const size_type r, const size_type c ) const
         {
-            return expression(r, c);
+            return expression( r, c );
         }
     };
 
@@ -52,7 +52,7 @@ namespace f
 
         const zen_type operator +() const
         {
-            return static_cast<zen_type const&>(*this);
+            return static_cast<zen_type const&>( *this );
         }
 
     };

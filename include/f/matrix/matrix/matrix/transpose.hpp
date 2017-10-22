@@ -16,7 +16,9 @@ namespace f
             zen_type ans( zen.col(), zen.row() );
 
             for ( size_type i = 0; i < zen.col(); ++i )
-            { std::copy( zen.col_begin( i ), zen.col_end( i ), ans.row_begin( i ) ); }
+            {
+                std::copy( zen.col_begin( i ), zen.col_end( i ), ans.row_begin( i ) );
+            }
 
             return ans;
         }

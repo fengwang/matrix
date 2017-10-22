@@ -12,7 +12,7 @@ namespace f
         void clear()
         {
             zen_type& zen = static_cast<zen_type&>( *this );
-            zen.resize(0, 0);
+            zen.resize( 0, 0 );
         }
 
     };//struct crtp_clear

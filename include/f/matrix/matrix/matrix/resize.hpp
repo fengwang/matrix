@@ -16,7 +16,9 @@ namespace f
             zen_type& zen = static_cast<zen_type&>( *this );
 
             if ( ( zen.row() == new_row ) && ( zen.col() == new_col ) )
-            { return zen; }
+            {
+                return zen;
+            }
 
             zen_type ans( new_row, new_col, v );
             zen.swap( ans );
@@ -28,7 +30,9 @@ namespace f
             zen_type& zen = static_cast<zen_type&>( *this );
 
             if ( ( zen.row() == new_row ) && ( zen.col() == new_col ) )
-            { return zen; }
+            {
+                return zen;
+            }
 
             if ( zen.size() == new_row * new_col )
             {

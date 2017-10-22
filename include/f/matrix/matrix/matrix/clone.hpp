@@ -24,7 +24,7 @@ namespace f
                     std::copy( other.row_begin( i ) + c0, other.row_begin( i ) + c1, zen.row_begin( i - r0 ) );
             else
                 for ( size_type i = c0; i != c1; ++i )
-                    std::copy( other.col_begin(i) + r0, other.col_begin(i) + r1, zen.col_begin(i-c0) );
+                    std::copy( other.col_begin( i ) + r0, other.col_begin( i ) + r1, zen.col_begin( i - c0 ) );
 
             return zen;
         }

@@ -4,12 +4,12 @@
 namespace f
 {
     template< typename Left_Expression, typename Right_Expression>
-    struct crtp_matrix_matrix_plus_expression : matrix_expression< crtp_matrix_matrix_plus_expression< Left_Expression, Right_Expression > >
+    struct crtp_matrix_matrix_plus_expression : matrix_expression< crtp_matrix_matrix_plus_expression< Left_Expression, Right_Expression >>
     {
         typedef typename Left_Expression::value_type     value_type;
         typedef typename Left_Expression::size_type      size_type;
 
-        crtp_matrix_matrix_plus_expression( Left_Expression const& l_expression_, Right_Expression const& r_expression_ ) : l_expression(l_expression_), r_expression(r_expression_) {}
+        crtp_matrix_matrix_plus_expression( Left_Expression const& l_expression_, Right_Expression const& r_expression_ ) : l_expression( l_expression_ ), r_expression( r_expression_ ) {}
 
         Left_Expression const&      l_expression;
         Right_Expression const&     r_expression;
@@ -28,7 +28,7 @@ namespace f
 
         value_type operator()( const size_type r, const size_type c ) const
         {
-            return l_expression(r, c) + r_expression(r, c);
+            return l_expression( r, c ) + r_expression( r, c );
         }
     };
 

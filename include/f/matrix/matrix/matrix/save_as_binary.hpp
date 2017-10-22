@@ -17,24 +17,24 @@ namespace f
         bool save_as_binary( char const* const file_name ) const
         {
             zen_type const& zen = static_cast<zen_type const&>( *this );
-
             std::ofstream ofs( file_name, std::ios::out | std::ios::binary );
-            if ( !ofs ) { return false; }
+
+            if ( !ofs )
+            {
+                return false;
+            }
 
             // store row and col
             auto const r = zen.row();
-            ofs.write( reinterpret_cast<char const*>(std::addressof(r)), sizeof(r) );
-
+            ofs.write( reinterpret_cast<char const*>( std::addressof( r ) ), sizeof( r ) );
             auto const c = zen.col();
-            ofs.write( reinterpret_cast<char const*>(std::addressof(c)), sizeof(c) );
-
+            ofs.write( reinterpret_cast<char const*>( std::addressof( c ) ), sizeof( c ) );
             // store data as binary
-            ofs.write( reinterpret_cast<char const*>(zen.data()), sizeof(Type)*zen.size() );
+            ofs.write( reinterpret_cast<char const*>( zen.data() ), sizeof( Type )*zen.size() );
 
             if ( !ofs.good() ) return false;
 
             ofs.close();
-
             return true;
         }
 

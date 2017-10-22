@@ -89,6 +89,7 @@ namespace f
         matrix_type const& VU = V + U;
         matrix_type const& UV = V - U;
         matrix_type F = VU / UV;
+
         for ( size_type i = 0; i != s; ++i )
             F *= F;
 

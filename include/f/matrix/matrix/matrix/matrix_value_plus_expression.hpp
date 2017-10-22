@@ -6,12 +6,12 @@
 namespace f
 {
     template< typename Expression, typename Type >
-    struct crtp_matrix_value_plus_expression : matrix_expression< crtp_matrix_value_plus_expression<Expression, Type> >
+    struct crtp_matrix_value_plus_expression : matrix_expression< crtp_matrix_value_plus_expression<Expression, Type>>
     {
         typedef typename Expression::value_type     value_type;
         typedef typename Expression::size_type      size_type;
 
-        crtp_matrix_value_plus_expression( Expression const& expression_, Type const& value_ ) : expression(expression_), value(value_) {}
+        crtp_matrix_value_plus_expression( Expression const& expression_, Type const& value_ ) : expression( expression_ ), value( value_ ) {}
 
         Expression const&   expression;
         Type const&         value;
@@ -28,7 +28,7 @@ namespace f
 
         value_type operator()( const size_type r, const size_type c ) const
         {
-            return expression(r, c) + value;
+            return expression( r, c ) + value;
         }
     };
 

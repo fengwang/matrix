@@ -4,12 +4,12 @@
 namespace f
 {
     template< typename Left_Expression, typename Right_Expression>
-    struct crtp_matrix_matrix_multiply_expression : matrix_expression< crtp_matrix_matrix_multiply_expression< Left_Expression, Right_Expression > >
+    struct crtp_matrix_matrix_multiply_expression : matrix_expression< crtp_matrix_matrix_multiply_expression< Left_Expression, Right_Expression >>
     {
         typedef typename Left_Expression::value_type     value_type;
         typedef typename Left_Expression::size_type      size_type;
 
-        crtp_matrix_matrix_multiply_expression( Left_Expression const& l_expression_, Right_Expression const& r_expression_ ) : l_expression(l_expression_), r_expression(r_expression_) {}
+        crtp_matrix_matrix_multiply_expression( Left_Expression const& l_expression_, Right_Expression const& r_expression_ ) : l_expression( l_expression_ ), r_expression( r_expression_ ) {}
 
         Left_Expression const&      l_expression;
         Right_Expression const&     r_expression;
@@ -30,10 +30,11 @@ namespace f
         {
             assert( l_expression.col() == r_expression.row() );
             const size_type n = l_expression.col();
+            value_type ans = value_type( 0 );
 
-            value_type ans = value_type(0);
             for ( size_type i = 0; i != n; ++i )
                 ans += l_expression( r, i ) * r_expression( i, c );
+
             return ans;
         }
     };

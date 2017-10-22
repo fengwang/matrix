@@ -11,16 +11,17 @@ namespace f
         bool save_as_full_bmp( const std::string& file_name ) const
         {
             zen_type const& zen = static_cast<zen_type const&>( *this );
-
             std::string new_file_name{ file_name };
             std::string const extension{ ".bmp" };
 
-            if ( ( new_file_name.size() < 4 )  || ( std::string{ new_file_name.begin()+new_file_name.size()-4, new_file_name.end() } != extension ) )
+            if ( ( new_file_name.size() < 4 )  || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
                 new_file_name += extension;
-
             std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
 
-            if ( !stream ) { return false; }
+            if ( !stream )
+            {
+                return false;
+            }
 
             unsigned char file[14] =
             {
@@ -30,7 +31,6 @@ namespace f
                 0, 0, // app data
                 54, 0, 0, 0 // start of data offset
             };
-
             unsigned char info[40] =
             {
                 40, 0, 0, 0, // info hd size
@@ -45,16 +45,19 @@ namespace f
                 0, 0, 0, 0, // #colors in pallete
                 0, 0, 0, 0, // #important colors
             };
-
             unsigned long const the_col = zen.col();
             unsigned long const the_row = zen.row();
             unsigned long const pad_size  = ( 4 - ( the_col * 3 ) % 4 ) % 4;
             unsigned long const data_size = the_col * the_row * 3 + the_row * pad_size;
             unsigned long const all_size  = data_size + sizeof( file ) + sizeof( info );
-
-            auto const& ul_to_uc = []( unsigned long val ){ return static_cast<unsigned char>( val & 0xffUL ); };
-            auto const& db_to_ul = []( double val, double ac, double dc ){ return static_cast<unsigned long>( std::floor( ( static_cast<double>(0xFFFFFF) + 0.9 ) * (val*ac+dc) ) ); };
-
+            auto const& ul_to_uc = []( unsigned long val )
+            {
+                return static_cast<unsigned char>( val & 0xffUL );
+            };
+            auto const& db_to_ul = []( double val, double ac, double dc )
+            {
+                return static_cast<unsigned long>( std::floor( ( static_cast<double>( 0xFFFFFF ) + 0.9 ) * ( val * ac + dc ) ) );
+            };
             file[ 2] = ul_to_uc( all_size       );
             file[ 3] = ul_to_uc( all_size >> 8  );
             file[ 4] = ul_to_uc( all_size >> 16 );
@@ -71,13 +74,10 @@ namespace f
             info[21] = ul_to_uc( data_size >> 8  );
             info[22] = ul_to_uc( data_size >> 16 );
             info[23] = ul_to_uc( data_size >> 24 );
-
             stream.write( reinterpret_cast<char*>( file ), sizeof( file ) );
             stream.write( reinterpret_cast<char*>( info ), sizeof( info ) );
-
             unsigned char pad[3] = {0, 0, 0};
             unsigned char pixel[3];
-
             double const max_val = static_cast<double>( *std::max_element( zen.begin(), zen.end() ) );
             double const min_val = static_cast<double>( *std::min_element( zen.begin(), zen.end() ) );
             double const ac_factor = 1.0 / ( max_val - min_val + 1.0e-40 );
@@ -88,11 +88,9 @@ namespace f
                 for ( unsigned long c = 0; c < the_col; c++ )
                 {
                     unsigned long const index = db_to_ul( zen[r][c], ac_factor, dc_factor );
-
                     pixel[0] = index >> 16;
-                    pixel[1] = (index >> 8 )& 0xFF;
+                    pixel[1] = ( index >> 8 ) & 0xFF;
                     pixel[2] = index & 0xFF;
-
                     stream.write( reinterpret_cast<char*>( pixel ), 3 );
                 }
 
@@ -100,7 +98,6 @@ namespace f
             }
 
             stream.close();
-
             return true;
         }
 

@@ -7,12 +7,12 @@ namespace f
 {
 #if 0
     template< typename Expression >
-    struct crtp_prefix_minus_expression : matrix_expression< crtp_prefix_minus_expression<Expression> >
+    struct crtp_prefix_minus_expression : matrix_expression< crtp_prefix_minus_expression<Expression>>
     {
         typedef typename Expression::value_type     value_type;
         typedef typename Expression::size_type      size_type;
 
-        crtp_prefix_minus_expression( Expression const& expression_ ) : expression(expression_) {}
+        crtp_prefix_minus_expression( Expression const& expression_ ) : expression( expression_ ) {}
 
         Expression const&   expression;
 
@@ -28,7 +28,7 @@ namespace f
 
         value_type operator()( const size_type r, const size_type c ) const
         {
-            return - expression(r, c);
+            return - expression( r, c );
         }
     };
 
@@ -48,15 +48,18 @@ namespace f
     struct crtp_prefix_minus
     {
         typedef Matrix                                      zen_type;
-        typedef crtp_typedef<Type,Default,Allocator>        type_proxy_type;
+        typedef crtp_typedef<Type, Default, Allocator>        type_proxy_type;
         typedef typename type_proxy_type::size_type         size_type;
         typedef typename type_proxy_type::value_type        value_type;
 
         const zen_type operator -() const
         {
-            zen_type const& zen = static_cast<zen_type const&>(*this);
+            zen_type const& zen = static_cast<zen_type const&>( *this );
             zen_type ans( zen );
-            std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x ){ return -x; } );
+            std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x )
+            {
+                return -x;
+            } );
             return ans;
         }
     };

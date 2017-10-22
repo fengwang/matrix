@@ -15,9 +15,7 @@ namespace f
         void reshape( const size_type new_row, const size_type new_col )
         {
             zen_type& zen = static_cast<zen_type&>( *this );
-
             assert( new_row * new_col == zen.row() * zen.col() );
-
             zen.row_ = new_row;
             zen.col_ = new_col;
         }

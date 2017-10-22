@@ -18,13 +18,19 @@ namespace f
             assert( zen.row() == zen.col() );
 
             if ( 0 == zen.size() )
-            { return value_type(); }
+            {
+                return value_type();
+            }
 
             if ( 1 == zen.size() )
-            { return *( zen.begin() ); }
+            {
+                return *( zen.begin() );
+            }
 
             if ( 4 == zen.size() )
-            { return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1]; }
+            {
+                return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1];
+            }
 
             size_type const n = zen.row();
             size_type const m = n >> 1;
