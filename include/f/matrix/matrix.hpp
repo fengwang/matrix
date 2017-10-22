@@ -1,0 +1,12 @@
+#ifndef MSDFPIOJ4EKLJNASFDLJKN32UIASLFDKJV439HDSFKJNV9UH3IUNJHAFD9U8YH4KLJFASFDF
+#define MSDFPIOJ4EKLJNASFDLJKN32UIASLFDKJV439HDSFKJNV9UH3IUNJHAFD9U8YH4KLJFASFDF
+
+#include "./details/std.hpp"
+
+#include "./matrix/matrix.hpp"
+#include "./functional/functional.hpp"
+#include "./operators/operators.hpp"
+#include "./numeric/numeric.hpp"
+
+#endif //MSDFPIOJ4EKLJNASFDLJKN32UIASLFDKJV439HDSFKJNV9UH3IUNJHAFD9U8YH4KLJFASFDF
+

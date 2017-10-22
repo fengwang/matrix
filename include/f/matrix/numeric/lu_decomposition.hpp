@@ -8,9 +8,9 @@ namespace f
     // return
     //          0       --       success
     //          1       --       failed
-    template<typename T1, std::size_t D1, typename A1,
-             typename T2, std::size_t D2, typename A2,
-             typename T3, std::size_t D3, typename A3>
+    template<typename T1, typename A1,
+             typename T2, typename A2,
+             typename T3, typename A3>
     int lu_decomposition( const matrix<T1, A1>& A, matrix<T2, A2>& L, matrix<T3, A3>& U )
     {
         typedef T1 value_type;

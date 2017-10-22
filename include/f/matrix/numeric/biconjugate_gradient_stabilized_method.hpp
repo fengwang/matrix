@@ -121,7 +121,7 @@ namespace f
         return ans;
     }
 
-    template<typename Matrix, typename T, std::size_t D, typename A_>
+    template<typename Matrix, typename T, typename A_>
     std::size_t bicgstab( const Matrix& A, matrix<T, D, A_>& x, const matrix<T, D, A_>& b, std::size_t const loops = 100, T const eps = T( 1.0e-15 ) )
     {
         return biconjugate_gradient_stablized_method( A, x, b, loops, eps );
