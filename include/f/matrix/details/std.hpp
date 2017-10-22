@@ -1,40 +1,34 @@
 #ifndef XJVUGKTBFERWKWWKTJEJLXLHSTKSABNWRJFGAVOAXXALSDGDRUGLDEYBQLOYKXMFGSWYDTEPQ
 #define XJVUGKTBFERWKWWKTJEJLXLHSTKSABNWRJFGAVOAXXALSDGDRUGLDEYBQLOYKXMFGSWYDTEPQ
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <cassert>
-#include <complex>
+#include <cctype>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <iomanip>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
-#include <functional>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <map>
+#include <memory>
 #include <numeric>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
-#include <map>
 #include <type_traits>
 #include <utility>
 #include <valarray>
 #include <vector>
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <cctype>
-#include <cassert>
-#include <memory>
 
 #endif//XJVUGKTBFERWKWWKTJEJLXLHSTKSABNWRJFGAVOAXXALSDGDRUGLDEYBQLOYKXMFGSWYDTEPQ
 

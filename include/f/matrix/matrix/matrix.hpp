@@ -59,7 +59,7 @@
 namespace f
 {
 
-    template< typename Type, class Allocator = std::allocator<typename std::decay<Type>::type> >
+    template< typename Type, class Allocator = std::allocator<typename std::decay<Type>::type>>
     struct matrix :
         public crtp_anti_diag_iterator<matrix<Type, Allocator>, Type, Allocator >,
         public crtp_apply<matrix<Type, Allocator>, Type, Allocator >,
@@ -102,7 +102,7 @@ namespace f
         public crtp_stream_operator<matrix<Type, Allocator>, Type, Allocator >,
         public crtp_swap<matrix<Type, Allocator>, Type, Allocator >,
         public crtp_transpose<matrix<Type, Allocator>, Type, Allocator >,
-        public matrix_expression<matrix<Type, Allocator> >,
+        public matrix_expression<matrix<Type, Allocator>>,
         public crtp_import<matrix<Type, Allocator>, Type, Allocator >
     {
         typedef matrix                                                          self_type;
@@ -112,34 +112,40 @@ namespace f
         typedef typename type_proxy_type::range_type                            range_type;
         typedef typename type_proxy_type::storage_type                          storage_type;
 
-        matrix( char const* const file_name ) : row_(0), col_(0), data_(storage_type{0})
+        matrix( char const* const file_name ) : row_( 0 ), col_( 0 ), data_( storage_type{0} )
         {
-            (*this).load(file_name);
+            ( *this ).load( file_name );
         }
 
-        matrix( std::string const& file_name ) : row_(0), col_(0), data_(storage_type{0})
+        matrix( std::string const& file_name ) : row_( 0 ), col_( 0 ), data_( storage_type{0} )
         {
-            (*this).load(file_name);
+            ( *this ).load( file_name );
         }
 
-        matrix( self_type && ) = default;
+        matrix( self_type&& ) = default;
 
-        matrix( const self_type& rhs ) { operator = ( rhs ); }
+        matrix( const self_type& rhs )
+        {
+            operator = ( rhs );
+        }
 
         template<typename T, size_type D, typename A>
-        matrix( const matrix<T, D, A>& rhs ) { operator = ( rhs ); }
+        matrix( const matrix<T, D, A>& rhs )
+        {
+            operator = ( rhs );
+        }
 
         template<typename Expression>
         matrix( const Expression& expression ) : row_( expression.row() ), col_( expression.col() ), data_( storage_type( expression.row() * expression.col() ) )
         {
             for ( size_type r = 0; r != expression.row(); ++r )
                 for ( size_type c = 0; c != expression.col(); ++c )
-                    (*this)(r, c) = expression(r, c);
+                    ( *this )( r, c ) = expression( r, c );
         }
 
         //explicit matrix( const size_type r=0, const size_type c=0 ) : row_( r ), col_( c ), data_( storage_type( r* c ) ) {}
 
-        explicit matrix( const size_type r=0, const size_type c=0, const value_type& v=value_type{} ) : row_( r ), col_( c ), data_( storage_type( r* c ) )
+        explicit matrix( const size_type r = 0, const size_type c = 0, const value_type& v = value_type{} ) : row_( r ), col_( c ), data_( storage_type( r * c ) )
         {
             std::fill( ( *this ).begin(), ( *this ).end(), v );
         }
@@ -150,7 +156,7 @@ namespace f
             ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
         }
 
-        matrix( matrix const& other, range_type const& rr, range_type const& rc ) : row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_(storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
+        matrix( matrix const& other, range_type const& rr, range_type const& rc ) : row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_( storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
         {
             ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
         }
@@ -164,8 +170,8 @@ namespace f
         template< typename U >
         matrix( const size_type r, const size_type c, std::initializer_list<U> il ) : row_( r ), col_( c ), data_( storage_type( r * c ) )
         {
-            assert( std::distance( std::begin(il), std::end(il) ) <= r*c );
-            std::copy( std::begin( il ), std::end( il ), (*this).begin() );
+            assert( std::distance( std::begin( il ), std::end( il ) ) <= r * c );
+            std::copy( std::begin( il ), std::end( il ), ( *this ).begin() );
         }
 
         template< typename T, size_type D, typename A >
@@ -187,7 +193,7 @@ namespace f
             return *this;
         }
 
-        self_type& operator = ( self_type && ) = default;
+        self_type& operator = ( self_type&& ) = default;
 
         self_type& operator = ( const value_type& v )
         {
@@ -198,18 +204,20 @@ namespace f
         template< typename U >
         self_type& operator = ( std::initializer_list<U> il )
         {
-            assert( std::distance( std::begin(il), std::end(il) ) <= (*this).size() );
-            std::copy( std::begin( il ), std::end( il ), (*this).begin() );
+            assert( std::distance( std::begin( il ), std::end( il ) ) <= ( *this ).size() );
+            std::copy( std::begin( il ), std::end( il ), ( *this ).begin() );
             return *this;
         }
 
         template<typename Expression>
         self_type& operator = ( const Expression& expression )
         {
-            (*this).resize( expression.row(), expression.col() );
+            ( *this ).resize( expression.row(), expression.col() );
+
             for ( size_type r = 0; r != expression.row(); ++r )
                 for ( size_type c = 0; c != expression.col(); ++c )
-                    (*this)(r, c) = expression(r, c);
+                    ( *this )( r, c ) = expression( r, c );
+
             return *this;
         }
 
