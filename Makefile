@@ -16,10 +16,6 @@ BIN_DIR       = ./bin
 LIB_DIR       = ./lib
 LOG_DIR       = ./log
 
-laplace_1d: test/matrix/laplace_1d.cc
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/laplace_1d.o test/matrix/laplace_1d.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/laplace_1d $(OBJECTS_DIR)/laplace_1d.o
-
 matrix_inverse: test/matrix/matrix_inverse.cc
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/matrix_inverse.o test/matrix/matrix_inverse.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/matrix_inverse $(OBJECTS_DIR)/matrix_inverse.o
