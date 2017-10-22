@@ -27,7 +27,7 @@ namespace f
 
     template<typename T,
 
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const eye( const std::size_t r, const std::size_t c )
     {
         matrix<T> ans{ r, c };
@@ -39,7 +39,7 @@ namespace f
 
     template<typename T,
 
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const eye( const std::size_t n )
     {
         return eye<T, A>( n, n );
@@ -47,7 +47,7 @@ namespace f
 
     template<typename T,
 
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const eye( const matrix<T, A>& m )
     {
         return eye<T, A>( m.row(), m.col() );

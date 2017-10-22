@@ -48,7 +48,7 @@ namespace f
     struct crtp_prefix_minus
     {
         typedef Matrix                                      zen_type;
-        typedef crtp_typedef<Type, Default, Allocator>        type_proxy_type;
+        typedef crtp_typedef<Type, Allocator>               type_proxy_type;
         typedef typename type_proxy_type::size_type         size_type;
         typedef typename type_proxy_type::value_type        value_type;
 

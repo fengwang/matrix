@@ -129,8 +129,8 @@ namespace f
             operator = ( rhs );
         }
 
-        template<typename T, size_type D, typename A>
-        matrix( const matrix<T, D, A>& rhs )
+        template<typename T, typename A>
+        matrix( const matrix<T, A>& rhs )
         {
             operator = ( rhs );
         }
@@ -150,8 +150,8 @@ namespace f
             std::fill( ( *this ).begin(), ( *this ).end(), v );
         }
 
-        template< typename T, size_type D, typename A >
-        matrix( const matrix<T, D, A>& other, const range_type& rr, const range_type& rc ) : row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_( storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
+        template< typename T, typename A >
+        matrix( const matrix<T, A>& other, const range_type& rr, const range_type& rc ) : row_( rr.second - rr.first ), col_( rc.second - rc.first ), data_( storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
         {
             ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
         }
@@ -174,8 +174,8 @@ namespace f
             std::copy( std::begin( il ), std::end( il ), ( *this ).begin() );
         }
 
-        template< typename T, size_type D, typename A >
-        matrix( const matrix<T, D, A>& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 ) : row_( r1 - r0 ), col_( c1 - c0 ), data_( storage_type( ( r1 - r0 ) * ( c1 - c0 ) ) )
+        template< typename T, typename A >
+        matrix( const matrix<T, A>& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 ) : row_( r1 - r0 ), col_( c1 - c0 ), data_( storage_type( ( r1 - r0 ) * ( c1 - c0 ) ) )
         {
             ( *this ).clone( other, r0, r1, c0, c1 );
         }
@@ -186,8 +186,8 @@ namespace f
             return *this;
         }
 
-        template<typename T, size_type D, typename A>
-        self_type& operator = ( const matrix<T, D, A>& rhs )
+        template<typename T, typename A>
+        self_type& operator = ( const matrix<T, A>& rhs )
         {
             ( *this ).copy( rhs );
             return *this;

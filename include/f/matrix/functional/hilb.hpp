@@ -6,7 +6,7 @@ namespace f
 
     template<typename T,
 
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const hilb( const std::size_t n )
     {
         matrix<T, A> ans( n, n );
@@ -23,7 +23,7 @@ namespace f
 
     template<typename T,
 
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const hilbert( const std::size_t n )
     {
         return hilb<T, A>( n );

@@ -1,7 +1,7 @@
 #ifndef MSVD_HPP_INCLUDED_OFSIDHJLKJ34OAHFD98HU398UHYAFOSOIUH3IUHD98U4EIJDFIJSDI
 #define MSVD_HPP_INCLUDED_OFSIDHJLKJ34OAHFD98HU398UHYAFOSOIUH3IUHD98U4EIJDFIJSDI
 
-#include "../misc/algorithm/for_each.hpp"
+#include "../details/algorithm/for_each.hpp"
 
 namespace f
 {

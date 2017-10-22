@@ -30,11 +30,11 @@ namespace f
 #if 1
     //complex cases
 #define GENERATE_COMPLEX_MATRIX_MATH_UNARY_FUNCTION( f_name )  \
-    template< typename T, std::size_t N, typename A > \
-    const matrix<T,N> \
-    f_name( const matrix<std::complex<T>, N, A> & mm ) \
+    template< typename T, typename A > \
+    const matrix<T,A> \
+    f_name( const matrix<std::complex<T>, A> & mm ) \
     { \
-        matrix<T,N> m(mm.row(), mm.col()); \
+        matrix<T,A> m(mm.row(), mm.col()); \
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> c ) { t = std:: f_name(c); } ); \
         return m; \
     }
@@ -49,11 +49,11 @@ namespace f
 
     //complex only functions
 #define GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION( f_name )  \
-    template< typename T, std::size_t N, typename A > \
-    const matrix<std::complex<T>, N, A> \
-    f_name( const matrix<std::complex<T>, N, A>& mm ) \
+    template< typename T, typename A > \
+    const matrix<std::complex<T>, A> \
+    f_name( const matrix<std::complex<T>, A>& mm ) \
     { \
-        matrix<std::complex<T>, N, A> m( mm ); \
+        matrix<std::complex<T>, A> m( mm ); \
         std::for_each( m.begin(), m.end(), [](std::complex<T>& val) { val = std:: f_name(val); } ); \
         return m; \
     }
@@ -64,12 +64,12 @@ namespace f
 #undef GENERATE_COMPLEX_MATRIX_ONLY_MATH_UNARY_FUNCTION
 
     //specialization for polar
-    template< typename T, std::size_t N, typename A, std::size_t N_, typename A_ >
-    const matrix<std::complex<T>, N> polar( const matrix<T, N, A>& mm, const matrix<T, N_, A_> nn )
+    template< typename T, typename A, typename A_ >
+    const matrix<std::complex<T>, A> polar( const matrix<T, A>& mm, const matrix<T, A_> nn )
     {
         assert( mm.row() == nn.row() );
         assert( mm.col() == nn.col() );
-        matrix<std::complex<T>, N> m( mm.row(), mm.col() );
+        matrix<std::complex<T>, A> m( mm.row(), mm.col() );
         for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex<T>& m )
         {
             m = std::polar( _mm, _nn );
@@ -77,10 +77,10 @@ namespace f
         return m;
     }
 
-    template< typename T, std::size_t N, typename A >
-    const matrix<std::complex<T>, N> polar( const matrix<T, N, A>& mm, const T nn )
+    template< typename T, typename A >
+    const matrix<std::complex<T>, A> polar( const matrix<T, A>& mm, const T nn )
     {
-        matrix<std::complex<T>, N> m( mm.row(), mm.col() );
+        matrix<std::complex<T>, A> m( mm.row(), mm.col() );
         for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex<T>& m )
         {
             m = std::polar( _mm, nn );
@@ -88,10 +88,10 @@ namespace f
         return m;
     }
 
-    template< typename T, std::size_t N, typename A >
-    const matrix<std::complex<T>, N> polar( const T nn, const matrix<T, N, A>& mm )
+    template< typename T, typename A >
+    const matrix<std::complex<T>, A> polar( const T nn, const matrix<T, A>& mm )
     {
-        matrix<std::complex<T>, N> m( mm.row(), mm.col() );
+        matrix<std::complex<T>, A> m( mm.row(), mm.col() );
         for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex<T>& m )
         {
             m = std::polar( nn, _mm );
@@ -101,11 +101,11 @@ namespace f
 
     //general case, i.e. for both complex and real
 #define GENERATE_MATRIX_MATH_UNARY_FUNCTION( f_name )  \
-    template< typename T, std::size_t N, typename A > \
-    const matrix<T, N, A> \
-    f_name( const matrix<T, N, A> & mm ) \
+    template< typename T, typename A > \
+    const matrix<T, A> \
+    f_name( const matrix<T,  A> & mm ) \
     { \
-        matrix<T, N, A> m( mm ); \
+        matrix<T, A> m( mm ); \
         std::for_each( m.begin(), m.end(), [](T& val) { val = std:: f_name(val); } ); \
         return m; \
     }
@@ -164,9 +164,9 @@ namespace f
 
 
 #define GENERATE_MATRIX_MATH_BINARY_FUNCTION( f_name )  \
-    template< typename T1, std::size_t N1, typename A1, typename T2, std::size_t N2, typename A2 > \
-    const matrix<T1, N1, A1> \
-    f_name( const matrix<T1, N1, A1> & mm, const matrix<T2, N2, A2>& nn ) \
+    template< typename T1, typename A1, typename T2, typename A2 > \
+    const matrix<T1, A1> \
+    f_name( const matrix<T1, A1> & mm, const matrix<T2, A2>& nn ) \
     { \
         assert( mm.row() == nn.row() ); \
         assert( mm.col() == nn.col() ); \
@@ -174,17 +174,17 @@ namespace f
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ){ return std:: f_name( v1, v2 ); } ); \
         return m; \
     } \
-    template< typename T1, std::size_t N1, typename A1, typename T2 > \
-    const matrix<T1, N1, A1> \
-    f_name( const matrix<T1, N1, A1> & mm, const T2 v ) \
+    template< typename T1, typename A1, typename T2 > \
+    const matrix<T1, A1> \
+    f_name( const matrix<T1, A1> & mm, const T2 v ) \
     { \
         auto m( mm ); \
         std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return std:: f_name( v1, v ); } ); \
         return m; \
     } \
-    template< typename T1, std::size_t N1, typename A1, typename T2 > \
-    const matrix<T1, N1, A1> \
-    f_name( const T2 v, const matrix<T1, N1, A1> & mm ) \
+    template< typename T1, typename A1, typename T2 > \
+    const matrix<T1, A1> \
+    f_name( const T2 v, const matrix<T1, A1> & mm ) \
     { \
         auto m( mm ); \
         std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ){ return std:: f_name( v, v1 ); } ); \

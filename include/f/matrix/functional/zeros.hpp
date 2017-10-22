@@ -4,7 +4,7 @@
 namespace f
 {
     template<typename T,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const zeros( const std::size_t r, const std::size_t c )
     {
         matrix<T, A> ans{ r, c, T( 0 ) };
@@ -12,7 +12,7 @@ namespace f
     }
 
     template<typename T,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const zeros( const std::size_t n )
     {
         return zeros<T, A>( n, n );

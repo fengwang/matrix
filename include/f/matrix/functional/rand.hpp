@@ -11,7 +11,7 @@ namespace f
     // Return
     //          a matrix with size (r,c), and every element s.t. U(0,1)
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const rand( const std::size_t r, const std::size_t c )
     {
         matrix<T> ans{ r, c };
@@ -26,35 +26,35 @@ namespace f
     }
 
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const rand( const std::size_t n )
     {
         return rand<T, A>( n, n );
     }
 
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const rand( const matrix<T, A>& m )
     {
         return rand<T, A>( m.row(), m.col() );
     }
 
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const ran( const std::size_t r, const std::size_t c )
     {
         return rand<T, A>( r, c );
     }
 
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const ran( const std::size_t n )
     {
         return rand<T, A>( n );
     }
 
     template<typename T = double,
-             typename A = std::allocator<typename remove_const<typename remove_reference<T>::result_type>::result_type>>
+             typename A = std::allocator<typename std::remove_const<typename std::remove_reference<T>::type>::type>>
     matrix<T, A> const ran( const matrix<T, A>& m )
     {
         return rand<T, A>( m.row(), m.col() );

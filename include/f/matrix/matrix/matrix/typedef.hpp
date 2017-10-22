@@ -13,7 +13,7 @@ namespace f
         typedef typename std::decay<Type>::type                             value_type;
         typedef value_type*                                                 iterator;
         typedef const value_type*                                           const_iterator;
-        typedef matrix_allocator<value_type, Default, Allocator>            storage_type;
+        typedef matrix_allocator<value_type, Allocator>                     storage_type;
         typedef std::uint64_t                                               size_type;
         typedef std::ptrdiff_t                                              difference_type;
         typedef range                                                       range_type;

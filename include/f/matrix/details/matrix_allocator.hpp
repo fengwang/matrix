@@ -26,8 +26,6 @@ struct matrix_allocator : public Allocator
     typedef std::ptrdiff_t                          difference_type;
     typedef Allocator                               host_allocator_type;
 
-public:
-
     matrix_allocator( self_type&& other )
     {
         operator = ( other );
@@ -91,7 +89,7 @@ public:
         }
     }
 
-    virtual ~matrix_allocator()
+    ~matrix_allocator()
     {
         if ( items_ && buffer_ )
         {
@@ -101,9 +99,6 @@ public:
             items_ = 0;
         }
     }
-
-    matrix_allocator() : buffer_(nullptr), items_(0)
-    {}
 
     bool empty()const
     {
@@ -217,14 +212,12 @@ public:
         std::copy(begin_, end_, begin());
     }
 
-public:
     void swap( self_type& other )
     {
         std::swap( buffer_, other.buffer_ );
         std::swap( items_, other.items_ );
     }
 
-public:
     pointer data()
     {
         return buffer_;
@@ -235,7 +228,6 @@ public:
         return buffer_;
     }
 
-public:
     pointer buffer_;
     size_type items_;
 

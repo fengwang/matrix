@@ -64,7 +64,7 @@ namespace f
     }
 
     template<typename Complex_Matrix1, typename Complex_Matrix2, typename T, typename A_, typename T_ = double>
-    void eigen_hermitian( const Complex_Matrix1& A, Complex_Matrix2& V, matrix<T, D, A_>& Lambda, const T_ eps = T_( 1.0e-20 ) )
+    void eigen_hermitian( const Complex_Matrix1& A, Complex_Matrix2& V, matrix<T, A_>& Lambda, const T_ eps = T_( 1.0e-20 ) )
     {
         Lambda.resize( A.row(), A.col() );
         Lambda = T( 0 );
