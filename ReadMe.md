@@ -1,9 +1,10 @@
-_still under construction ..._
-
+A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ------
 
-## Requirements
+## Design
+
+### Requirements
 
 
 In the table below, `M` denotes a matrix of type `T` using allocator of type `A`, `m` is a value of type `A`, `a` and `b` denote values of type `M`, `u` denotes an identifier, `r` denotes a non-constant value of type `M`, and `rv` denotes a non-const rvalue of type `M`.
@@ -47,7 +48,7 @@ In the table below, `M` denotes a matrix of type `T` using allocator of type `A`
 |   |   |   |   |   |
 
 
-## Header `<matrix>` synopsis
+### Header `<matrix>` synopsis
 
 ```language-cpp
 namespace xxx
