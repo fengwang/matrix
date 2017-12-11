@@ -5,6 +5,20 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 + [Design](#esign)
     - [Requirements](#requirements)
     - [Header synopsis](#header-matrix-synopsis)
+    - [Example usage](#example-usage)
+    - [In a nutshell](#in-a-nutshell)
+    - [License](#license)
+    - [Dependencies](#dependencies)
+    - [Installation](#installation)
+    - [Usage](#usage)
+    - [Synopsis](#synopsis)
+    - [Variants of *lest*](#variants-of-lest)
+    - [Features of *lest*](#features-of-lest)
+    - [Reported to work with](#reported-to-work-with)
+    - [Building tests and examples](#building-tests-and-examples)
+    - [Contributions to *lest*](#contributions-to-lest)
+    - [Other test frameworks](#other-test-frameworks)
+    - [Notes and references](#notes-and-references)
 
 
 

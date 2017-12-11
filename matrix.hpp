@@ -1,83 +1,63 @@
+#ifdef __clang__
+#define SUPPRESS_WARNINGS \
+_Pragma("clang diagnostic push ") \
+_Pragma("clang diagnostic ignored \"-Wshorten-64-to-32\"" ) \
+_Pragma("clang diagnostic ignored \"-Wcast-align\"" ) \
+_Pragma("clang diagnostic ignored \"-Wdouble-promotion\"" ) \
+_Pragma("clang diagnostic ignored \"-Wreserved-id-macro\"" ) \
+_Pragma("clang diagnostic ignored \"-Wdocumentation-unknown-command\"") \
+_Pragma("clang diagnostic ignored \"-Wundef\"") \
+_Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
+_Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") \
+_Pragma("clang diagnostic ignored \"-Wdocumentation-deprecated-sync\"") \
+_Pragma("clang diagnostic ignored \"-Wdocumentation\"") \
+_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"") \
+_Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
+_Pragma("clang diagnostic ignored \"-Wpadded\"") \
+_Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"") \
+_Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
+_Pragma("clang diagnostic ignored \"-Wglobal-constructors\"") \
+_Pragma("clang diagnostic ignored \"-Wshadow-uncaptured-local\"") \
+_Pragma("clang diagnostic ignored \"-Wzero-as-null-pointer-constant\"")
+#define RESTORE_WARNINGS \
+_Pragma( "clang diagnostic pop" )
+#else
+    #define SUPPRESS_WARNINGS
+    #define RESTORE_WARNINGS
+#endif
+
+SUPPRESS_WARNINGS
 #include <algorithm>
 #include <array>
-//#include <atomic>
-//#include <bitset>
 #include <cassert>
-#//include <ccomplex>
-#include <cctype>
-//#include <cerrno>
-//#include <cfenv>
-//#include <cfloat>
-//#include <chrono>
-//#include <cinttypes>
-//#include <ciso646>
-//#include <climits>
-//#include <clocale>
 #include <cmath>
-//#include <codecvt>
 #include <complex>
-//#include <condition_variable>
-//#include <csetjmp>
-//#include <csignal>
-//#include <cstdarg>
-//#include <cstdbool>
-//#include <cstddef>
-//#include <cstdint>
-//#include <cstdio>
-//#include <cstdlib>
-//#include <cstring>
-//#include <ctgmath>
-//#include <ctime>
-//#include <cwchar>
-//#include <cwctype>
 #include <deque>
-#include <exception>
-#include <forward_list>
 #include <fstream>
 #include <functional>
-#include <future>
-#include <initializer_list>
 #include <iomanip>
-//#include <ios>
-//#include <iosfwd>
 #include <iostream>
-//#include <istream>
 #include <iterator>
 #include <limits>
-#include <list>
-//#include <locale>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <new>
 #include <numeric>
-//#include <ostream>
-#include <queue>
+#include <optional>
 #include <random>
-#include <ratio>
-//#include <regex>
-//#include <scoped_allocator>
 #include <set>
-//#include <shared_mutex>
 #include <sstream>
-#include <stack>
-#include <stdexcept>
 #include <streambuf>
 #include <string>
-//#include <system_error>
-#include <thread>
 #include <tuple>
 #include <type_traits>
-//#include <typeindex>
-//#include <typeinfo>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <valarray>
 #include <vector>
 
 namespace feng
 {
+    constexpr unsigned long feng_matrix_version = 20171211;
 
     template < typename Type, class Allocator = std::allocator< Type >>
     struct allocator : public Allocator
@@ -8151,3 +8131,5 @@ namespace feng
         return 0;
     }
 } //namespace feng
+
+RESTORE_WARNINGS
