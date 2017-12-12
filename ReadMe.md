@@ -309,15 +309,15 @@ n.save_as_bmp( "./images/0002_clone.bmp" );
 
 matrix m:
 
-![clone](./images/0000_cone.bmp)
+![clone](./images/0000_clone.bmp)
 
 m slicing of [0:32, 0:64]
 
-![clone](./images/0001_cone.bmp)
+![clone](./images/0001_clone.bmp)
 
 m slicing of [32:64, 0:64]
 
-![clone](./images/0002_cone.bmp)
+![clone](./images/0002_clone.bmp)
 
 -------------------
 
