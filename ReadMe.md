@@ -19,7 +19,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ### create
 
-#### create, row, col, size and shape
+#### create, row, col, size, shape, clear
 ```
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
@@ -31,6 +31,10 @@ assert( m.size() == m.row() * m.col() );
 auto const [r,c] = m.shape();
 assert( r == m.row() );
 assert( c == m.col() );
+
+m.clear();
+assert( 0 == m.row() );
+assert( 0 == m.col() );
 ```
 ![create](./images/0002_create.bmp)
 ------
@@ -50,6 +54,22 @@ m.save_as_bmp( "./images/0019_create.bmp" );
 ```
 ![create](./images/0019_create.bmp)
 ----------
+
+
+#### range-based for access
+```
+feng::matrix<double> m{ 64, 256 };
+int starter = 0;
+double const keys[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+for ( auto& x : m )
+{
+    int val = starter++ & 0x7;
+    x = keys[val];
+}
+m.save_as_bmp( "./images/0000_access.bmp" );
+```
+![access](./images/0000_access.bmp)
+-------------------------
 
 #### copying, resizing and reshaping
 ```
@@ -88,23 +108,6 @@ reshaped matrix m:
 
 ### iterations
 
-#### range-based for access
-```
-feng::matrix<double> m{ 64, 256 };
-
-int starter = 0;
-
-double const keys[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-
-for ( auto& x : m )
-{
-    int val = starter++ & 0x7;
-    x = keys[val];
-}
-m.save_as_bmp( "./images/0000_access.bmp" );
-```
-![access](./images/0000_access.bmp)
--------------------------
 
 #### elementwise apply
 ```

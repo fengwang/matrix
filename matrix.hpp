@@ -776,7 +776,7 @@ namespace feng
     {
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
-        void clear()
+        void clear() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             zen.resize( 0, 0 );

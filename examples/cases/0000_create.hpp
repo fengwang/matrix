@@ -23,6 +23,9 @@ void _0002_create()
     auto const [r,c] = m.shape();
     assert( r == m.row() );
     assert( c == m.col() );
+    m.clear();
+    assert( 0 == m.row() );
+    assert( 0 == m.col() );
 }
 
 void _0003_create()
