@@ -146,6 +146,22 @@ void _0018_create()
     m.save_as_bmp( "./images/0018_create.bmp" );
 }
 
+void _0019_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    for ( auto r = 12; r != 34; ++r )
+        for ( auto c = 34; c != 45; ++c )
+            m[r][c] = 1.0;
+
+    for ( auto r = 34; r != 45; ++r )
+        for ( auto c = 123; c != 234; ++c )
+            m(r, c) = -1.0;
+
+    m.save_as_bmp( "./images/0019_create.bmp" );
+}
+
+
 
 
 

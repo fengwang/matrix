@@ -30,6 +30,24 @@ m.save_as_bmp( "./images/0002_create.bmp" );
 ![create](./images/0002_create.bmp)
 ------
 
+
+#### element access using `operator []` or `operator ()`
+```
+feng::matrix<double> m{ 64, 256 };
+
+for ( auto r = 12; r != 34; ++r )
+    for ( auto c = 34; c != 45; ++c )
+        m[r][c] = 1.0;
+
+for ( auto r = 34; r != 45; ++r )
+    for ( auto c = 123; c != 234; ++c )
+        m(r, c) = -1.0;
+
+m.save_as_bmp( "./images/0019_create.bmp" );
+```
+![create](./images/0019_create.bmp)
+----------
+
 #### iteration from head to tail
 ```
 feng::matrix<double> m{ 64, 256 };
@@ -64,7 +82,7 @@ m.save_as_bmp( "./images/0003_create.bmp" );
 ```
 ![create](./images/0003_create.bmp)
 ------
-#### iteration through a selected col
+#### iteration through a selected column
 
 ```
 feng::matrix<double> m{ 64, 256 };
@@ -75,7 +93,7 @@ m.save_as_bmp( "./images/0004_create.bmp" );
 ```
 ![create](./images/0004_create.bmp)
 ------
-#### reverse iteration through a selected col
+#### reverse iteration through a selected column
 
 ```
 feng::matrix<double> m{ 64, 256 };
@@ -102,7 +120,7 @@ m.save_as_bmp( "./images/0012_create.bmp" );
 ```
 ![create](./images/0012_create.bmp)
 ------
-#### iteration through a selected upper diagonal
+#### iteration through upper diagonal
 ```
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_begin(17), m.upper_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
@@ -110,7 +128,7 @@ m.save_as_bmp( "./images/0007_create.bmp" );
 ```
 ![create](./images/0007_create.bmp)
 ------
-#### reverse iteration through a selected upper diagonal
+#### reverse iteration through upper diagonal
 ```
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_rbegin(17), m.upper_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
@@ -119,7 +137,7 @@ m.save_as_bmp( "./images/0008_create.bmp" );
 ![create](./images/0008_create.bmp)
 ------
 
-#### iteration through a selected lower diagonal
+#### iteration through lower diagonal
 ```
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_begin(17), m.lower_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
@@ -127,7 +145,7 @@ m.save_as_bmp( "./images/0009_create.bmp" );
 ```
 ![create](./images/0009_create.bmp)
 ------
-#### reverse iteration through a selected lower diagonal
+#### reverse iteration through lower diagonal
 ```
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_rbegin(17), m.lower_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
