@@ -1,29 +1,29 @@
 #ifdef __clang__
 #define SUPPRESS_WARNINGS \
-_Pragma("clang diagnostic push ") \
-_Pragma("clang diagnostic ignored \"-Wshorten-64-to-32\"" ) \
-_Pragma("clang diagnostic ignored \"-Wcast-align\"" ) \
-_Pragma("clang diagnostic ignored \"-Wdouble-promotion\"" ) \
-_Pragma("clang diagnostic ignored \"-Wreserved-id-macro\"" ) \
-_Pragma("clang diagnostic ignored \"-Wdocumentation-unknown-command\"") \
-_Pragma("clang diagnostic ignored \"-Wundef\"") \
-_Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
-_Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") \
-_Pragma("clang diagnostic ignored \"-Wdocumentation-deprecated-sync\"") \
-_Pragma("clang diagnostic ignored \"-Wdocumentation\"") \
-_Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"") \
-_Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
-_Pragma("clang diagnostic ignored \"-Wpadded\"") \
-_Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"") \
-_Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
-_Pragma("clang diagnostic ignored \"-Wglobal-constructors\"") \
-_Pragma("clang diagnostic ignored \"-Wshadow-uncaptured-local\"") \
-_Pragma("clang diagnostic ignored \"-Wzero-as-null-pointer-constant\"")
+    _Pragma("clang diagnostic push ") \
+    _Pragma("clang diagnostic ignored \"-Wshorten-64-to-32\"" ) \
+    _Pragma("clang diagnostic ignored \"-Wcast-align\"" ) \
+    _Pragma("clang diagnostic ignored \"-Wdouble-promotion\"" ) \
+    _Pragma("clang diagnostic ignored \"-Wreserved-id-macro\"" ) \
+    _Pragma("clang diagnostic ignored \"-Wdocumentation-unknown-command\"") \
+    _Pragma("clang diagnostic ignored \"-Wundef\"") \
+    _Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
+    _Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") \
+    _Pragma("clang diagnostic ignored \"-Wdocumentation-deprecated-sync\"") \
+    _Pragma("clang diagnostic ignored \"-Wdocumentation\"") \
+    _Pragma("clang diagnostic ignored \"-Wmissing-prototypes\"") \
+    _Pragma("clang diagnostic ignored \"-Wold-style-cast\"") \
+    _Pragma("clang diagnostic ignored \"-Wpadded\"") \
+    _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"") \
+    _Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
+    _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"") \
+    _Pragma("clang diagnostic ignored \"-Wshadow-uncaptured-local\"") \
+    _Pragma("clang diagnostic ignored \"-Wzero-as-null-pointer-constant\"")
 #define RESTORE_WARNINGS \
-_Pragma( "clang diagnostic pop" )
+    _Pragma( "clang diagnostic pop" )
 #else
-    #define SUPPRESS_WARNINGS
-    #define RESTORE_WARNINGS
+#define SUPPRESS_WARNINGS
+#define RESTORE_WARNINGS
 #endif
 
 SUPPRESS_WARNINGS
@@ -57,207 +57,207 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long feng_matrix_version = 20171211;
+    constexpr unsigned long matrix_version = 20171211;
 
     template < typename Type, class Allocator = std::allocator< Type >>
-    struct allocator : public Allocator
+    struct allocator : Allocator
     {
-            typedef Type value_type;
-            typedef allocator self_type;
-            typedef value_type* storage_type;
-            typedef value_type* pointer;
-            typedef const value_type* const_pointer;
-            typedef value_type& reference;
-            typedef const value_type& const_reference;
-            typedef value_type* iterator;
-            typedef std::reverse_iterator< iterator > reverse_iterator;
-            typedef const value_type* const_iterator;
-            typedef std::reverse_iterator< const_iterator > const_reverse_iterator;
-            typedef std::size_t size_type;
-            typedef std::ptrdiff_t difference_type;
-            typedef Allocator host_allocator_type;
-        public:
-            allocator( self_type&& other )
+        typedef Type value_type;
+        typedef allocator self_type;
+        typedef value_type* storage_type;
+        typedef value_type* pointer;
+        typedef const value_type* const_pointer;
+        typedef value_type& reference;
+        typedef const value_type& const_reference;
+        typedef value_type* iterator;
+        typedef std::reverse_iterator< iterator > reverse_iterator;
+        typedef const value_type* const_iterator;
+        typedef std::reverse_iterator< const_iterator > const_reverse_iterator;
+        typedef std::size_t size_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef Allocator host_allocator_type;
+
+        allocator( self_type&& other )
+        {
+            operator=( other );
+        }
+        self_type& operator=( self_type&& other )
+        {
+            Allocator::operator=( std::move( other ) );
+            buffer_            = other.buffer_;
+            items_             = other.items_;
+            other.buffer_      = nullptr;
+            other.items_       = 0;
+            return *this;
+        }
+        allocator( const self_type& rhs )
+            : Allocator( rhs )
+        {
+            operator=( rhs );
+        }
+        self_type& operator=( const self_type& rhs )
+        {
+            items_  = 0;
+            buffer_ = nullptr;
+
+            if ( rhs.items_ && rhs.buffer_ )
             {
-                operator=( other );
+                items_  = rhs.items_;
+                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
+                std::copy( rhs.begin(), rhs.end(), begin() );
             }
-            self_type& operator=( self_type&& other )
+
+            return *this;
+        }
+        explicit allocator( const size_type dims = 0 )
+        {
+            items_  = dims;
+            buffer_ = nullptr;
+
+            if ( items_ )
             {
-                Allocator::operator=( std::move( other ) );
-                buffer_            = other.buffer_;
-                items_             = other.items_;
-                other.buffer_      = nullptr;
-                other.items_       = 0;
-                return *this;
+                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
+                std::memset( buffer_, 0, items_ * sizeof( Type ) );
             }
-            allocator( const self_type& rhs )
-                : Allocator( rhs )
+        }
+        template < typename Input_Iterator >
+        allocator( Input_Iterator begin_, Input_Iterator end_ )
+        {
+            items_  = std::distance( begin_, end_ );
+            buffer_ = nullptr;
+
+            if ( items_ )
             {
-                operator=( rhs );
+                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
+                std::copy( begin_, end_, begin() );
             }
-            self_type& operator=( const self_type& rhs )
+        }
+        virtual ~allocator()
+        {
+            if ( items_ && buffer_ )
             {
+                Allocator::deallocate( buffer_, items_ );
+                buffer_ = nullptr;
                 items_  = 0;
-                buffer_ = nullptr;
-
-                if ( rhs.items_ && rhs.buffer_ )
-                {
-                    items_  = rhs.items_;
-                    buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                    std::copy( rhs.begin(), rhs.end(), begin() );
-                }
-
-                return *this;
             }
-            explicit allocator( const size_type dims = 0 )
-            {
-                items_  = dims;
-                buffer_ = nullptr;
+        }
+        allocator()
+            : buffer_( nullptr )
+            , items_( 0 )
+        {
+        }
+        bool empty() const
+        {
+            return ( 0 == items_ );
+        }
+        size_type size() const
+        {
+            return items_;
+        }
+        iterator begin()
+        {
+            return &buffer_[0];
+        }
+        const_iterator begin() const
+        {
+            return &buffer_[0];
+        }
+        const_iterator cbegin() const
+        {
+            return begin();
+        }
+        iterator end()
+        {
+            return begin() + size();
+        }
+        const_iterator end() const
+        {
+            return begin() + size();
+        }
+        const_iterator cend() const
+        {
+            return end();
+        }
+        reverse_iterator rbegin()
+        {
+            return reverse_iterator( end() );
+        }
+        const_reverse_iterator rbegin() const
+        {
+            return const_reverse_iterator( end() );
+        }
+        const_reverse_iterator crbegin() const
+        {
+            return rbegin();
+        }
+        reverse_iterator rend()
+        {
+            return reverse_iterator( begin() );
+        }
+        const_reverse_iterator rend() const
+        {
+            return const_reverse_iterator( begin() );
+        }
+        const_reverse_iterator crend() const
+        {
+            return rend();
+        }
+        reference operator[]( const size_type index )
+        {
+            return buffer_[index];
+        }
+        const_reference operator[]( const size_type index ) const
+        {
+            return buffer_[index];
+        }
 
-                if ( items_ )
-                {
-                    buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                    std::memset( buffer_, 0, items_ * sizeof( Type ) );
-                }
-            }
-            template < typename Input_Iterator >
-            allocator( Input_Iterator begin_, Input_Iterator end_ )
-            {
-                items_  = std::distance( begin_, end_ );
-                buffer_ = nullptr;
+        void do_copy( const self_type& rhs )
+        {
+            assign( rhs.begin(), rhs.end() );
+        }
 
-                if ( items_ )
-                {
-                    buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                    std::copy( begin_, end_, begin() );
-                }
-            }
-            virtual ~allocator()
+        template < typename Input_Iterator >
+        void assign( Input_Iterator begin_, Input_Iterator end_ )
+        {
+            const size_type dis = std::distance( begin_, end_ );
+
+            if ( items_ != dis )
             {
                 if ( items_ && buffer_ )
                 {
                     Allocator::deallocate( buffer_, items_ );
-                    buffer_ = nullptr;
                     items_  = 0;
+                    buffer_ = nullptr;
                 }
-            }
-            allocator()
-                : buffer_( nullptr )
-                , items_( 0 )
-            {
-            }
-            bool empty() const
-            {
-                return ( 0 == items_ );
-            }
-            size_type size() const
-            {
-                return items_;
-            }
-            iterator begin()
-            {
-                return &buffer_[0];
-            }
-            const_iterator begin() const
-            {
-                return &buffer_[0];
-            }
-            const_iterator cbegin() const
-            {
-                return begin();
-            }
-            iterator end()
-            {
-                return begin() + size();
-            }
-            const_iterator end() const
-            {
-                return begin() + size();
-            }
-            const_iterator cend() const
-            {
-                return end();
-            }
-            reverse_iterator rbegin()
-            {
-                return reverse_iterator( end() );
-            }
-            const_reverse_iterator rbegin() const
-            {
-                return const_reverse_iterator( end() );
-            }
-            const_reverse_iterator crbegin() const
-            {
-                return rbegin();
-            }
-            reverse_iterator rend()
-            {
-                return reverse_iterator( begin() );
-            }
-            const_reverse_iterator rend() const
-            {
-                return const_reverse_iterator( begin() );
-            }
-            const_reverse_iterator crend() const
-            {
-                return rend();
-            }
-            reference operator[]( const size_type index )
-            {
-                return buffer_[index];
-            }
-            const_reference operator[]( const size_type index ) const
-            {
-                return buffer_[index];
-            }
-        private:
-            void do_copy( const self_type& rhs )
-            {
-                assign( rhs.begin(), rhs.end() );
-            }
-        public:
-            template < typename Input_Iterator >
-            void assign( Input_Iterator begin_, Input_Iterator end_ )
-            {
-                const size_type dis = std::distance( begin_, end_ );
 
-                if ( items_ != dis )
+                items_ = dis;
+
+                if ( items_ )
                 {
-                    if ( items_ && buffer_ )
-                    {
-                        Allocator::deallocate( buffer_, items_ );
-                        items_  = 0;
-                        buffer_ = nullptr;
-                    }
-
-                    items_ = dis;
-
-                    if ( items_ )
-                    {
-                        buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                    }
+                    buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
                 }
+            }
 
-                std::copy( begin_, end_, begin() );
-            }
-        public:
-            void swap( self_type& other )
-            {
-                std::swap( buffer_, other.buffer_ );
-                std::swap( items_, other.items_ );
-            }
-        public:
-            pointer data()
-            {
-                return buffer_;
-            }
-            const_pointer data() const
-            {
-                return buffer_;
-            }
-        public:
-            pointer buffer_;
-            size_type items_;
+            std::copy( begin_, end_, begin() );
+        }
+
+        void swap( self_type& other )
+        {
+            std::swap( buffer_, other.buffer_ );
+            std::swap( items_, other.items_ );
+        }
+
+        pointer data()
+        {
+            return buffer_;
+        }
+        const_pointer data() const
+        {
+            return buffer_;
+        }
+
+        pointer buffer_;
+        size_type items_;
     };
     template < typename T1, typename A1, typename T2, typename A2 >
     bool operator==( allocator< T1, A1 > const&, allocator< T2, A2 > const& )
@@ -274,42 +274,7 @@ namespace feng
     {
         one.swap( another );
     }
-    template < typename Type, class Allocator = std::allocator< Type >>
-    struct matrix_allocator : allocator< Type, Allocator >
-    {
-        typedef std::size_t size_type;
-        typedef allocator< Type, Allocator > host_allocator_type;
-        explicit matrix_allocator( const size_type dims = 0 )
-            : host_allocator_type( dims )
-        {
-        }
-        template < typename Input_Iterator >
-        matrix_allocator( Input_Iterator begin_, Input_Iterator end_ )
-            : host_allocator_type( begin_, end_ )
-        {
-        }
-    };
 
-    template < typename T >
-    struct remove_reference
-    {
-        typedef T result_type;
-    };
-    template < typename T >
-    struct remove_reference< T& >
-    {
-        typedef T result_type;
-    };
-    template < typename T >
-    struct remove_const
-    {
-        typedef T result_type;
-    };
-    template < typename T >
-    struct remove_const< T const >
-    {
-        typedef T result_type;
-    };
     struct range
     {
         typedef range self_type;
@@ -338,9 +303,8 @@ namespace feng
         }
     };
     template < typename Iterator_Type >
-    class stride_iterator
+    struct stride_iterator
     {
-        public:
             typedef typename std::iterator_traits< Iterator_Type >::value_type value_type;
             typedef typename std::iterator_traits< Iterator_Type >::reference reference;
             typedef typename std::iterator_traits< Iterator_Type >::difference_type difference_type;
@@ -472,7 +436,6 @@ namespace feng
             {
                 step_ = step;
             }
-        private:
             Iterator_Type iterator_;
             difference_type step_;
     };
@@ -482,7 +445,7 @@ namespace feng
         typedef typename std::decay< Type >::type value_type;
         typedef value_type* iterator;
         typedef const value_type* const_iterator;
-        typedef matrix_allocator< value_type, Allocator > storage_type;
+        typedef allocator< value_type, Allocator > storage_type;
         typedef std::uint64_t size_type;
         typedef std::ptrdiff_t difference_type;
         typedef range range_type;
@@ -2695,6 +2658,7 @@ namespace feng
                 } } )
         };
     }
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_bmp
     {
@@ -4876,16 +4840,16 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
-    matrix< T, A > const zeros( const std::size_t r, const std::size_t c )
+               typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
+                       matrix< T, A > const zeros( const std::size_t r, const std::size_t c )
     {
         matrix< T, A > ans{ r, c, T( 0 ) };
         return ans;
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
-    matrix< T, A > const zeros( const std::size_t n )
+               typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
+                       matrix< T, A > const zeros( const std::size_t n )
     {
         return zeros< T, A >( n, n );
     }
@@ -6066,8 +6030,8 @@ namespace feng
     {
         std::cout << m << std::endl;
     }
-    template < typename T, typename A >
-    void disp( const matrix< T, A >& m )
+               template < typename T, typename A >
+               void disp( const matrix< T, A >& m )
     {
         display( m );
     }
@@ -6100,7 +6064,7 @@ namespace feng
     };
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const eye( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c };
@@ -6109,14 +6073,14 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const eye( const std::size_t n )
     {
         return eye< T, A >( n, n );
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const eye( const matrix< T, A >& m )
     {
         return eye< T, A >( m.row(), m.col() );
@@ -6183,7 +6147,7 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const hilb( const std::size_t n )
     {
         matrix< T, A > ans( n, n );
@@ -6199,7 +6163,7 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const hilbert( const std::size_t n )
     {
         return hilb< T, A >( n );
@@ -6430,7 +6394,7 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ones( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c, T( 1 ) };
@@ -6438,14 +6402,14 @@ namespace feng
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ones( const std::size_t n )
     {
         return ones< T, A >( n, n );
     }
     template < typename T,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ones( const matrix< T, A >& m )
     {
         return ones< T, A >( m.row(), m.col() );
@@ -6793,7 +6757,7 @@ namespace feng
     {
         return pinverse( m );
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const rand( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c };
@@ -6805,27 +6769,27 @@ namespace feng
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const rand( const std::size_t n )
     {
         return rand< T, A >( n, n );
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const rand( const matrix< T, A >& m )
     {
         return rand< T, A >( m.row(), m.col() );
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ran( const std::size_t r, const std::size_t c )
     {
         return rand< T, A >( r, c );
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ran( const std::size_t n )
     {
         return rand< T, A >( n );
     }
-    template < typename T = double, typename A = std::allocator< typename remove_const< typename remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const ran( const matrix< T, A >& m )
     {
         return rand< T, A >( m.row(), m.col() );
@@ -6851,7 +6815,7 @@ namespace feng
     template < typename Itor1,
                typename Itor2,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< typename std::iterator_traits< Itor1 >::value_type >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< typename std::iterator_traits< Itor1 >::value_type >::result_type >::result_type >>
     matrix< typename std::iterator_traits< Itor1 >::value_type, A > const toeplitz( Itor1 i1_, Itor1 _i1, Itor2 i2_, Itor2 _i2 )
     {
         std::size_t r = std::distance( i1_, _i1 );
@@ -6868,7 +6832,7 @@ namespace feng
     }
     template < typename Itor,
 
-               typename A    = std::allocator< typename remove_const< typename remove_reference< typename std::iterator_traits< Itor >::value_type >::result_type >::result_type >>
+               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< typename std::iterator_traits< Itor >::value_type >::result_type >::result_type >>
     matrix< typename std::iterator_traits< Itor >::value_type, A > const toeplitz( Itor i_, Itor _i )
     {
         return toeplitz( i_, _i, i_, _i );
