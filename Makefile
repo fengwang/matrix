@@ -10,6 +10,8 @@ BIN_DIR       = .
 LIB_DIR       = .
 LOG_DIR       = .
 
+all: test example
+
 test: tests/test.cc ./matrix.hpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJECTS_DIR)/test.o tests/test.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test $(OBJECTS_DIR)/test.o
@@ -17,4 +19,10 @@ test: tests/test.cc ./matrix.hpp
 example: examples/example.cc ./matrix.hpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJECTS_DIR)/example.o examples/example.cc
 	$(LINK) $(LFLAGS) -o $(BIN_DIR)/example $(OBJECTS_DIR)/example.o
+
+.PHONY: clean
+clean:
+	rm ./*.o
+	rm ./test
+	rm ./example
 

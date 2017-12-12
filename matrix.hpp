@@ -18,6 +18,7 @@
     _Pragma("clang diagnostic ignored \"-Wc++98-compat\"") \
     _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"") \
     _Pragma("clang diagnostic ignored \"-Wshadow-uncaptured-local\"") \
+    _Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
     _Pragma("clang diagnostic ignored \"-Wzero-as-null-pointer-constant\"")
 #define RESTORE_WARNINGS \
     _Pragma( "clang diagnostic pop" )
