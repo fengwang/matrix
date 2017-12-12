@@ -142,11 +142,6 @@ namespace feng
                 items_  = 0;
             }
         }
-        allocator()
-            : buffer_( nullptr )
-            , items_( 0 )
-        {
-        }
         bool empty() const
         {
             return ( 0 == items_ );

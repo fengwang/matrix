@@ -28,6 +28,33 @@ m.save_as_bmp( "./images/0002_create.bmp" );
 ![create](./images/0002_create.bmp)
 ------
 
+#### copying, resizing and reshaping
+```
+feng::matrix<double> m{ 64, 256 };
+for ( auto r = 12; r != 34; ++r )
+    for ( auto c = 12; c != 34; ++c )
+        m[r][c] = 1.0;
+m.save_as_bmp( "./images/0020_create.bmp" );
+
+feng::matrix<double> n = m; //copying
+n.save_as_bmp( "./images/0021_create.bmp" );
+
+n.resize( 63, 244 );
+n.save_as_bmp( "./images/0022_create.bmp" );
+
+m.reshape( m.col(), m.row() );
+m.save_as_bmp( "./images/0023_create.bmp" );
+```
+created matrix m:
+![create](./images/0020_create.bmp)
+copied matrix n:
+![create](./images/0021_create.bmp)
+resized matrix n:
+![create](./images/0022_create.bmp)
+reshaped matrix m:
+![create](./images/0023_create.bmp)
+
+
 ### element access using `operator []` or `operator ()`
 ```
 feng::matrix<double> m{ 64, 256 };
