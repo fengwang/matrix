@@ -4,5 +4,5 @@ SUPPRESS_WARNINGS
 #define CATCH_CONFIG_MAIN
 #include "./catch.hpp"
 
-#include "./cases/row.hpp"
+#include "./cases/size.hpp"
 RESTORE_WARNINGS

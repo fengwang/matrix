@@ -19,20 +19,82 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ## Example usage
 
 
-#### create
+### create
+
+#### create an empty matrix
+
 ```
-// create a matrix size of ( 64, 127 )
-feng::matrix<double> m{ 64, 128 };
-// sequentially generate values as
-// 0.1 0.2 ... 6.4
-// 6.5 6.6 ... 12.8
-// ...
-// 806.5 806.6 ... 812.8
+feng::matrix<double> m{ 64, 256 };
+m.save_as_bmp( "./images/0002_create.bmp" );
+```
+![create](./images/0002_create.bmp)
+
+#### iteration through a selected row
+
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.row_begin(17), m.row_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0001_create.bmp" );
+```
+![create](./images/0001_create.bmp)
+
+#### reverse iteration through a selected row
+
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.row_rbegin(17), m.row_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0003_create.bmp" );
+```
+![create](./images/0003_create.bmp)
+
+#### iteration through a selected col
+
+```
+feng::matrix<double> m{ 64, 256 };
+
+std::generate( m.col_begin(17), m.col_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0004_create.bmp" );
+
+```
+![create](./images/0004_create.bmp)
+
+#### reverse iteration through a selected col
+
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.col_rbegin(17), m.col_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0003_create.bmp" );
+```
+![create](./images/0005_create.bmp)
+
+
+#### iteration from head to tail
+```
+// create a matrix size of ( 64, 256 )
+feng::matrix<double> m{ 64, 256 };
+// sequentially generate matrix values
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 // save create matrix as an image
 m.save_as_bmp( "./images/0000_create.bmp" );
 ```
 ![create](./images/0000_create.bmp)
+
+
+#### size
+```
+feng::matrix mat{ 64, 127 };
+auto const& [r,c] = mat.shape();
+assert( r == 64 );
+assert( c == 127 );
+assert( mat.row() == 64 );
+assert( mat.col() == 127 );
+assert( mat.size() == 64*127 );
+mat.resize( 120, 60 );
+auto const& [nr, nc] = mat.shape();
+assert( nr == mat.row() );
+assert( nc == mat.col() );
+assert( 120*60 == mat.size() );
+```
 
 
 

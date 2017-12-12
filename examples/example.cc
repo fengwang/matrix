@@ -6,6 +6,11 @@ SUPPRESS_WARNINGS
 int main()
 {
     _0000_create();
+    _0001_create();
+    _0002_create();
+    _0003_create();
+    _0004_create();
+    _0005_create();
 
 
 

@@ -477,6 +477,19 @@ namespace feng
         typedef std::reverse_iterator< anti_diag_type > reverse_anti_diag_type;
         typedef std::reverse_iterator< const_anti_diag_type > const_reverse_anti_diag_type;
     };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_shape
+    {
+        typedef Matrix zen_type;
+
+        auto shape() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>(*this);
+            return std::make_tuple( zen.row(), zen.col() );
+        }
+    };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_anti_diag_iterator
     {
@@ -2664,7 +2677,7 @@ namespace feng
     struct crtp_save_as_bmp
     {
         typedef Matrix zen_type;
-        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "default" }, std::string const& transform = std::string{ "default" } ) const
+        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "jet" }, std::string const& transform = std::string{ "default" } ) const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
@@ -2771,7 +2784,9 @@ namespace feng
             {
                 for ( unsigned long c = 0; c < the_col; c++ )
                 {
-                    auto const& rgb = selected_map( selected_transform( max_val, min_val )( zen[r][c] ) );
+                    auto const r_ = the_row - r - 1;
+                    auto const c_ = c;
+                    auto const& rgb = selected_map( selected_transform( max_val, min_val )( zen[r_][c_] ) );
                     pixel[2]        = rgb[0];
                     pixel[1]        = rgb[1];
                     pixel[0]        = rgb[2];
@@ -4527,6 +4542,7 @@ namespace feng
         , public crtp_save_as_uniform_bmp< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_save_as_uniform_inverse_bmp< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_save_as_pgm< matrix< Type, Allocator >, Type, Allocator >
+        , public crtp_shape< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_store< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_swap< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_transpose< matrix< Type, Allocator >, Type, Allocator >
