@@ -789,7 +789,7 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         template < typename Other_Matrix >
-        zen_type& clone( const Other_Matrix& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 )
+        zen_type& clone( const Other_Matrix& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             assert( r1 > r0 );
@@ -804,6 +804,14 @@ namespace feng
                     std::copy( other.col_begin( i ) + r0, other.col_begin( i ) + r1, zen.col_begin( i - c0 ) );
 
             return zen;
+        }
+
+        zen_type const clone( size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            zen_type ans;
+            ans.clone( zen, r0, r1, c0, c1 );
+            return ans;
         }
     };
     template < typename Matrix, typename Type, typename Allocator >

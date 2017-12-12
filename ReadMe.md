@@ -290,7 +290,36 @@ m.save_as_bmp( "./images/0016_create.bmp" );
 ![create](./images/0016_create.bmp)
 ------
 
+### functions
 
+#### clone -- matrix slicing
+
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.begin(), m.end(), [](){ double x = 0.0; return [x]()mutable{ x+=0.1; return std::sin(x);}; }() );
+std::fill( m.diag_begin(), m.diag_end(), 1.1 );
+m.save_as_bmp( "./images/0000_clone.bmp" );
+// n clone from m
+auto n = m.clone( 0, 32, 0, 64 );
+n.save_as_bmp( "./images/0001_clone.bmp" );
+// n clone from m
+n.clone( m, 32, 64, 0, 64 );
+n.save_as_bmp( "./images/0002_clone.bmp" );
+```
+
+matrix m:
+
+![clone](./images/0000_cone.bmp)
+
+m slicing of [0:32, 0:64]
+
+![clone](./images/0001_cone.bmp)
+
+m slicing of [32:64, 0:64]
+
+![clone](./images/0002_cone.bmp)
+
+-------------------
 
 
 
