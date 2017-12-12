@@ -2,7 +2,39 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ### Contents
 
-- [Example usage](#example-usage)
+- [Example usage](#example-usage
+    + basic operations
+      + [row, col, size, shape, clear](#create-row-col-size-shape-clear)
+      + [element access](#element-access-using-operator--or-operator-)
+      + [range based for](#range-based-for-access)
+      + [copy, resize, reshape](copying-resizing-and-reshaping)
+    + [iterations](#iterations)
+      - [element-wise apply](#elementwise-apply)
+      - [head->tail iteration](#iteration-from-head-to-tail)
+      - [tail->head iteration](#iteration-from-tail-to-head)
+      - [row iteration](#iteration-through-a-selected-row)
+      - [reversed row iteration](#reverse-iteration-through-a-selected-row)
+      - [column iteration](#iteration-through-a-selected-column)
+      - [reversed column iteration](#reverse-iteration-through-a-selected-column)
+      - [diagonal iteration](#iteration-through-diagonal)
+      - [reversed diagonal iteration](#reverse-iteration-through-diagonal)
+      - [upper diagonal iteration](#iteration-through-upper-diagonal)
+      - [reversed upper diagonal iteration](#reverse-iteration-through-upper-diagonal)
+      - [lower diagonal iteration](#iteration-through-lower-diagonal)
+      - [reversed lower diagonal iteration](#reverse-iteration-through-lower-diagonal)
+      - [anti-diagonal iteration](#iteration-through-anti-diagonal)
+      - [reversed anti-diagonal iteration](#reverse-iteration-through-anti-diagonal)
+      - [upper anti-diagonal iteration](#iterator-through-upper-anti-diagonal)
+      - [reversed upper anti-diagonal iteration](#reverse-iteration-through-upper-anti-diagonal)
+      - [lower anti-diagonal iteration](#iteration-through-lower-anti-diagonal)
+      - [reversed lower anti-diagonal iteration](#reverse-iteration-through-lower-anti-diagonal)
+   + [built-in functions](#functions)
+     - [clone -- matrix slicing](#clone----matrix-slicing)
+     - [data -- accessing raw memory](#data----raw-memory-access)
+     - [det -- matrix determinant](#det----matrix-determinant)
+     + MORE TODO
+
+
 - [License](#license)
 - [Dependency](#dependency)
 - [Installation](#installation)
@@ -36,7 +68,8 @@ m.clear();
 assert( 0 == m.row() );
 assert( 0 == m.col() );
 ```
-<span style="display:block;text-align:right">![create](./images/0002_create.bmp))</span>
+![create](./images/0002_create.bmp)
+
 ------
 
 ### element access using `operator []` or `operator ()`
