@@ -98,6 +98,59 @@ void _0012_create()
     m.save_as_bmp( "./images/0012_create.bmp" );
 }
 
+void _0013_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.upper_anti_diag_begin(17), m.upper_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0013_create.bmp" );
+}
+
+void _0014_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.upper_anti_diag_rbegin(17), m.upper_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0014_create.bmp" );
+}
+
+void _0015_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.lower_anti_diag_begin(17), m.lower_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0015_create.bmp" );
+}
+
+void _0016_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.lower_anti_diag_rbegin(17), m.lower_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0016_create.bmp" );
+}
+
+void _0017_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.anti_diag_begin(), m.anti_diag_end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0017_create.bmp" );
+}
+
+void _0018_create()
+{
+    feng::matrix<double> m{ 64, 256 };
+
+    std::generate( m.anti_diag_rbegin(), m.anti_diag_rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0018_create.bmp" );
+}
+
+
+
+
+
+
 
 
 

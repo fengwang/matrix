@@ -28,30 +28,24 @@ feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
 ```
 ![create](./images/0002_create.bmp)
-
+------
 
 #### iteration from head to tail
 ```
-// create a matrix size of ( 64, 256 )
 feng::matrix<double> m{ 64, 256 };
-// sequentially generate matrix values
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-// save create matrix as an image
 m.save_as_bmp( "./images/0000_create.bmp" );
 ```
 ![create](./images/0000_create.bmp)
-
+------
 #### iteration from tail to head
 ```
-// create a matrix size of ( 64, 256 )
 feng::matrix<double> m{ 64, 256 };
-// sequentially generate matrix values
 std::generate( m.rbegin(), m.rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-// save create matrix as an image
 m.save_as_bmp( "./images/0006_create.bmp" );
 ```
 ![create](./images/0006_create.bmp)
-
+------
 #### iteration through a selected row
 
 ```
@@ -60,7 +54,7 @@ std::generate( m.row_begin(17), m.row_end(17),  [](){ double init = 0.0; return 
 m.save_as_bmp( "./images/0001_create.bmp" );
 ```
 ![create](./images/0001_create.bmp)
-
+------
 #### reverse iteration through a selected row
 
 ```
@@ -69,7 +63,7 @@ std::generate( m.row_rbegin(17), m.row_rend(17),  [](){ double init = 0.0; retur
 m.save_as_bmp( "./images/0003_create.bmp" );
 ```
 ![create](./images/0003_create.bmp)
-
+------
 #### iteration through a selected col
 
 ```
@@ -80,7 +74,7 @@ m.save_as_bmp( "./images/0004_create.bmp" );
 
 ```
 ![create](./images/0004_create.bmp)
-
+------
 #### reverse iteration through a selected col
 
 ```
@@ -89,40 +83,7 @@ std::generate( m.col_rbegin(17), m.col_rend(17),  [](){ double init = 0.0; retur
 m.save_as_bmp( "./images/0003_create.bmp" );
 ```
 ![create](./images/0005_create.bmp)
-
-#### iteration through a selected upper diagonal
-```
-feng::matrix<double> m{ 64, 256 };
-std::generate( m.upper_diag_begin(17), m.upper_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-m.save_as_bmp( "./images/0007_create.bmp" );
-```
-![create](./images/0007_create.bmp)
-
-#### reverse iteration through a selected upper diagonal
-```
-feng::matrix<double> m{ 64, 256 };
-std::generate( m.upper_diag_rbegin(17), m.upper_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-m.save_as_bmp( "./images/0008_create.bmp" );
-```
-![create](./images/0008_create.bmp)
-
-
-#### iteration through a selected lower diagonal
-```
-feng::matrix<double> m{ 64, 256 };
-std::generate( m.lower_diag_begin(17), m.lower_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-m.save_as_bmp( "./images/0009_create.bmp" );
-```
-![create](./images/0009_create.bmp)
-
-#### reverse iteration through a selected lower diagonal
-```
-feng::matrix<double> m{ 64, 256 };
-std::generate( m.lower_diag_rbegin(17), m.lower_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
-m.save_as_bmp( "./images/0010_create.bmp" );
-```
-![create](./images/0010_create.bmp)
-
+------
 #### iteration through diagonal
 
 ```
@@ -131,7 +92,7 @@ std::generate( m.diag_begin(), m.diag_end(),  [](){ double init = 0.0; return [i
 m.save_as_bmp( "./images/0011_create.bmp" );
 ```
 ![create](./images/0011_create.bmp)
-
+------
 #### reverse iteration through diagonal
 
 ```
@@ -140,6 +101,98 @@ std::generate( m.diag_rbegin(), m.diag_rend(),  [](){ double init = 0.0; return 
 m.save_as_bmp( "./images/0012_create.bmp" );
 ```
 ![create](./images/0012_create.bmp)
+------
+#### iteration through a selected upper diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.upper_diag_begin(17), m.upper_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0007_create.bmp" );
+```
+![create](./images/0007_create.bmp)
+------
+#### reverse iteration through a selected upper diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.upper_diag_rbegin(17), m.upper_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0008_create.bmp" );
+```
+![create](./images/0008_create.bmp)
+------
+
+#### iteration through a selected lower diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.lower_diag_begin(17), m.lower_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0009_create.bmp" );
+```
+![create](./images/0009_create.bmp)
+------
+#### reverse iteration through a selected lower diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.lower_diag_rbegin(17), m.lower_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0010_create.bmp" );
+```
+![create](./images/0010_create.bmp)
+------
+
+
+#### iteration through anti diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.anti_diag_begin(), m.anti_diag_end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0017_create.bmp" );
+```
+![create](./images/0017_create.bmp)
+------
+
+#### reverse iteration through anti diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+iag_rbegin(), m.anti_diag_rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0018_create.bmp" );
+```
+![create](./images/0018_create.bmp)
+------
+
+#### iterator through upper anti diagonal
+
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.upper_anti_diag_begin(17), m.upper_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0013_create.bmp" );
+```
+![create](./images/0013_create.bmp)
+------
+
+#### reverse iteration through upper anti diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.upper_anti_diag_rbegin(17), m.upper_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0014_create.bmp" );
+```
+![create](./images/0014_create.bmp)
+------
+
+#### iteration through lower anti diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.lower_anti_diag_begin(17), m.lower_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0015_create.bmp" );
+```
+![create](./images/0015_create.bmp)
+------
+
+#### reverse iteration through lower anti diagonal
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.lower_anti_diag_rbegin(17), m.lower_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0016_create.bmp" );
+```
+![create](./images/0016_create.bmp)
+------
+
+
 
 
 #### size
