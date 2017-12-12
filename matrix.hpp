@@ -2778,8 +2778,14 @@ namespace feng
             stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
             unsigned char pad[3] = { 0, 0, 0 };
             unsigned char pixel[3];
-            double const max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
-            double const min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
+            double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
+            double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
+
+            if (max_val - min_val < 1.0e-10)
+            {
+                max_val += 1.0e-10;
+                min_val -= 1.0e-10;
+            }
 
             for ( unsigned long r = 0; r < the_row; r++ )
             {
