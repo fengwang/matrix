@@ -78,27 +78,33 @@ for ( auto r = 12; r != 34; ++r )
     for ( auto c = 12; c != 34; ++c )
         m[r][c] = 1.0;
 m.save_as_bmp( "./images/0020_create.bmp" );
-
-feng::matrix<double> n = m; //copying
-n.save_as_bmp( "./images/0021_create.bmp" );
-
-n.resize( 63, 244 );
-n.save_as_bmp( "./images/0022_create.bmp" );
-
-m.reshape( m.col(), m.row() );
-m.save_as_bmp( "./images/0023_create.bmp" );
 ```
 created matrix m:
 
 ![create](./images/0020_create.bmp)
 
+```
+feng::matrix<double> n = m; //copying
+n.save_as_bmp( "./images/0021_create.bmp" );
+```
+
 copied matrix n:
 
 ![create](./images/0021_create.bmp)
 
+```
+n.resize( 63, 244 );
+n.save_as_bmp( "./images/0022_create.bmp" );
+```
+
 resized matrix n:
 
 ![create](./images/0022_create.bmp)
+
+```
+m.reshape( m.col(), m.row() );
+m.save_as_bmp( "./images/0023_create.bmp" );
+```
 
 reshaped matrix m:
 
@@ -114,13 +120,15 @@ reshaped matrix m:
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0000_apply.bmp" );
-
-m.apply( [](auto& x) { x = std::sin(x); } );
-m.save_as_bmp( "./images/0001_apply.bmp" );
 ```
 before apply:
 
 ![apply](./images/0000_apply.bmp)
+
+```
+m.apply( [](auto& x) { x = std::sin(x); } );
+m.save_as_bmp( "./images/0001_apply.bmp" );
+```
 
 after apply:
 
@@ -298,19 +306,25 @@ m.save_as_bmp( "./images/0016_create.bmp" );
 feng::matrix<double> m{ 64, 256 };
 std::fill( m.diag_begin(), m.diag_end(), 1.1 );
 m.save_as_bmp( "./images/0000_clone.bmp" );
-auto n = m.clone( 0, 32, 0, 64 );
-n.save_as_bmp( "./images/0001_clone.bmp" );
-n.clone( m, 32, 64, 0, 64 );
-n.save_as_bmp( "./images/0002_clone.bmp" );
 ```
 
 matrix m:
 
 ![clone](./images/0000_clone.bmp)
 
+```
+auto n = m.clone( 0, 32, 0, 64 );
+n.save_as_bmp( "./images/0001_clone.bmp" );
+```
+
 m slicing of [0:32, 0:64]:
 
 ![clone](./images/0001_clone.bmp)
+
+```
+n.clone( m, 32, 64, 0, 64 );
+n.save_as_bmp( "./images/0002_clone.bmp" );
+```
 
 m slicing of [32:64, 0:64]:
 
@@ -322,16 +336,19 @@ m slicing of [32:64, 0:64]:
 ```
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0000_data.bmp" );
-auto ptr = m.data();
-for (  auto idx = 0UL; idx != m.size(); ++idx )
-    ptr[idx] = std::sin( idx*idx*0.1 );
-m.save_as_bmp( "./images/0001_data.bmp" );
 ```
 
 
 original matrix
 
 ![clone](./images/0000_data.bmp)
+
+```
+auto ptr = m.data();
+for (  auto idx = 0UL; idx != m.size(); ++idx )
+    ptr[idx] = std::sin( idx*idx*0.1 );
+m.save_as_bmp( "./images/0001_data.bmp" );
+```
 
 after modification
 
