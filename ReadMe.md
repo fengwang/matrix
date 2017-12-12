@@ -2,7 +2,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ### Contents
 
-- [Example usage](#example-usage
+- [Example usage](#example-usage)
     + basic operations
       + [row, col, size, shape, clear](#create-row-col-size-shape-clear)
       + [element access](#element-access-using-operator--or-operator-)
