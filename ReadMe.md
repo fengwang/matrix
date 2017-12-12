@@ -18,6 +18,24 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ## Example usage
 
+
+#### create
+```
+// create a matrix size of ( 64, 127 )
+feng::matrix<double> m{ 64, 128 };
+// sequentially generate values as
+// 0.1 0.2 ... 6.4
+// 6.5 6.6 ... 12.8
+// ...
+// 806.5 806.6 ... 812.8
+std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+// save create matrix as an image
+m.save_as_bmp( "./images/0000_create.bmp" );
+```
+![create](./images/0000_create.bmp)
+
+
+
 ## In A nutshell
 
 ## Dependencies
