@@ -3,11 +3,9 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ### Contents
 
 - [Example usage](#example-usage)
-- [In a nutshell](#in-a-nutshell)
 - [License](#license)
 - [Dependencies](#dependencies)
 - [Installation](#installation)
-- [Usage](#usage)
 - [Building tests and examples](#building-tests-and-examples)
 - [Notes and references](#notes-and-references)
 + [Design](#esign)
@@ -30,8 +28,7 @@ m.save_as_bmp( "./images/0002_create.bmp" );
 ![create](./images/0002_create.bmp)
 ------
 
-
-#### element access using `operator []` or `operator ()`
+### element access using `operator []` or `operator ()`
 ```
 feng::matrix<double> m{ 64, 256 };
 
@@ -47,6 +44,8 @@ m.save_as_bmp( "./images/0019_create.bmp" );
 ```
 ![create](./images/0019_create.bmp)
 ----------
+
+### iterations
 
 #### iteration from head to tail
 ```
@@ -229,19 +228,36 @@ assert( nc == mat.col() );
 assert( 120*60 == mat.size() );
 ```
 
+## license
 
+```
+Copyright <2017> <Feng Wang>
 
-## In A nutshell
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
 
 ## Dependencies
 
-## Installation
+This library only depends on a C++-17 standards.
 
-## Usage
+## Installation
+This is a single-file header-only library. Put `matrix.hpp` directly into the project source tree or somewhere reachable from your project.
+
+
 
 ## [Synopsis](#header-matrix-synopsis)
 
 ## Building tests and examples
+
+Simple execute `make` or `make test` or `make example` at the root folder.
 
 ## Notes and references
 
