@@ -88,6 +88,24 @@ reshaped matrix m:
 
 ### iterations
 
+#### range-based for access
+```
+feng::matrix<double> m{ 64, 256 };
+
+int starter = 0;
+
+double const keys[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+for ( auto& x : m )
+{
+    int val = starter++ & 0x7;
+    x = keys[val];
+}
+m.save_as_bmp( "./images/0000_access.bmp" );
+```
+![access](./images/0000_access.bmp)
+-------------------------
+
 #### elementwise apply
 ```
 feng::matrix<double> m{ 64, 256 };
@@ -104,6 +122,8 @@ before apply:
 after apply:
 
 ![apply](./images/0001_apply.bmp)
+
+---------------------
 
 #### iteration from head to tail
 ```

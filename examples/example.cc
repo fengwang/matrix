@@ -3,6 +3,7 @@
 SUPPRESS_WARNINGS
 #include "./cases/0000_create.hpp"
 #include "./cases/0001_apply.hpp"
+#include "./cases/0002_access.hpp"
 
 int main()
 {
@@ -30,6 +31,7 @@ int main()
 
 
     _0000_apply();
+    _0000_access();
 
     return 0;
 }

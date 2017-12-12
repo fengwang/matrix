@@ -758,13 +758,13 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::row_type row_type;
         typedef typename type_proxy_type::const_row_type const_row_type;
-        row_type operator[]( const size_type index )
+        row_type operator[]( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             assert( index < zen.row() && "Row index outof boundary!" );
             return zen.row_begin( index );
         }
-        const_row_type operator[]( const size_type index ) const
+        const_row_type operator[]( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( index < zen.row() && "Row index outof boundary!" );
