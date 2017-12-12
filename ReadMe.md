@@ -36,7 +36,7 @@ m.clear();
 assert( 0 == m.row() );
 assert( 0 == m.col() );
 ```
-![create](./images/0002_create.bmp)
+<span style="display:block;text-align:right">![create](./images/0002_create.bmp)
 ------
 
 ### element access using `operator []` or `operator ()`
