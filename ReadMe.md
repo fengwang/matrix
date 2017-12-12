@@ -23,9 +23,11 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ```
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
+
 assert( m.row() == 64 );
 assert( m.col() == 256 );
 assert( m.size() == m.row() * m.col() );
+
 auto const [r,c] = m.shape();
 assert( r == m.row() );
 assert( c == m.col() );
@@ -36,7 +38,6 @@ assert( c == m.col() );
 ### element access using `operator []` or `operator ()`
 ```
 feng::matrix<double> m{ 64, 256 };
-
 for ( auto r = 12; r != 34; ++r )
     for ( auto c = 34; c != 45; ++c )
         m[r][c] = 1.0;
@@ -68,15 +69,19 @@ m.reshape( m.col(), m.row() );
 m.save_as_bmp( "./images/0023_create.bmp" );
 ```
 created matrix m:
+
 ![create](./images/0020_create.bmp)
 
 copied matrix n:
+
 ![create](./images/0021_create.bmp)
 
 resized matrix n:
+
 ![create](./images/0022_create.bmp)
 
 reshaped matrix m:
+
 ![create](./images/0023_create.bmp)
 ----------
 
