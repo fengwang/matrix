@@ -20,7 +20,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ### create
 
 #### create, row, col, size, shape, clear
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
 
@@ -36,11 +36,11 @@ m.clear();
 assert( 0 == m.row() );
 assert( 0 == m.col() );
 ```
-<span style="display:block;text-align:right">![create](./images/0002_create.bmp)
+<span style="display:block;text-align:right">![create](./images/0002_create.bmp))</span>
 ------
 
 ### element access using `operator []` or `operator ()`
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 for ( auto r = 12; r != 34; ++r )
     for ( auto c = 34; c != 45; ++c )
@@ -57,7 +57,7 @@ m.save_as_bmp( "./images/0019_create.bmp" );
 
 
 #### range-based for access
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 int starter = 0;
 double const keys[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
@@ -72,7 +72,7 @@ m.save_as_bmp( "./images/0000_access.bmp" );
 -------------------------
 
 #### copying, resizing and reshaping
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 for ( auto r = 12; r != 34; ++r )
     for ( auto c = 12; c != 34; ++c )
@@ -83,7 +83,7 @@ created matrix m:
 
 ![create](./images/0020_create.bmp)
 
-```
+```cpp
 feng::matrix<double> n = m; //copying
 n.save_as_bmp( "./images/0021_create.bmp" );
 ```
@@ -92,7 +92,7 @@ copied matrix n:
 
 ![create](./images/0021_create.bmp)
 
-```
+```cpp
 n.resize( 63, 244 );
 n.save_as_bmp( "./images/0022_create.bmp" );
 ```
@@ -101,7 +101,7 @@ resized matrix n:
 
 ![create](./images/0022_create.bmp)
 
-```
+```cpp
 m.reshape( m.col(), m.row() );
 m.save_as_bmp( "./images/0023_create.bmp" );
 ```
@@ -116,7 +116,7 @@ reshaped matrix m:
 
 
 #### elementwise apply
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0000_apply.bmp" );
@@ -125,7 +125,7 @@ before apply:
 
 ![apply](./images/0000_apply.bmp)
 
-```
+```cpp
 m.apply( [](auto& x) { x = std::sin(x); } );
 m.save_as_bmp( "./images/0001_apply.bmp" );
 ```
@@ -137,7 +137,7 @@ after apply:
 ---------------------
 
 #### iteration from head to tail
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0000_create.bmp" );
@@ -145,7 +145,7 @@ m.save_as_bmp( "./images/0000_create.bmp" );
 ![create](./images/0000_create.bmp)
 ------
 #### iteration from tail to head
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.rbegin(), m.rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0006_create.bmp" );
@@ -154,7 +154,7 @@ m.save_as_bmp( "./images/0006_create.bmp" );
 ------
 #### iteration through a selected row
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.row_begin(17), m.row_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0001_create.bmp" );
@@ -163,7 +163,7 @@ m.save_as_bmp( "./images/0001_create.bmp" );
 ------
 #### reverse iteration through a selected row
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.row_rbegin(17), m.row_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0003_create.bmp" );
@@ -172,9 +172,8 @@ m.save_as_bmp( "./images/0003_create.bmp" );
 ------
 #### iteration through a selected column
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
-
 std::generate( m.col_begin(17), m.col_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0004_create.bmp" );
 
@@ -183,7 +182,7 @@ m.save_as_bmp( "./images/0004_create.bmp" );
 ------
 #### reverse iteration through a selected column
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.col_rbegin(17), m.col_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0003_create.bmp" );
@@ -192,7 +191,7 @@ m.save_as_bmp( "./images/0003_create.bmp" );
 ------
 #### iteration through diagonal
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.diag_begin(), m.diag_end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0011_create.bmp" );
@@ -201,7 +200,7 @@ m.save_as_bmp( "./images/0011_create.bmp" );
 ------
 #### reverse iteration through diagonal
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.diag_rbegin(), m.diag_rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0012_create.bmp" );
@@ -209,7 +208,7 @@ m.save_as_bmp( "./images/0012_create.bmp" );
 ![create](./images/0012_create.bmp)
 ------
 #### iteration through upper diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_begin(17), m.upper_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0007_create.bmp" );
@@ -217,7 +216,7 @@ m.save_as_bmp( "./images/0007_create.bmp" );
 ![create](./images/0007_create.bmp)
 ------
 #### reverse iteration through upper diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_rbegin(17), m.upper_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0008_create.bmp" );
@@ -226,7 +225,7 @@ m.save_as_bmp( "./images/0008_create.bmp" );
 ------
 
 #### iteration through lower diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_begin(17), m.lower_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0009_create.bmp" );
@@ -234,7 +233,7 @@ m.save_as_bmp( "./images/0009_create.bmp" );
 ![create](./images/0009_create.bmp)
 ------
 #### reverse iteration through lower diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_rbegin(17), m.lower_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0010_create.bmp" );
@@ -244,7 +243,7 @@ m.save_as_bmp( "./images/0010_create.bmp" );
 
 
 #### iteration through anti diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.anti_diag_begin(), m.anti_diag_end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0017_create.bmp" );
@@ -253,7 +252,7 @@ m.save_as_bmp( "./images/0017_create.bmp" );
 ------
 
 #### reverse iteration through anti diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 iag_rbegin(), m.anti_diag_rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0018_create.bmp" );
@@ -263,7 +262,7 @@ m.save_as_bmp( "./images/0018_create.bmp" );
 
 #### iterator through upper anti diagonal
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_anti_diag_begin(17), m.upper_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0013_create.bmp" );
@@ -272,7 +271,7 @@ m.save_as_bmp( "./images/0013_create.bmp" );
 ------
 
 #### reverse iteration through upper anti diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_anti_diag_rbegin(17), m.upper_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0014_create.bmp" );
@@ -281,7 +280,7 @@ m.save_as_bmp( "./images/0014_create.bmp" );
 ------
 
 #### iteration through lower anti diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_anti_diag_begin(17), m.lower_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0015_create.bmp" );
@@ -290,7 +289,7 @@ m.save_as_bmp( "./images/0015_create.bmp" );
 ------
 
 #### reverse iteration through lower anti diagonal
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_anti_diag_rbegin(17), m.lower_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0016_create.bmp" );
@@ -302,7 +301,7 @@ m.save_as_bmp( "./images/0016_create.bmp" );
 
 #### clone -- matrix slicing
 
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 std::fill( m.diag_begin(), m.diag_end(), 1.1 );
 m.save_as_bmp( "./images/0000_clone.bmp" );
@@ -312,7 +311,7 @@ matrix m:
 
 ![clone](./images/0000_clone.bmp)
 
-```
+```cpp
 auto n = m.clone( 0, 32, 0, 64 );
 n.save_as_bmp( "./images/0001_clone.bmp" );
 ```
@@ -321,7 +320,7 @@ m slicing of [0:32, 0:64]:
 
 ![clone](./images/0001_clone.bmp)
 
-```
+```cpp
 n.clone( m, 32, 64, 0, 64 );
 n.save_as_bmp( "./images/0002_clone.bmp" );
 ```
@@ -333,7 +332,7 @@ m slicing of [32:64, 0:64]:
 -------------------
 
 #### data -- raw memory access
-```
+```cpp
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0000_data.bmp" );
 ```
@@ -341,9 +340,9 @@ m.save_as_bmp( "./images/0000_data.bmp" );
 
 original matrix
 
-![clone](./images/0000_data.bmp)
+![data](./images/0000_data.bmp)
 
-```
+```cpp
 auto ptr = m.data();
 for (  auto idx = 0UL; idx != m.size(); ++idx )
     ptr[idx] = std::sin( idx*idx*0.1 );
@@ -352,7 +351,24 @@ m.save_as_bmp( "./images/0001_data.bmp" );
 
 after modification
 
-![clone](./images/0001_data.bmp)
+![data](./images/0001_data.bmp)
+
+
+--------------------
+
+#### det -- matrix determinant
+
+```cpp
+feng::matrix<double> m{ 128, 128 };
+std::generate( m.diag_begin(), m.diag_end(), [](){ double x = 0.9; return [x]() mutable { x+= 0.156; return x; }(); } );
+double det1 = m.det();
+double det2 = std::accumulate( m.diag_begin(), m.diag_end(), 1.0, []( double x, double y ){ return x*y; } );
+std::cout << det1 << "\t:\t" << det2 << std::endl;
+```
+generated output is
+```
+1069.00941294551	:	1069.0094129455
+```
 
 
 

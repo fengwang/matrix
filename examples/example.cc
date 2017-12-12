@@ -6,6 +6,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0002_access.hpp"
 #include "./cases/0003_clone.hpp"
 #include "./cases/0004_data.hpp"
+#include "./cases/0005_det.hpp"
 
 int main()
 {
@@ -36,6 +37,7 @@ int main()
     _0000_access();
     _0000_clone();
     _0000_data();
+    _0000_det();
 
     return 0;
 }

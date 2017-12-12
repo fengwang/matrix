@@ -885,7 +885,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         template < typename Other_Matrix >
-        void copy( const Other_Matrix& rhs )
+        void copy( const Other_Matrix& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             zen.row_      = rhs.row();
@@ -900,12 +900,12 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::pointer pointer;
         typedef typename type_proxy_type::const_pointer const_pointer;
-        pointer data()
+        pointer data() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return zen.data_.data();
         }
-        const_pointer data() const
+        const_pointer data() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.data_.data();
@@ -919,7 +919,7 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
-        value_type det() const
+        value_type det() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( zen.row() == zen.col() );
@@ -1427,7 +1427,7 @@ namespace feng
                 }
 
                 const value_type factor = a[i][i];
-                assert( factor != value_type() );
+                assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() );
                 std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x )
                 {
                     x /= factor;
@@ -2781,7 +2781,7 @@ namespace feng
             double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
             double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
 
-            if (max_val - min_val < 1.0e-10)
+            if ( max_val - min_val < 1.0e-10 )
             {
                 max_val += 1.0e-10;
                 min_val -= 1.0e-10;
