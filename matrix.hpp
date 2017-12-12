@@ -824,57 +824,57 @@ namespace feng
         typedef typename type_proxy_type::const_col_type const_col_type;
         typedef typename type_proxy_type::reverse_col_type reverse_col_type;
         typedef typename type_proxy_type::const_reverse_col_type const_reverse_col_type;
-        col_type col_begin( const size_type index )
+        col_type col_begin( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return col_type( zen.begin() + index, zen.col() );
         }
-        col_type col_end( const size_type index )
+        col_type col_end( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return col_begin( index ) + zen.row();
         }
-        const_col_type col_begin( const size_type index ) const
+        const_col_type col_begin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_col_type( zen.begin() + index, zen.col() );
         }
-        const_col_type col_end( const size_type index ) const
+        const_col_type col_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return col_begin( index ) + zen.row();
         }
-        const_col_type col_cbegin( const size_type index ) const
+        const_col_type col_cbegin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_col_type( zen.begin() + index, zen.col() );
         }
-        const_col_type col_cend( const size_type index ) const
+        const_col_type col_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return col_begin( index ) + zen.row();
         }
-        reverse_col_type col_rbegin( const size_type index = 0 )
+        reverse_col_type col_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_col_type( col_end( index ) );
         }
-        reverse_col_type col_rend( const size_type index = 0 )
+        reverse_col_type col_rend( const size_type index = 0 ) noexcept
         {
             return reverse_col_type( col_begin( index ) );
         }
-        const_reverse_col_type col_rbegin( const size_type index = 0 ) const
+        const_reverse_col_type col_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_col_type( col_end( index ) );
         }
-        const_reverse_col_type col_rend( const size_type index = 0 ) const
+        const_reverse_col_type col_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_col_type( col_begin( index ) );
         }
-        const_reverse_col_type col_crbegin( const size_type index = 0 ) const
+        const_reverse_col_type col_crbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_col_type( col_end( index ) );
         }
-        const_reverse_col_type col_crend( const size_type index = 0 ) const
+        const_reverse_col_type col_crend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_col_type( col_begin( index ) );
         }
