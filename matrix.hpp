@@ -78,11 +78,11 @@ namespace feng
         typedef std::ptrdiff_t difference_type;
         typedef Allocator host_allocator_type;
 
-        allocator( self_type&& other )
+        allocator( self_type&& other ) noexcept
         {
             operator=( other );
         }
-        self_type& operator=( self_type&& other )
+        self_type& operator=( self_type&& other ) noexcept
         {
             Allocator::operator=( std::move( other ) );
             buffer_            = other.buffer_;
@@ -91,12 +91,12 @@ namespace feng
             other.items_       = 0;
             return *this;
         }
-        allocator( const self_type& rhs )
+        allocator( const self_type& rhs ) noexcept
             : Allocator( rhs )
         {
             operator=( rhs );
         }
-        self_type& operator=( const self_type& rhs )
+        self_type& operator=( const self_type& rhs ) noexcept
         {
             items_  = 0;
             buffer_ = nullptr;
@@ -110,7 +110,7 @@ namespace feng
 
             return *this;
         }
-        explicit allocator( const size_type dims = 0 )
+        explicit allocator( const size_type dims = 0 ) noexcept
         {
             items_  = dims;
             buffer_ = nullptr;
@@ -122,7 +122,7 @@ namespace feng
             }
         }
         template < typename Input_Iterator >
-        allocator( Input_Iterator begin_, Input_Iterator end_ )
+        allocator( Input_Iterator begin_, Input_Iterator end_ ) noexcept
         {
             items_  = std::distance( begin_, end_ );
             buffer_ = nullptr;
@@ -133,7 +133,7 @@ namespace feng
                 std::copy( begin_, end_, begin() );
             }
         }
-        virtual ~allocator()
+        virtual ~allocator() noexcept
         {
             if ( items_ && buffer_ )
             {
@@ -142,11 +142,11 @@ namespace feng
                 items_  = 0;
             }
         }
-        bool empty() const
+        bool empty() const noexcept
         {
             return ( 0 == items_ );
         }
-        size_type size() const
+        size_type size() const noexcept
         {
             return items_;
         }
@@ -154,66 +154,66 @@ namespace feng
         {
             return &buffer_[0];
         }
-        const_iterator begin() const
+        const_iterator begin() const noexcept
         {
             return &buffer_[0];
         }
-        const_iterator cbegin() const
+        const_iterator cbegin() const noexcept
         {
             return begin();
         }
-        iterator end()
+        iterator end() noexcept
         {
             return begin() + size();
         }
-        const_iterator end() const
+        const_iterator end() const noexcept
         {
             return begin() + size();
         }
-        const_iterator cend() const
+        const_iterator cend() const noexcept
         {
             return end();
         }
-        reverse_iterator rbegin()
+        reverse_iterator rbegin() noexcept
         {
             return reverse_iterator( end() );
         }
-        const_reverse_iterator rbegin() const
+        const_reverse_iterator rbegin() const noexcept
         {
             return const_reverse_iterator( end() );
         }
-        const_reverse_iterator crbegin() const
+        const_reverse_iterator crbegin() const noexcept
         {
             return rbegin();
         }
-        reverse_iterator rend()
+        reverse_iterator rend() noexcept
         {
             return reverse_iterator( begin() );
         }
-        const_reverse_iterator rend() const
+        const_reverse_iterator rend() const noexcept
         {
             return const_reverse_iterator( begin() );
         }
-        const_reverse_iterator crend() const
+        const_reverse_iterator crend() const noexcept
         {
             return rend();
         }
-        reference operator[]( const size_type index )
+        reference operator[]( const size_type index ) noexcept
         {
             return buffer_[index];
         }
-        const_reference operator[]( const size_type index ) const
+        const_reference operator[]( const size_type index ) const noexcept
         {
             return buffer_[index];
         }
 
-        void do_copy( const self_type& rhs )
+        void do_copy( const self_type& rhs ) noexcept
         {
             assign( rhs.begin(), rhs.end() );
         }
 
         template < typename Input_Iterator >
-        void assign( Input_Iterator begin_, Input_Iterator end_ )
+        void assign( Input_Iterator begin_, Input_Iterator end_ ) noexcept
         {
             const size_type dis = std::distance( begin_, end_ );
 
@@ -237,17 +237,17 @@ namespace feng
             std::copy( begin_, end_, begin() );
         }
 
-        void swap( self_type& other )
+        void swap( self_type& other ) noexcept
         {
             std::swap( buffer_, other.buffer_ );
             std::swap( items_, other.items_ );
         }
 
-        pointer data()
+        pointer data() noexcept
         {
             return buffer_;
         }
-        const_pointer data() const
+        const_pointer data() const noexcept
         {
             return buffer_;
         }
@@ -256,17 +256,17 @@ namespace feng
         size_type items_;
     };
     template < typename T1, typename A1, typename T2, typename A2 >
-    bool operator==( allocator< T1, A1 > const&, allocator< T2, A2 > const& )
+    bool operator==( allocator< T1, A1 > const&, allocator< T2, A2 > const& ) noexcept
     {
         return true;
     }
     template < typename T1, typename A1, typename T2, typename A2 >
-    bool operator!=( allocator< T1, A1 > const&, allocator< T2, A2 > const& )
+    bool operator!=( allocator< T1, A1 > const&, allocator< T2, A2 > const& ) noexcept
     {
         return false;
     }
     template < typename T, typename A >
-    void swap( allocator< T, A >& one, allocator< T, A >& another )
+    void swap( allocator< T, A >& one, allocator< T, A >& another ) noexcept
     {
         one.swap( another );
     }
@@ -277,23 +277,23 @@ namespace feng
         typedef std::size_t value_type;
         value_type first;
         value_type second;
-        range( const value_type first_, const value_type second_ )
+        range( const value_type first_, const value_type second_ ) noexcept
             : first( first_ )
             , second( second_ )
         {
         }
-        range( const self_type& other )
+        range( const self_type& other ) noexcept
             : first( other.first )
             , second( other.second )
         {
         }
         friend const self_type
-        operator+( const self_type lhs, const std::size_t n )
+        operator+( const self_type lhs, const std::size_t n ) noexcept
         {
             return self_type( lhs.first + n, lhs.second + n );
         }
         friend const self_type
-        operator-( const self_type lhs, const std::size_t n )
+        operator-( const self_type lhs, const std::size_t n ) noexcept
         {
             return self_type( lhs.first - n, lhs.second - n );
         }
@@ -307,128 +307,128 @@ namespace feng
             typedef typename std::iterator_traits< Iterator_Type >::pointer pointer;
             typedef typename std::iterator_traits< Iterator_Type >::iterator_category iterator_category;
             typedef stride_iterator self_type;
-            stride_iterator()
+            stride_iterator() noexcept
                 : iterator_( 0 )
                 , step_( 1 )
             {
             }
-            stride_iterator( const self_type& ) = default;
-            stride_iterator( self_type&& )      = default;
-            self_type& operator=( const self_type& ) = default;
-            self_type& operator=( self_type&& ) = default;
-            stride_iterator( const Iterator_Type& it, const difference_type& dt )
+            stride_iterator( const self_type& ) noexcept = default;
+            stride_iterator( self_type&& ) noexcept = default;
+            self_type& operator=( const self_type& ) noexcept = default;
+            self_type& operator=( self_type&& ) noexcept = default;
+            stride_iterator( const Iterator_Type& it, const difference_type& dt ) noexcept
                 : iterator_( it )
                 , step_( dt )
             {
             }
-            self_type& operator++()
+            self_type& operator++() noexcept
             {
                 iterator_ += step_;
                 return *this;
             }
-            const self_type operator++( int )
+            const self_type operator++( int ) noexcept
             {
                 self_type ans( *this );
                 operator++();
                 return ans;
             }
-            self_type& operator+=( const difference_type dt )
+            self_type& operator+=( const difference_type dt ) noexcept
             {
                 iterator_ += dt * step_;
                 return *this;
             }
-            friend const self_type operator+( const self_type& lhs, const difference_type rhs )
+            friend const self_type operator+( const self_type& lhs, const difference_type rhs ) noexcept
             {
                 self_type ans( lhs );
                 ans += rhs;
                 return ans;
             }
-            friend const self_type operator+( const difference_type lhs, const self_type& rhs )
+            friend const self_type operator+( const difference_type lhs, const self_type& rhs ) noexcept
             {
                 return rhs + lhs;
             }
-            self_type& operator--()
+            self_type& operator--() noexcept
             {
                 iterator_ -= step_;
                 return *this;
             }
-            const self_type operator--( int )
+            const self_type operator--( int ) noexcept
             {
                 self_type ans( *this );
                 operator--();
                 return ans;
             }
-            self_type& operator-=( const difference_type dt )
+            self_type& operator-=( const difference_type dt ) noexcept
             {
                 iterator_ -= dt * step_;
                 return *this;
             }
-            friend const self_type operator-( const self_type& lhs, const difference_type rhs )
+            friend const self_type operator-( const self_type& lhs, const difference_type rhs ) noexcept
             {
                 self_type ans( lhs );
                 ans -= rhs;
                 return ans;
             }
-            reference operator[]( const difference_type dt )
+            reference operator[]( const difference_type dt ) noexcept
             {
                 return iterator_[dt * step_];
             }
-            const reference operator[]( const difference_type dt ) const
+            const reference operator[]( const difference_type dt ) const noexcept
             {
                 return iterator_[dt * step_];
             }
-            reference operator*()
+            reference operator*() noexcept
             {
                 return *iterator_;
             }
-            const reference operator*() const
+            const reference operator*() const noexcept
             {
                 return *iterator_;
             }
-            friend bool operator==( const self_type& lhs, const self_type& rhs )
+            friend bool operator==( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ == rhs.iterator_;
             }
-            friend bool operator!=( const self_type& lhs, const self_type& rhs )
+            friend bool operator!=( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ != rhs.iterator_;
             }
-            friend bool operator<( const self_type& lhs, const self_type& rhs )
+            friend bool operator<( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ < rhs.iterator_;
             }
-            friend bool operator<=( const self_type& lhs, const self_type& rhs )
+            friend bool operator<=( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ <= rhs.iterator_;
             }
-            friend bool operator>( const self_type& lhs, const self_type& rhs )
+            friend bool operator>( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ > rhs.iterator_;
             }
-            friend bool operator>=( const self_type& lhs, const self_type& rhs )
+            friend bool operator>=( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return lhs.iterator_ >= rhs.iterator_;
             }
-            friend difference_type operator-( const self_type& lhs, const self_type& rhs )
+            friend difference_type operator-( const self_type& lhs, const self_type& rhs ) noexcept
             {
                 assert( lhs.step_ == rhs.step_ );
                 return ( lhs.iterator_ - rhs.iterator_ ) / lhs.step_;
             }
-            difference_type step() const
+            difference_type step() const noexcept
             {
                 return step_;
             }
-            void reset_step( const difference_type step )
+            void reset_step( const difference_type step ) noexcept
             {
                 step_ = step;
             }
-            void step( const difference_type step )
+            void step( const difference_type step ) noexcept
             {
                 step_ = step;
             }
@@ -496,12 +496,12 @@ namespace feng
         typedef typename type_proxy_type::const_anti_diag_type const_anti_diag_type;
         typedef typename type_proxy_type::reverse_anti_diag_type reverse_anti_diag_type;
         typedef typename type_proxy_type::const_reverse_anti_diag_type const_reverse_anti_diag_type;
-        anti_diag_type upper_anti_diag_begin( const size_type index = 0 )
+        anti_diag_type upper_anti_diag_begin( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return anti_diag_type( zen.begin() + zen.col() - index - 1, zen.col() - 1 );
         }
-        anti_diag_type upper_anti_diag_end( const size_type index = 0 )
+        anti_diag_type upper_anti_diag_end( const size_type index = 0 ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
             size_type depth = zen.col() - index;
@@ -513,12 +513,12 @@ namespace feng
 
             return upper_anti_diag_begin( index ) + depth;
         }
-        const_anti_diag_type upper_anti_diag_begin( const size_type index = 0 ) const
+        const_anti_diag_type upper_anti_diag_begin( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_anti_diag_type( zen.begin() + zen.col() - index - 1, zen.col() - 1 );
         }
-        const_anti_diag_type upper_anti_diag_end( const size_type index = 0 ) const
+        const_anti_diag_type upper_anti_diag_end( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.col() - index;
@@ -530,44 +530,44 @@ namespace feng
 
             return upper_anti_diag_begin( index ) + depth;
         }
-        const_anti_diag_type upper_anti_diag_cbegin( const size_type index = 0 ) const
+        const_anti_diag_type upper_anti_diag_cbegin( const size_type index = 0 ) const noexcept
         {
             return upper_anti_diag_begin( index );
         }
-        const_anti_diag_type upper_anti_diag_cend( const size_type index = 0 ) const
+        const_anti_diag_type upper_anti_diag_cend( const size_type index = 0 ) const noexcept
         {
             return upper_anti_diag_end( index );
         }
-        reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 )
+        reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_anti_diag_type( upper_anti_diag_end( index ) );
         }
-        reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 )
+        reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 ) noexcept
         {
             return reverse_anti_diag_type( upper_anti_diag_begin( index ) );
         }
-        const_reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 ) const
+        const_reverse_anti_diag_type upper_anti_diag_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_anti_diag_type( upper_anti_diag_end( index ) );
         }
-        const_reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 ) const
+        const_reverse_anti_diag_type upper_anti_diag_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_anti_diag_type( upper_anti_diag_begin( index ) );
         }
-        const_reverse_anti_diag_type upper_anti_diag_crbegin( const size_type index = 0 ) const
+        const_reverse_anti_diag_type upper_anti_diag_crbegin( const size_type index = 0 ) const noexcept
         {
             return upper_anti_diag_rbegin( index );
         }
-        const_reverse_anti_diag_type upper_anti_diag_crend( const size_type index = 0 ) const
+        const_reverse_anti_diag_type upper_anti_diag_crend( const size_type index = 0 ) const noexcept
         {
             return upper_anti_diag_rend( index );
         }
-        anti_diag_type lower_anti_diag_begin( const size_type index = 0 )
+        anti_diag_type lower_anti_diag_begin( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return anti_diag_type( zen.begin() + ( zen.col() * ( index + 1 ) ) - 1, zen.col() - 1 );
         }
-        anti_diag_type lower_anti_diag_end( const size_type index = 0 )
+        anti_diag_type lower_anti_diag_end( const size_type index = 0 ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
             size_type depth = zen.row() - index;
@@ -579,12 +579,12 @@ namespace feng
 
             return lower_anti_diag_begin( index ) + depth;
         }
-        const_anti_diag_type lower_anti_diag_begin( const size_type index = 0 ) const
+        const_anti_diag_type lower_anti_diag_begin( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_anti_diag_type( zen.begin() + ( zen.col() * ( index + 1 ) ) - 1, zen.col() - 1 );
         }
-        const_anti_diag_type lower_anti_diag_end( const size_type index = 0 ) const
+        const_anti_diag_type lower_anti_diag_end( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.row() - index;
@@ -596,39 +596,39 @@ namespace feng
 
             return lower_anti_diag_begin( index ) + depth;
         }
-        const_anti_diag_type lower_anti_diag_cbegin( const size_type index = 0 ) const
+        const_anti_diag_type lower_anti_diag_cbegin( const size_type index = 0 ) const noexcept
         {
             return lower_anti_diag_begin( index );
         }
-        const_anti_diag_type lower_anti_diag_cend( const size_type index = 0 ) const
+        const_anti_diag_type lower_anti_diag_cend( const size_type index = 0 ) const noexcept
         {
             return lower_anti_diag_end( index );
         }
-        reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 )
+        reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_anti_diag_type( lower_anti_diag_end( index ) );
         }
-        reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 )
+        reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 ) noexcept
         {
             return reverse_anti_diag_type( lower_anti_diag_begin( index ) );
         }
-        const_reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 ) const
+        const_reverse_anti_diag_type lower_anti_diag_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_anti_diag_type( lower_anti_diag_end( index ) );
         }
-        const_reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 ) const
+        const_reverse_anti_diag_type lower_anti_diag_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_anti_diag_type( lower_anti_diag_begin( index ) );
         }
-        const_reverse_anti_diag_type lower_anti_diag_crbegin( const size_type index = 0 ) const
+        const_reverse_anti_diag_type lower_anti_diag_crbegin( const size_type index = 0 ) const noexcept
         {
             return lower_anti_diag_rbegin( index );
         }
-        const_reverse_anti_diag_type lower_anti_diag_crend( const size_type index = 0 ) const
+        const_reverse_anti_diag_type lower_anti_diag_crend( const size_type index = 0 ) const noexcept
         {
             return lower_anti_diag_rend( index );
         }
-        anti_diag_type anti_diag_begin( const difference_type index = 0 )
+        anti_diag_type anti_diag_begin( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -637,7 +637,7 @@ namespace feng
 
             return lower_anti_diag_begin( -index );
         }
-        anti_diag_type anti_diag_end( const difference_type index = 0 )
+        anti_diag_type anti_diag_end( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -646,7 +646,7 @@ namespace feng
 
             return lower_anti_diag_end( -index );
         }
-        const_anti_diag_type anti_diag_begin( const difference_type index = 0 ) const
+        const_anti_diag_type anti_diag_begin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -655,7 +655,7 @@ namespace feng
 
             return lower_anti_diag_begin( -index );
         }
-        const_anti_diag_type anti_diag_end( const difference_type index = 0 ) const
+        const_anti_diag_type anti_diag_end( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -664,7 +664,7 @@ namespace feng
 
             return lower_anti_diag_end( -index );
         }
-        const_anti_diag_type anti_diag_cbegin( const difference_type index = 0 ) const
+        const_anti_diag_type anti_diag_cbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -673,7 +673,7 @@ namespace feng
 
             return lower_anti_diag_cbegin( -index );
         }
-        const_anti_diag_type anti_diag_cend( const difference_type index = 0 ) const
+        const_anti_diag_type anti_diag_cend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -682,7 +682,7 @@ namespace feng
 
             return lower_anti_diag_cend( -index );
         }
-        reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 )
+        reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -691,7 +691,7 @@ namespace feng
 
             return lower_anti_diag_rbegin( -index );
         }
-        reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 )
+        reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -700,7 +700,7 @@ namespace feng
 
             return lower_anti_diag_rend( -index );
         }
-        const_reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 ) const
+        const_reverse_anti_diag_type anti_diag_rbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -709,7 +709,7 @@ namespace feng
 
             return lower_anti_diag_rbegin( -index );
         }
-        const_reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 ) const
+        const_reverse_anti_diag_type anti_diag_rend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -718,7 +718,7 @@ namespace feng
 
             return lower_anti_diag_rend( -index );
         }
-        const_reverse_anti_diag_type anti_diag_crbegin( const difference_type index = 0 ) const
+        const_reverse_anti_diag_type anti_diag_crbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -727,7 +727,7 @@ namespace feng
 
             return lower_anti_diag_crbegin( -index );
         }
-        const_reverse_anti_diag_type anti_diag_crend( const difference_type index = 0 ) const
+        const_reverse_anti_diag_type anti_diag_crend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -741,14 +741,12 @@ namespace feng
     struct crtp_apply
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
         template < typename Function >
-        zen_type const apply( const Function& f ) const
+        void apply( const Function& func ) noexcept
         {
-            zen_type const& zen = static_cast< zen_type const& >( *this );
-            zen_type ans( zen.row(), zen.col() );
-            std::transform( zen.begin(), zen.end(), ans.begin(), f );
-            return ans;
+            zen_type& zen = static_cast< zen_type& >( *this );
+            for (auto& x : zen )
+                func(x);
         }
     };
     template < typename Matrix, typename Type, typename Allocator >

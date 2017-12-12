@@ -2,6 +2,7 @@
 
 SUPPRESS_WARNINGS
 #include "./cases/0000_create.hpp"
+#include "./cases/0001_apply.hpp"
 
 int main()
 {
@@ -28,6 +29,7 @@ int main()
     _0020_create();
 
 
+    _0000_apply();
 
     return 0;
 }

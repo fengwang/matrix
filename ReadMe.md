@@ -4,7 +4,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 - [Example usage](#example-usage)
 - [License](#license)
-- [Dependencies](#dependencies)
+- [Dependency](#dependency)
 - [Installation](#installation)
 - [Building tests and examples](#building-tests-and-examples)
 - [Notes and references](#notes-and-references)
@@ -85,7 +85,25 @@ reshaped matrix m:
 ![create](./images/0023_create.bmp)
 ----------
 
+
 ### iterations
+
+#### elementwise apply
+```
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0000_apply.bmp" );
+
+m.apply( [](auto& x) { x = std::sin(x); } );
+m.save_as_bmp( "./images/0001_apply.bmp" );
+```
+before apply:
+
+![apply](./images/0000_create.bmp)
+
+after apply:
+
+![apply](./images/0001_create.bmp)
 
 #### iteration from head to tail
 ```
@@ -252,23 +270,9 @@ m.save_as_bmp( "./images/0016_create.bmp" );
 
 
 
-#### size
-```
-feng::matrix mat{ 64, 127 };
-auto const& [r,c] = mat.shape();
-assert( r == 64 );
-assert( c == 127 );
-assert( mat.row() == 64 );
-assert( mat.col() == 127 );
-assert( mat.size() == 64*127 );
-mat.resize( 120, 60 );
-auto const& [nr, nc] = mat.shape();
-assert( nr == mat.row() );
-assert( nc == mat.col() );
-assert( 120*60 == mat.size() );
-```
 
-## license
+
+## License
 
 ```
 Copyright <2017> <Feng Wang>
@@ -284,7 +288,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## Dependencies
+## Dependency
 
 This library only depends on a C++-17 standards.
 
