@@ -19,14 +19,36 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ### create
 
-#### create an empty matrix
-
+#### create, row, col, size and shape
 ```
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
+assert( m.row() == 64 );
+assert( m.col() == 256 );
+assert( m.size() == m.row() * m.col() );
+auto const [r,c] = m.shape();
+assert( r == m.row() );
+assert( c == m.col() );
 ```
 ![create](./images/0002_create.bmp)
 ------
+
+### element access using `operator []` or `operator ()`
+```
+feng::matrix<double> m{ 64, 256 };
+
+for ( auto r = 12; r != 34; ++r )
+    for ( auto c = 34; c != 45; ++c )
+        m[r][c] = 1.0;
+
+for ( auto r = 34; r != 45; ++r )
+    for ( auto c = 123; c != 234; ++c )
+        m(r, c) = -1.0;
+
+m.save_as_bmp( "./images/0019_create.bmp" );
+```
+![create](./images/0019_create.bmp)
+----------
 
 #### copying, resizing and reshaping
 ```
@@ -47,29 +69,15 @@ m.save_as_bmp( "./images/0023_create.bmp" );
 ```
 created matrix m:
 ![create](./images/0020_create.bmp)
+
 copied matrix n:
 ![create](./images/0021_create.bmp)
+
 resized matrix n:
 ![create](./images/0022_create.bmp)
+
 reshaped matrix m:
 ![create](./images/0023_create.bmp)
-
-
-### element access using `operator []` or `operator ()`
-```
-feng::matrix<double> m{ 64, 256 };
-
-for ( auto r = 12; r != 34; ++r )
-    for ( auto c = 34; c != 45; ++c )
-        m[r][c] = 1.0;
-
-for ( auto r = 34; r != 45; ++r )
-    for ( auto c = 123; c != 234; ++c )
-        m(r, c) = -1.0;
-
-m.save_as_bmp( "./images/0019_create.bmp" );
-```
-![create](./images/0019_create.bmp)
 ----------
 
 ### iterations

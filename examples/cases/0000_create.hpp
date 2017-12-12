@@ -17,6 +17,12 @@ void _0002_create()
 {
     feng::matrix<double> m{ 64, 256 };
     m.save_as_bmp( "./images/0002_create.bmp" );
+    assert( m.row() == 64 );
+    assert( m.col() == 256 );
+    assert( m.size() == m.row() * m.col() );
+    auto const [r,c] = m.shape();
+    assert( r == m.row() );
+    assert( c == m.col() );
 }
 
 void _0003_create()
