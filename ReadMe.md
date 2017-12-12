@@ -99,11 +99,11 @@ m.save_as_bmp( "./images/0001_apply.bmp" );
 ```
 before apply:
 
-![apply](./images/0000_create.bmp)
+![apply](./images/0000_apply.bmp)
 
 after apply:
 
-![apply](./images/0001_create.bmp)
+![apply](./images/0001_apply.bmp)
 
 #### iteration from head to tail
 ```
