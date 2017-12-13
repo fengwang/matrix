@@ -1,3 +1,6 @@
+#ifndef FENG_MATRIX_HPP_INCLUDED_
+#define FENG_MATRIX_HPP_INCLUDED_
+
 #ifdef __clang__
 #define SUPPRESS_WARNINGS \
     _Pragma("clang diagnostic push ") \
@@ -964,12 +967,12 @@ namespace feng
         typedef typename type_proxy_type::const_reverse_lower_diag_type const_reverse_lower_diag_type;
         typedef typename type_proxy_type::reverse_diag_type reverse_diag_type;
         typedef typename type_proxy_type::const_reverse_diag_type const_reverse_diag_type;
-        diag_type upper_diag_begin( const size_type index )
+        diag_type upper_diag_begin( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return diag_type( zen.begin() + index, zen.col() + 1 );
         }
-        diag_type upper_diag_end( const size_type index )
+        diag_type upper_diag_end( const size_type index ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
             size_type depth = zen.col() - index;
@@ -981,12 +984,12 @@ namespace feng
 
             return diag_type( upper_diag_begin( index ) + depth );
         }
-        const_diag_type upper_diag_begin( const size_type index ) const
+        const_diag_type upper_diag_begin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_diag_type( zen.begin() + index, zen.col() + 1 );
         }
-        const_diag_type upper_diag_end( const size_type index ) const
+        const_diag_type upper_diag_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.col() - index;
@@ -998,12 +1001,12 @@ namespace feng
 
             return upper_diag_begin( index ) + depth;
         }
-        const_diag_type upper_diag_cbegin( const size_type index ) const
+        const_diag_type upper_diag_cbegin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_diag_type( zen.cbegin() + index, zen.col() + 1 );
         }
-        const_diag_type upper_diag_cend( const size_type index ) const
+        const_diag_type upper_diag_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.col() - index;
@@ -1015,42 +1018,36 @@ namespace feng
 
             return upper_diag_cbegin( index ) + depth;
         }
-        reverse_upper_diag_type
-        upper_diag_rbegin( const size_type index = 0 )
+        reverse_upper_diag_type upper_diag_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_upper_diag_type( upper_diag_end( index ) );
         }
-        reverse_upper_diag_type
-        upper_diag_rend( const size_type index = 0 )
+        reverse_upper_diag_type upper_diag_rend( const size_type index = 0 ) noexcept
         {
             return reverse_upper_diag_type( upper_diag_begin( index ) );
         }
-        const_reverse_upper_diag_type
-        upper_diag_rbegin( const size_type index = 0 ) const
+        const_reverse_upper_diag_type upper_diag_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_upper_diag_type( upper_diag_end( index ) );
         }
-        const_reverse_upper_diag_type
-        upper_diag_rend( const size_type index = 0 ) const
+        const_reverse_upper_diag_type upper_diag_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_upper_diag_type( upper_diag_begin( index ) );
         }
-        const_reverse_upper_diag_type
-        upper_diag_crbegin( const size_type index = 0 ) const
+        const_reverse_upper_diag_type upper_diag_crbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_upper_diag_type( upper_diag_end( index ) );
         }
-        const_reverse_upper_diag_type
-        upper_diag_crend( const size_type index = 0 ) const
+        const_reverse_upper_diag_type upper_diag_crend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_upper_diag_type( upper_diag_begin( index ) );
         }
-        diag_type lower_diag_begin( const size_type index )
+        diag_type lower_diag_begin( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return diag_type( zen.begin() + index * zen.col(), zen.col() + 1 );
         }
-        diag_type lower_diag_end( const size_type index )
+        diag_type lower_diag_end( const size_type index ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
             size_type depth = zen.row() - index;
@@ -1062,12 +1059,12 @@ namespace feng
 
             return lower_diag_begin( index ) + depth;
         }
-        const_diag_type lower_diag_begin( const size_type index ) const
+        const_diag_type lower_diag_begin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_diag_type( zen.begin() + index * zen.col(), zen.col() + 1 );
         }
-        const_diag_type lower_diag_end( const size_type index ) const
+        const_diag_type lower_diag_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.row() - index;
@@ -1079,12 +1076,12 @@ namespace feng
 
             return lower_diag_begin( index ) + depth;
         }
-        const_diag_type lower_diag_cbegin( const size_type index ) const
+        const_diag_type lower_diag_cbegin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_diag_type( zen.begin() + index * zen.col(), zen.col() + 1 );
         }
-        const_diag_type lower_diag_cend( const size_type index ) const
+        const_diag_type lower_diag_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth     = zen.row() - index;
@@ -1096,31 +1093,31 @@ namespace feng
 
             return lower_diag_begin( index ) + depth;
         }
-        reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 )
+        reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_lower_diag_type( lower_diag_end( index ) );
         }
-        reverse_lower_diag_type lower_diag_rend( const size_type index = 0 )
+        reverse_lower_diag_type lower_diag_rend( const size_type index = 0 ) noexcept
         {
             return reverse_lower_diag_type( lower_diag_begin( index ) );
         }
-        const_reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) const
+        const_reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_lower_diag_type( lower_diag_end( index ) );
         }
-        const_reverse_lower_diag_type lower_diag_rend( const size_type index = 0 ) const
+        const_reverse_lower_diag_type lower_diag_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_lower_diag_type( lower_diag_begin( index ) );
         }
-        const_reverse_lower_diag_type lower_diag_crbegin( const size_type index = 0 ) const
+        const_reverse_lower_diag_type lower_diag_crbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_lower_diag_type( lower_diag_end( index ) );
         }
-        const_reverse_lower_diag_type lower_diag_crend( const size_type index = 0 ) const
+        const_reverse_lower_diag_type lower_diag_crend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_lower_diag_type( lower_diag_begin( index ) );
         }
-        diag_type diag_begin( const difference_type index = 0 )
+        diag_type diag_begin( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -1129,7 +1126,7 @@ namespace feng
 
             return lower_diag_begin( -index );
         }
-        diag_type diag_end( const difference_type index = 0 )
+        diag_type diag_end( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -1138,7 +1135,7 @@ namespace feng
 
             return lower_diag_end( -index );
         }
-        const_diag_type diag_begin( const difference_type index = 0 ) const
+        const_diag_type diag_begin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1147,7 +1144,7 @@ namespace feng
 
             return lower_diag_begin( -index );
         }
-        const_diag_type diag_end( const difference_type index = 0 ) const
+        const_diag_type diag_end( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1156,7 +1153,7 @@ namespace feng
 
             return lower_diag_end( -index );
         }
-        const_diag_type diag_cbegin( const difference_type index = 0 ) const
+        const_diag_type diag_cbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1165,7 +1162,7 @@ namespace feng
 
             return lower_diag_cbegin( -index );
         }
-        const_diag_type diag_cend( const difference_type index = 0 ) const
+        const_diag_type diag_cend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1174,7 +1171,7 @@ namespace feng
 
             return lower_diag_cend( -index );
         }
-        reverse_diag_type diag_rbegin( const difference_type index = 0 )
+        reverse_diag_type diag_rbegin( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -1183,7 +1180,7 @@ namespace feng
 
             return lower_diag_rbegin( -index );
         }
-        reverse_diag_type diag_rend( const difference_type index = 0 )
+        reverse_diag_type diag_rend( const difference_type index = 0 ) noexcept
         {
             if ( index > 0 )
             {
@@ -1192,7 +1189,7 @@ namespace feng
 
             return lower_diag_rend( -index );
         }
-        const_reverse_diag_type diag_rbegin( const difference_type index = 0 ) const
+        const_reverse_diag_type diag_rbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1201,7 +1198,7 @@ namespace feng
 
             return lower_diag_rbegin( -index );
         }
-        const_reverse_diag_type diag_rend( const difference_type index = 0 ) const
+        const_reverse_diag_type diag_rend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1210,7 +1207,7 @@ namespace feng
 
             return lower_diag_rend( -index );
         }
-        const_reverse_diag_type diag_crbegin( const difference_type index = 0 ) const
+        const_reverse_diag_type diag_crbegin( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1219,7 +1216,7 @@ namespace feng
 
             return lower_diag_crbegin( -index );
         }
-        const_reverse_diag_type diag_crend( const difference_type index = 0 ) const
+        const_reverse_diag_type diag_crend( const difference_type index = 0 ) const noexcept
         {
             if ( index > 0 )
             {
@@ -1238,57 +1235,57 @@ namespace feng
         typedef typename type_proxy_type::reverse_iterator reverse_iterator;
         typedef typename type_proxy_type::const_iterator const_iterator;
         typedef typename type_proxy_type::const_reverse_iterator const_reverse_iterator;
-        iterator begin()
+        iterator begin() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return zen.data_.begin();
         }
-        iterator end()
+        iterator end() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return zen.data_.end();
         }
-        const_iterator begin() const
+        const_iterator begin() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.data_.begin();
         }
-        const_iterator end() const
+        const_iterator end() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.data_.end();
         }
-        const_iterator cbegin() const
+        const_iterator cbegin() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.data_.begin();
         }
-        const_iterator cend() const
+        const_iterator cend() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.data_.end();
         }
-        reverse_iterator rbegin()
+        reverse_iterator rbegin() noexcept
         {
             return reverse_iterator( end() );
         }
-        reverse_iterator rend()
+        reverse_iterator rend() noexcept
         {
             return reverse_iterator( begin() );
         }
-        const_reverse_iterator rbegin() const
+        const_reverse_iterator rbegin() const noexcept
         {
             return const_reverse_iterator( end() );
         }
-        const_reverse_iterator rend() const
+        const_reverse_iterator rend() const noexcept
         {
             return const_reverse_iterator( begin() );
         }
-        const_reverse_iterator crbegin() const
+        const_reverse_iterator crbegin() const noexcept
         {
             return const_reverse_iterator( end() );
         }
-        const_reverse_iterator crend() const
+        const_reverse_iterator crend() const noexcept
         {
             return const_reverse_iterator( begin() );
         }
@@ -1299,7 +1296,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
-        zen_type& operator/=( const value_type& rhs )
+        zen_type& operator/=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
@@ -1308,7 +1305,7 @@ namespace feng
 
             return zen;
         }
-        zen_type& operator/=( const zen_type& rhs )
+        zen_type& operator/=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             zen *= rhs.inverse();
@@ -6781,7 +6778,7 @@ namespace feng
     {
         return pinverse( m );
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const rand( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c };
@@ -6793,27 +6790,27 @@ namespace feng
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const rand( const std::size_t n )
     {
         return rand< T, A >( n, n );
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const rand( const matrix< T, A >& m )
     {
         return rand< T, A >( m.row(), m.col() );
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const ran( const std::size_t r, const std::size_t c )
     {
         return rand< T, A >( r, c );
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const ran( const std::size_t n )
     {
         return rand< T, A >( n );
     }
-    template < typename T = double, typename A = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const ran( const matrix< T, A >& m )
     {
         return rand< T, A >( m.row(), m.col() );
@@ -6838,8 +6835,7 @@ namespace feng
     }
     template < typename Itor1,
                typename Itor2,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< typename std::iterator_traits< Itor1 >::value_type >::result_type >::result_type >>
+               typename A = std::allocator< typename std::remove_const< typename std::remove_reference< typename std::iterator_traits< Itor1 >::value_type >::result_type >::result_type >>
     matrix< typename std::iterator_traits< Itor1 >::value_type, A > const toeplitz( Itor1 i1_, Itor1 _i1, Itor2 i2_, Itor2 _i2 )
     {
         std::size_t r = std::distance( i1_, _i1 );
@@ -8121,3 +8117,5 @@ namespace feng
 } //namespace feng
 
 RESTORE_WARNINGS
+
+#endif

@@ -32,6 +32,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [clone -- matrix slicing](#clone----matrix-slicing)
      - [data -- accessing raw memory](#data----raw-memory-access)
      - [det -- matrix determinant](#det----matrix-determinant)
+     - [operator `/=`](#operator-divide-equal)
      + MORE TODO
 
 
@@ -403,6 +404,17 @@ generated output is
 1069.00941294551	:	1069.0094129455
 ```
 
+-------------
+
+#### operator divide-equal
+```cpp
+auto m = feng::rand<double>( 197, 197 );
+auto n = m;
+n /= 2.0;
+m /= n;
+m.save_as_bmp( "images/0000_divide_equal.bmp" );
+```
+![divide equal](images/0000_divide_equal.bmp)
 
 
 
