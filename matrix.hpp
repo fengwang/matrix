@@ -62,7 +62,7 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long matrix_version = 20171211;
+    constexpr unsigned long matrix_version = 20171213;
 
     template < typename Type, class Allocator = std::allocator< Type >>
     struct allocator : Allocator
@@ -1339,6 +1339,7 @@ namespace feng
             return static_cast< zen_type const& >( *this );
         }
     };
+    /*
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_import
     {
@@ -1390,6 +1391,7 @@ namespace feng
                 return import( zen.begin(), values... );
             }
     };
+    */
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_inverse
     {
@@ -4551,7 +4553,7 @@ namespace feng
         , public crtp_store< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_swap< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_transpose< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_import< matrix< Type, Allocator >, Type, Allocator >
+        //, public crtp_import< matrix< Type, Allocator >, Type, Allocator >
     {
         typedef matrix self_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
@@ -6801,13 +6803,13 @@ namespace feng
         return pinverse( m );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::size_t r, const std::size_t c )
+    matrix< T, A > const rand( const std::size_t r, const std::size_t c ) noexcept
     {
         matrix< T > ans{ r, c };
         std::srand( static_cast< unsigned int >( static_cast< std::size_t >( std::time( nullptr ) ) + reinterpret_cast< std::size_t >( &ans ) ) );
-        auto const generator = []()
+        auto const& generator = []() noexcept
         {
-            return T( std::rand() ) / T( RAND_MAX );
+            return static_cast<T>( std::rand() ) / static_cast<T>( RAND_MAX );
         };
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
