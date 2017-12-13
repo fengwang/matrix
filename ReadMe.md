@@ -34,6 +34,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [data -- accessing raw memory](#data----raw-memory-access)
      - [det -- matrix determinant](#det----matrix-determinant)
      - [operator `/=`](#operator-divide-equal)
+     - [inverse](#matrix-inverse)
      + MORE TODO
 
 
@@ -173,6 +174,7 @@ p.save_as_bmp( "./images/0002_slicing.bmp" );
 
 
 ----------------------------------------
+
 
 ### iterations
 
@@ -443,6 +445,21 @@ m /= n;
 m.save_as_bmp( "images/0000_divide_equal.bmp" );
 ```
 ![divide equal](images/0000_divide_equal.bmp)
+
+---------------------------------------------
+
+#### matrix inverse
+```cpp
+auto const& m = feng::rand<double>( 128, 128 );
+auto const& n = m.inverse();
+auto const& identity = m * n;
+identity.save_as_bmp( "./images/0000_inverse.bmp" );
+```
+![matrix inverse](./images/0000_inverse.bmp)
+
+
+----------------------------------------
+
 
 
 

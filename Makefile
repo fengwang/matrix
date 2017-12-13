@@ -1,8 +1,7 @@
-CXX           = clang++
-CXXFLAGS      = -std=c++17 -stdlib=libc++ -O2 -ferror-limit=2 -Weverything
-GXXFLAGS      = -mtune=corei7 -march=corei7 -std=c++11 -O3 -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -pipe -Wall -Wextra -fPIC -fmax-errors=2
+CXX           = g++-7
+CXXFLAGS      = -std=c++17 -O2 -Wall
 LINK          = $(CXX)
-LFLAGS        = -lc++ -lc++abi -O2
+LFLAGS        = -O2
 
 ####### Output directory
 OBJECTS_DIR   = .

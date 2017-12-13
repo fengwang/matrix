@@ -9,9 +9,11 @@ SUPPRESS_WARNINGS
 #include "./cases/0005_det.hpp"
 #include "./cases/0006_devide_equal.hpp"
 #include "./cases/0007_slicing.hpp"
+#include "./cases/0008_inverse.hpp"
 
 int main()
 {
+    std::cerr << "running create.\n";
     _0000_create();
     _0001_create();
     _0002_create();
@@ -35,13 +37,29 @@ int main()
     _0020_create();
 
 
+    std::cerr << "running apply.\n";
     _0000_apply();
+
+    std::cerr << "running access.\n";
     _0000_access();
+
+    std::cerr << "running clone.\n";
     _0000_clone();
+
+    std::cerr << "running data.\n";
     _0000_data();
+
+    std::cerr << "running det.\n";
     _0000_det();
+
+    std::cerr << "running divide_equal.\n";
     _0000_divide_equal();
+
+    std::cerr << "running slicing.\n";
     _0000_slicing();
+
+    std::cerr << "running inverse.\n";
+    _0000_inverse();
 
     return 0;
 }

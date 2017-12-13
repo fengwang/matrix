@@ -36,6 +36,7 @@ SUPPRESS_WARNINGS
 #include <cassert>
 #include <cmath>
 #include <complex>
+#include <cstring>
 #include <deque>
 #include <fstream>
 #include <functional>
