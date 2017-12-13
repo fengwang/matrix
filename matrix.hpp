@@ -39,6 +39,7 @@ SUPPRESS_WARNINGS
 #include <deque>
 #include <fstream>
 #include <functional>
+#include <initializer_list>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -4506,7 +4507,7 @@ namespace feng
             return crtp_value_matrix_minus_expression< Right_Expression, Type >( r_expression, l_value );
         }
     };
-    template < typename Type, class Allocator = std::allocator< typename std::decay< Type >::type >>
+    template < typename Type, class Allocator = std::allocator< typename std::decay_t< Type > > >
     struct matrix : public matrix_expression< matrix< Type >>
         , public crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
@@ -4598,6 +4599,27 @@ namespace feng
             , data_( storage_type( r * c ) )
         {
             std::fill( ( *this ).begin(), ( *this ).end(), v );
+        }
+        template< typename T, typename A >
+        matrix( matrix<T,A> const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept
+        {
+            assert( rr.size() == 2 && "row dims not match!" );
+            assert( rc.size() == 2 && "col dims not match!" );
+            auto [rr0, rr1] = std::make_tuple( *rr.begin(), *(rr.begin()+1) );
+            auto [rc0, rc1] = std::make_tuple( *rc.begin(), *(rc.begin()+1) );
+            assert( rr0 <= rr1 && "row index not correct!" );
+            assert( rc0 <= rc1 && "col index not correct!" );
+            (*this).clone( other, rr0, rr1, rc0, rc1 );
+        }
+        matrix( matrix const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept
+        {
+            assert( rr.size() == 2 && "row dims not match!" );
+            assert( rc.size() == 2 && "col dims not match!" );
+            auto [rr0, rr1] = std::make_tuple( *rr.begin(), *(rr.begin()+1) );
+            auto [rc0, rc1] = std::make_tuple( *rc.begin(), *(rc.begin()+1) );
+            assert( rr0 <= rr1 && "row index not correct!" );
+            assert( rc0 <= rc1 && "col index not correct!" );
+            (*this).clone( other, rr0, rr1, rc0, rc1 );
         }
         template < typename T, typename A >
         matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc )

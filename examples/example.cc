@@ -8,6 +8,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0004_data.hpp"
 #include "./cases/0005_det.hpp"
 #include "./cases/0006_devide_equal.hpp"
+#include "./cases/0007_slicing.hpp"
 
 int main()
 {
@@ -40,6 +41,7 @@ int main()
     _0000_data();
     _0000_det();
     _0000_divide_equal();
+    _0000_slicing();
 
     return 0;
 }

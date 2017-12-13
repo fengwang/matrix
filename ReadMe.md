@@ -3,11 +3,12 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ### Contents
 
 - [Example usage](#example-usage)
-    + basic operations
+    + [basic operations](#basic)
       + [row, col, size, shape, clear](#create-row-col-size-shape-clear)
       + [element access](#element-access-using-operator--or-operator-)
       + [range based for](#range-based-for-access)
-      + [copy, resize, reshape](copying-resizing-and-reshaping)
+      + [copy, resize, reshape](#copying-resizing-and-reshaping)
+      + [slicing](#matrix-slicing)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
@@ -50,7 +51,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ## Example usage
 
 
-### create
+### basic
 
 #### create, row, col, size, shape, clear
 ```cpp
@@ -145,6 +146,33 @@ reshaped matrix m:
 ![create](./images/0023_create.bmp)
 ----------
 
+#### matrix slicing
+```cpp
+feng::matrix<double> m{ 64, 256 };
+std::fill( m.upper_diag_begin(1), m.upper_diag_end(1), 1.0 );
+std::fill( m.diag_begin(), m.diag_end(), 1.0 );
+std::fill( m.lower_diag_begin(1), m.lower_diag_end(1), 1.0 );
+m.save_as_bmp( "./images/0000_slicing.bmp" );
+```
+
+![matrix slicing](./images/0000_slicing.bmp)
+
+```cpp
+feng::matrix<double> n{ m, 0, 32, 0, 64 };
+n.save_as_bmp( "./images/0001_slicing.bmp" );
+```
+
+![matrix slicing](./images/0001_slicing.bmp)
+
+```cpp
+feng::matrix<double> p{ m, {16, 48}, {0, 64} };
+p.save_as_bmp( "./images/0002_slicing.bmp" );
+```
+
+![matrix slicing](./images/0002_slicing.bmp)
+
+
+----------------------------------------
 
 ### iterations
 
