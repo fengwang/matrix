@@ -275,7 +275,7 @@ namespace feng
     {
         one.swap( another );
     }
-
+    /*
     struct range
     {
         typedef range self_type;
@@ -302,7 +302,7 @@ namespace feng
         {
             return self_type( lhs.first - n, lhs.second - n );
         }
-    };
+    };*/
     template < typename Iterator_Type >
     struct stride_iterator
     {
@@ -449,7 +449,8 @@ namespace feng
         typedef allocator< value_type, Allocator > storage_type;
         typedef std::uint64_t size_type;
         typedef std::ptrdiff_t difference_type;
-        typedef range range_type;
+        //typedef range range_type;
+        typedef std::pair<size_type, size_type> range_type;
         typedef typename Allocator::pointer pointer;
         typedef typename Allocator::const_pointer const_pointer;
         typedef stride_iterator< value_type* > matrix_stride_iterator;
@@ -482,7 +483,6 @@ namespace feng
     struct crtp_shape
     {
         typedef Matrix zen_type;
-
         auto shape() const noexcept
         {
             auto const& zen = static_cast<zen_type const&>(*this);
@@ -1458,6 +1458,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
         typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
+        /*
         bool load( const char* const file_name )
         {
             return load_ascii( file_name );
@@ -1474,7 +1475,12 @@ namespace feng
         {
             return load( file_name.c_str() );
         }
-        bool load_ascii( const char* const file_name )
+        */
+        bool load_txt( std::string const& file_name )
+        {
+            return load_txt(file_name.c_str());
+        }
+        bool load_txt( const char* const file_name )
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name );
@@ -1500,11 +1506,10 @@ namespace feng
             {
                 std::cerr << "Error: Failed to match matrix size.\n \tthe size of matrix stored in file \"" << file_name << "\" is " << buff.size() << ".\n";
                 std::cerr << " \tthe size of the destination matrix is " << r << " by " << c << " elements.\n";
-                std::cerr << " \tthe buff is:\n";
-                std::copy( buff.begin(), buff.end(), std::ostream_iterator< value_type >( std::cerr, "\t" ) );
-                std::cerr << "\n";
-                std::cerr << " \tthe stream_buffer is:\n"
-                          << stream_buff << "\n";
+                //std::cerr << " \tthe buff is:\n";
+                //std::copy( buff.begin(), buff.end(), std::ostream_iterator< value_type >( std::cerr, "\t" ) );
+                //std::cerr << "\n";
+                //std::cerr << " \tthe stream_buffer is:\n" << stream_buff << "\n";
                 return false;
             }
 
@@ -1513,10 +1518,11 @@ namespace feng
             ifs.close();
             return true;
         }
+        /*
         bool load_mat( const char* const )
         {
             return true;
-        }
+        }*/
     };
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_load_binary
@@ -1538,7 +1544,7 @@ namespace feng
                 return false;
 
             std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
-            assert( buffer.size() >= sizeof( size_type ) + sizeof( size_type ) && "matrix::load_library -- file too small, must be damaged" );
+            assert( buffer.size() >= sizeof( size_type ) + sizeof( size_type ) && "matrix::load_library -- file too small, maybe be damaged" );
 
             if ( buffer.size() <= sizeof( size_type ) + sizeof( size_type ) )
                 return false;
@@ -1548,7 +1554,7 @@ namespace feng
             size_type c;
             std::copy( buffer.begin() + sizeof( r ), buffer.begin() + sizeof( r ) + sizeof( c ), reinterpret_cast< char* >( std::addressof( c ) ) );
             zen.resize( r, c );
-            assert( buffer.size() == sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() && "matrix::load_binary -- data does not match, file damaged" );
+            assert( buffer.size() == sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() && "matrix::load_binary -- data does not match, maybe damaged" );
 
             if ( buffer.size() != sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() )
                 return false;
@@ -2584,8 +2590,8 @@ namespace feng
         static const std::map< std::string, color_value_type > color_maps
         {
             std::make_pair(
-            std::string{ "default" },
-            color_value_type{
+                std::string{ "default" },
+                color_value_type{
                 []( double x )
                 {
                     typedef unsigned char type;
@@ -2600,7 +2606,44 @@ namespace feng
                     if ( 3.0 * x < 2.0 )
                         return make_array( type{ 0 }, type{ ch( x - 1.0 / 3.0 ) }, type{ 255 } );
                     return make_array( type{ ch( x - 2.0 / 3.0 ) }, type{ 255 }, type{ 255 } );
-                } } ),
+                }
+                            }
+                        ),
+            std::make_pair(
+                std::string{ "parula" },
+                color_value_type{
+                []( double x )
+                {
+                    typedef unsigned char type;
+                    auto const& r = [](double v)
+                    {
+                        if (v*3.0<1.0)
+                        {
+                            double const ratio = 1.0 - v*3.0;
+                            return static_cast< type >( static_cast< int >(7 + 47.0*ratio) );
+                        }
+                        double const ratio = (3.0*v - 1.0) / 2.0;
+                        return static_cast< type >( static_cast< int >(7+242*ratio));
+                    };
+                    auto const& g = [](double v)
+                    {
+                        return static_cast< type >( static_cast< int >(42+210.0*v));
+                    };
+                    auto const& b = [](double v)
+                    {
+                        if (v*9.0<1.0)
+                        {
+                            double const ratio = v*9.0;
+                            return static_cast< type >( static_cast< int >(135+87*ratio));
+                        }
+                        double const ratio = (9.0 - 9.0*v) / 8.0;
+                        return static_cast< type >( static_cast< int >(14*208*ratio));
+                    };
+
+                    return make_array( type{r(x)}, type{g(x)}, type{b(x)} );
+                }
+                            }
+                        ),
             std::make_pair(
                 std::string{ "hotblue" },
             color_value_type{
@@ -2679,7 +2722,7 @@ namespace feng
     struct crtp_save_as_bmp
     {
         typedef Matrix zen_type;
-        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "jet" }, std::string const& transform = std::string{ "default" } ) const
+        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" }, std::string const& transform = std::string{ "default" } ) const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );

@@ -10,6 +10,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0006_devide_equal.hpp"
 #include "./cases/0007_slicing.hpp"
 #include "./cases/0008_inverse.hpp"
+#include "./cases/0009_save_load.hpp"
 
 int main()
 {
@@ -60,6 +61,9 @@ int main()
 
     std::cerr << "running inverse.\n";
     _0000_inverse();
+
+    std::cerr << "running save_load.\n";
+    _0000_save_load();
 
     return 0;
 }

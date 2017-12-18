@@ -35,6 +35,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [det -- matrix determinant](#det----matrix-determinant)
      - [operator `/=`](#operator-divide-equal)
      - [inverse](#matrix-inverse)
+     - [save/load](#save-load)
      + MORE TODO
 
 
@@ -461,6 +462,24 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 ----------------------------------------
 
 
+#### save load
+```cpp
+auto const& m = feng::rand<double>( 128, 128 );
+m.save_as_txt( "./images/0000_save_load.txt" );
+m.save_as_bmp( "./images/0000_save_load.bmp" );
+```
+
+![image saved](./images/0000_save_load.bmp)
+
+```cpp
+feng::matrix<double> n;
+n.load_txt( "./images/0000_save_load.txt" );
+n.save_as_bmp( "./images/0001_save_load.bmp" );
+```
+
+![image saved](./images/0001_save_load.bmp)
+
+-------------------------------------------
 
 
 ## License
