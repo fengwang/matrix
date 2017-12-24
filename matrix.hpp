@@ -1324,10 +1324,12 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
-        const zen_type inverse() const
+        const zen_type inverse() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() == zen.col() );
+
+            assert( zen.row() == zen.col() && "matrix is not square!" );
+
             size_type const n = zen.row();
             zen_type a( n, n + n, value_type( 0 ) );
 
@@ -1351,8 +1353,10 @@ namespace feng
                 }
 
                 const value_type factor = a[i][i];
-                assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() );
-                std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x )
+
+                assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() && "Failed inversing matrix, too small factor for Gaussian elimination!" );
+
+                std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x ) noexcept
                 {
                     x /= factor;
                 } );
@@ -1365,14 +1369,14 @@ namespace feng
                     }
 
                     const value_type ratio = a[j][i];
-                    std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio]( value_type x, value_type y )
+                    std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio]( value_type x, value_type y ) noexcept
                     {
                         return x - y * ratio;
                     } );
                 }
             }
 
-            return zen_type( a, range_type( 0, n ), range_type( n, n + n ) );
+            return zen_type{ a, range_type{ 0, n }, range_type{ n, n + n } };
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -1381,11 +1385,11 @@ namespace feng
         typedef Matrix zen_type;
         typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
         typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
-        bool load_txt( std::string const& file_name )
+        bool load_txt( std::string const& file_name ) noexcept
         {
             return load_txt(file_name.c_str());
         }
-        bool load_txt( const char* const file_name )
+        bool load_txt( const char* const file_name ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name );
@@ -1426,11 +1430,11 @@ namespace feng
         typedef Matrix zen_type;
         typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
         typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
-        bool load_binary( std::string const& file_name )
+        bool load_binary( std::string const& file_name ) noexcept
         {
             return load_binary( file_name.c_str() );
         }
-        bool load_binary( char const* const file_name )
+        bool load_binary( char const* const file_name ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name, std::ios::binary );
@@ -1465,7 +1469,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
-        zen_type& operator-=( const value_type& rhs )
+        zen_type& operator-=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
@@ -1474,7 +1478,7 @@ namespace feng
 
             return zen;
         }
-        zen_type& operator-=( const zen_type& rhs )
+        zen_type& operator-=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::minus< value_type >() );

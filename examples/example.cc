@@ -11,6 +11,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0007_slicing.hpp"
 #include "./cases/0008_inverse.hpp"
 #include "./cases/0009_save_load.hpp"
+#include "./cases/0010_minux_equal.hpp"
 
 int main()
 {
@@ -64,6 +65,9 @@ int main()
 
     std::cerr << "running save_load.\n";
     _0000_save_load();
+
+    std::cerr << "running minus_equal.\n";
+    _0000_minus_equal();
 
     return 0;
 }

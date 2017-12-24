@@ -36,6 +36,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [operator `/=`](#operator-divide-equal)
      - [inverse](#matrix-inverse)
      - [save/load](#save-load)
+     - [minus equal](#operator-minus-equal)
      + MORE TODO
 
 
@@ -484,7 +485,38 @@ n.save_as_bmp( "./images/0001_save_load.bmp" );
 n.load_binary( "./images/0000_save_load.bin" );
 n.save_as_pgm( "./images/0002_save_load.pgm" );
 ```
+
 ![image saved](./images/0002_save_load.pgm)
+
+#### operator minus equal
+
+```cpp
+    feng::matrix<double> image;
+    image.load_txt( "images/Lenna.txt" );
+    image.save_as_bmp("images/0000_minus_equal.bmp");
+```
+
+![image minus equal](images/0000_minus_equal.bmp)
+
+    
+```cpp
+    double const min = *std::min_element( image.begin(), image.end() );
+    image -= min;
+    image.save_as_bmp("images/0001_minus_equal.bmp");
+``` 
+
+![image minus equal](images/0001_minus_equal.bmp)
+ 
+```cpp
+    image -= image;
+    image.save_as_bmp("images/0002_minus_equal.bmp");
+```
+
+![image minus equal](images/0002_minus_equal.bmp)
+
+
+
+
 -------------------------------------------
 
 
@@ -571,7 +603,7 @@ In the table below, `M` denotes a matrix of type `T` using allocator of type `A`
 
 ### Header `<matrix>` synopsis
 
-```language-cpp
+```cpp
 namespace xxx
 {
 
