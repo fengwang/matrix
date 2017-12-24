@@ -465,7 +465,8 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 
 #### save load
 ```cpp
-auto const& m = feng::rand<double>( 128, 128 );
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
 m.save_as_txt( "./images/0000_save_load.txt" );
 m.save_as_binary( "./images/0000_save_load.bin" );
 m.save_as_bmp( "./images/0000_save_load.bmp" );
@@ -481,7 +482,7 @@ n.save_as_bmp( "./images/0001_save_load.bmp" );
 
 ![image saved](./images/0001_save_load.bmp)
 
-```cpp  
+```cpp
 n.load_binary( "./images/0000_save_load.bin" );
 n.save_as_pgm( "./images/0002_save_load.pgm" );
 ```
@@ -498,15 +499,15 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 
 ![image minus equal](images/0000_minus_equal.bmp)
 
-    
+
 ```cpp
     double const min = *std::min_element( image.begin(), image.end() );
     image -= min;
     image.save_as_bmp("images/0001_minus_equal.bmp", "jet");
-``` 
+```
 
 ![image minus equal](images/0001_minus_equal.bmp)
- 
+
 ```cpp
     image -= image;
     image.save_as_bmp("images/0002_minus_equal.bmp");
