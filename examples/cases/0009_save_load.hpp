@@ -1,6 +1,8 @@
 void _0000_save_load()
 {
-    auto const& m = feng::rand<double>( 128, 128 );
+    //auto const& m = feng::rand<double>( 128, 128 );
+    feng::matrix<double> m;
+    m.load_txt( "./images/Lenna.txt" );
     m.save_as_txt( "./images/0000_save_load.txt" );
     m.save_as_binary( "./images/0000_save_load.bin" );
     m.save_as_bmp( "./images/0000_save_load.bmp" );

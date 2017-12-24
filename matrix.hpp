@@ -2602,7 +2602,9 @@ namespace feng
             {
                 for ( unsigned long c = 0; c < zen.col(); c++ )
                 {
-                    auto rgb = selected_map( ( selected_transform( max_val, min_val )( zen[zen.row() - 1 - r][c] ) - mmin ) / divider );
+                    unsigned long const r_ = zen.row() - r - 1;
+                    auto rgb = selected_map( ( selected_transform( max_val, min_val )( zen[zen.row() - 1 - r_][c] ) - mmin ) / divider );
+                    //auto rgb = selected_map( ( selected_transform( max_val, min_val )( zen[zen.row() - 1 - r][c] ) - mmin ) / divider );
 
                     if ( rgb > 255.0 )
                         rgb = 255.0;

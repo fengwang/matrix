@@ -493,7 +493,7 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 ```cpp
     feng::matrix<double> image;
     image.load_txt( "images/Lenna.txt" );
-    image.save_as_bmp("images/0000_minus_equal.bmp");
+    image.save_as_bmp("images/0000_minus_equal.bmp", "gray");
 ```
 
 ![image minus equal](images/0000_minus_equal.bmp)
@@ -502,7 +502,7 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 ```cpp
     double const min = *std::min_element( image.begin(), image.end() );
     image -= min;
-    image.save_as_bmp("images/0001_minus_equal.bmp");
+    image.save_as_bmp("images/0001_minus_equal.bmp", "jet");
 ``` 
 
 ![image minus equal](images/0001_minus_equal.bmp)
