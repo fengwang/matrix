@@ -466,6 +466,7 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 ```cpp
 auto const& m = feng::rand<double>( 128, 128 );
 m.save_as_txt( "./images/0000_save_load.txt" );
+m.save_as_binary( "./images/0000_save_load.bin" );
 m.save_as_bmp( "./images/0000_save_load.bmp" );
 ```
 
@@ -479,6 +480,11 @@ n.save_as_bmp( "./images/0001_save_load.bmp" );
 
 ![image saved](./images/0001_save_load.bmp)
 
+```cpp  
+n.load_binary( "./images/0000_save_load.bin" );
+n.save_as_pgm( "./images/0002_save_load.pgm" );
+```
+![image saved](./images/0002_save_load.pgm)
 -------------------------------------------
 
 
