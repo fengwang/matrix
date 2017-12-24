@@ -746,6 +746,20 @@ namespace feng
             assert( index < zen.row() && "Row index outof boundary!" );
             return zen.row_begin( index );
         }
+        value_type operator()( size_type r, size_type c ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            assert( r < zen.row() && "Row index out of boundary!" );
+            assert( c < zen.col() && "Column index out of boundary!" );
+            return zen[r][c];
+        }
+        value_type& operator()( size_type r, size_type c ) noexcept
+        {
+            zen_type& zen = static_cast< zen_type& >( *this );
+            assert( r < zen.row() && "Row index out of boundary!" );
+            assert( c < zen.col() && "Column index out of boundary!" );
+            return zen[r][c];
+        }
     };
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_clear
@@ -1302,6 +1316,7 @@ namespace feng
             return zen;
         }
     };
+    /*
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_expression
     {
@@ -1328,6 +1343,7 @@ namespace feng
             return static_cast< zen_type const& >( *this );
         }
     };
+    */
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_inverse
     {
@@ -1471,6 +1487,7 @@ namespace feng
             return true;
         }
     };
+    /*
     template < typename Matrix >
     struct matrix_expression
     {
@@ -1486,6 +1503,8 @@ namespace feng
             return zen;
         }
     };
+    */
+    /*
     template < typename Left_Expression, typename Right_Expression >
     struct crtp_matrix_matrix_minus_expression : matrix_expression< crtp_matrix_matrix_minus_expression< Left_Expression, Right_Expression >>
     {
@@ -1750,6 +1769,7 @@ namespace feng
             return crtp_matrix_value_plus_expression< Right_Expression, Type >( r_expression, l_value );
         }
     };
+    */
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_minus_equal_operator
     {
@@ -3031,6 +3051,7 @@ namespace feng
             return ans;
         }
     };
+    /*
     template < typename Expression, typename Type >
     struct crtp_value_matrix_minus_expression : matrix_expression< crtp_value_matrix_minus_expression< Expression, Type >>
     {
@@ -3065,11 +3086,12 @@ namespace feng
             return crtp_value_matrix_minus_expression< Right_Expression, Type >( r_expression, l_value );
         }
     };
+    */
     template < typename Type, class Allocator = std::allocator< typename std::decay_t< Type > > >
-    struct matrix : public matrix_expression< matrix< Type >>
-        , public crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
+    struct matrix :// public matrix_expression< matrix< Type >>
+          public crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_expression< matrix< Type, Allocator >, Type, Allocator >
+        //, public crtp_expression< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_stream_operator< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_data< matrix< Type, Allocator >, Type, Allocator >
         , public crtp_apply< matrix< Type, Allocator >, Type, Allocator >
