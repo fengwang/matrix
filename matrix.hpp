@@ -63,391 +63,187 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long matrix_version = 20171213;
+    constexpr unsigned long matrix_version = 20180101;
 
-    template < typename Type, class Allocator = std::allocator< Type >>
-    struct allocator : Allocator
+    template< typename T >
+    struct debug_allocator : std::allocator<T>
     {
-        typedef Type value_type;
-        typedef allocator self_type;
-        typedef value_type* storage_type;
-        typedef value_type* pointer;
-        typedef const value_type* const_pointer;
-        typedef value_type& reference;
-        typedef const value_type& const_reference;
-        typedef value_type* iterator;
-        typedef std::reverse_iterator< iterator > reverse_iterator;
-        typedef const value_type* const_iterator;
-        typedef std::reverse_iterator< const_iterator > const_reverse_iterator;
-        typedef std::size_t size_type;
-        typedef std::ptrdiff_t difference_type;
-        typedef Allocator host_allocator_type;
-
-        allocator( self_type&& other ) noexcept
+        typedef T*              pointer;
+        typedef unsigned long   size_type;
+        debug_allocator(){}
+        debug_allocator(debug_allocator const&){}
+        template<typename U>
+        debug_allocator(debug_allocator<U> const&){}
+        pointer allocate( size_type n )
         {
-            operator=( other );
+            pointer mem = std::allocator<T>::allocate( n );
+            std::cerr << "allocate: " << mem << " with size " << n << std::endl;
+            return mem;
         }
-        self_type& operator=( self_type&& other ) noexcept
+        void deallocate( pointer mem, size_type n ) noexcept
         {
-            Allocator::operator=( std::move( other ) );
-            buffer_            = other.buffer_;
-            items_             = other.items_;
-            other.buffer_      = nullptr;
-            other.items_       = 0;
-            return *this;
+            std::cerr << "dllocate: " << mem << " with size " << n << std::endl;
+            std::allocator<T>::deallocate( mem, n );
         }
-        allocator( const self_type& rhs ) noexcept
-            : Allocator( rhs )
-        {
-            operator=( rhs );
-        }
-        self_type& operator=( const self_type& rhs ) noexcept
-        {
-            items_  = 0;
-            buffer_ = nullptr;
-
-            if ( rhs.items_ && rhs.buffer_ )
-            {
-                items_  = rhs.items_;
-                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                std::copy( rhs.begin(), rhs.end(), begin() );
-            }
-
-            return *this;
-        }
-        explicit allocator( const size_type dims = 0 ) noexcept
-        {
-            items_  = dims;
-            buffer_ = nullptr;
-
-            if ( items_ )
-            {
-                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                std::memset( buffer_, 0, items_ * sizeof( Type ) );
-            }
-        }
-        template < typename Input_Iterator >
-        allocator( Input_Iterator begin_, Input_Iterator end_ ) noexcept
-        {
-            items_  = std::distance( begin_, end_ );
-            buffer_ = nullptr;
-
-            if ( items_ )
-            {
-                buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                std::copy( begin_, end_, begin() );
-            }
-        }
-        virtual ~allocator() noexcept
-        {
-            if ( items_ && buffer_ )
-            {
-                Allocator::deallocate( buffer_, items_ );
-                buffer_ = nullptr;
-                items_  = 0;
-            }
-        }
-        bool empty() const noexcept
-        {
-            return ( 0 == items_ );
-        }
-        size_type size() const noexcept
-        {
-            return items_;
-        }
-        iterator begin()
-        {
-            return &buffer_[0];
-        }
-        const_iterator begin() const noexcept
-        {
-            return &buffer_[0];
-        }
-        const_iterator cbegin() const noexcept
-        {
-            return begin();
-        }
-        iterator end() noexcept
-        {
-            return begin() + size();
-        }
-        const_iterator end() const noexcept
-        {
-            return begin() + size();
-        }
-        const_iterator cend() const noexcept
-        {
-            return end();
-        }
-        reverse_iterator rbegin() noexcept
-        {
-            return reverse_iterator( end() );
-        }
-        const_reverse_iterator rbegin() const noexcept
-        {
-            return const_reverse_iterator( end() );
-        }
-        const_reverse_iterator crbegin() const noexcept
-        {
-            return rbegin();
-        }
-        reverse_iterator rend() noexcept
-        {
-            return reverse_iterator( begin() );
-        }
-        const_reverse_iterator rend() const noexcept
-        {
-            return const_reverse_iterator( begin() );
-        }
-        const_reverse_iterator crend() const noexcept
-        {
-            return rend();
-        }
-        reference operator[]( const size_type index ) noexcept
-        {
-            return buffer_[index];
-        }
-        const_reference operator[]( const size_type index ) const noexcept
-        {
-            return buffer_[index];
-        }
-
-        void do_copy( const self_type& rhs ) noexcept
-        {
-            assign( rhs.begin(), rhs.end() );
-        }
-
-        template < typename Input_Iterator >
-        void assign( Input_Iterator begin_, Input_Iterator end_ ) noexcept
-        {
-            const size_type dis = std::distance( begin_, end_ );
-
-            if ( items_ != dis )
-            {
-                if ( items_ && buffer_ )
-                {
-                    Allocator::deallocate( buffer_, items_ );
-                    items_  = 0;
-                    buffer_ = nullptr;
-                }
-
-                items_ = dis;
-
-                if ( items_ )
-                {
-                    buffer_ = static_cast< pointer >( Allocator::allocate( items_ ) );
-                }
-            }
-
-            std::copy( begin_, end_, begin() );
-        }
-
-        void swap( self_type& other ) noexcept
-        {
-            std::swap( buffer_, other.buffer_ );
-            std::swap( items_, other.items_ );
-        }
-
-        pointer data() noexcept
-        {
-            return buffer_;
-        }
-        const_pointer data() const noexcept
-        {
-            return buffer_;
-        }
-
-        pointer buffer_;
-        size_type items_;
     };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    bool operator==( allocator< T1, A1 > const&, allocator< T2, A2 > const& ) noexcept
-    {
-        return true;
-    }
-    template < typename T1, typename A1, typename T2, typename A2 >
-    bool operator!=( allocator< T1, A1 > const&, allocator< T2, A2 > const& ) noexcept
-    {
-        return false;
-    }
-    template < typename T, typename A >
-    void swap( allocator< T, A >& one, allocator< T, A >& another ) noexcept
-    {
-        one.swap( another );
-    }
+
     template < typename Iterator_Type >
     struct stride_iterator
     {
-            typedef typename std::iterator_traits< Iterator_Type >::value_type value_type;
-            typedef typename std::iterator_traits< Iterator_Type >::reference reference;
-            typedef typename std::iterator_traits< Iterator_Type >::difference_type difference_type;
-            typedef typename std::iterator_traits< Iterator_Type >::pointer pointer;
-            typedef typename std::iterator_traits< Iterator_Type >::iterator_category iterator_category;
-            typedef stride_iterator self_type;
-            stride_iterator() noexcept
-                : iterator_( 0 )
-                , step_( 1 )
-            {
-            }
-            stride_iterator( const self_type& ) noexcept = default;
-            stride_iterator( self_type&& ) noexcept = default;
-            self_type& operator=( const self_type& ) noexcept = default;
-            self_type& operator=( self_type&& ) noexcept = default;
-            stride_iterator( const Iterator_Type& it, const difference_type& dt ) noexcept
-                : iterator_( it )
-                , step_( dt )
-            {
-            }
-            self_type& operator++() noexcept
-            {
-                iterator_ += step_;
-                return *this;
-            }
-            const self_type operator++( int ) noexcept
-            {
-                self_type ans( *this );
-                operator++();
-                return ans;
-            }
-            self_type& operator+=( const difference_type dt ) noexcept
-            {
-                iterator_ += dt * step_;
-                return *this;
-            }
-            friend const self_type operator+( const self_type& lhs, const difference_type rhs ) noexcept
-            {
-                self_type ans( lhs );
-                ans += rhs;
-                return ans;
-            }
-            friend const self_type operator+( const difference_type lhs, const self_type& rhs ) noexcept
-            {
-                return rhs + lhs;
-            }
-            self_type& operator--() noexcept
-            {
-                iterator_ -= step_;
-                return *this;
-            }
-            const self_type operator--( int ) noexcept
-            {
-                self_type ans( *this );
-                operator--();
-                return ans;
-            }
-            self_type& operator-=( const difference_type dt ) noexcept
-            {
-                iterator_ -= dt * step_;
-                return *this;
-            }
-            friend const self_type operator-( const self_type& lhs, const difference_type rhs ) noexcept
-            {
-                self_type ans( lhs );
-                ans -= rhs;
-                return ans;
-            }
-            reference operator[]( const difference_type dt ) noexcept
-            {
-                return iterator_[dt * step_];
-            }
-            const reference operator[]( const difference_type dt ) const noexcept
-            {
-                return iterator_[dt * step_];
-            }
-            reference operator*() noexcept
-            {
-                return *iterator_;
-            }
-            const reference operator*() const noexcept
-            {
-                return *iterator_;
-            }
-            friend bool operator==( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ == rhs.iterator_;
-            }
-            friend bool operator!=( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ != rhs.iterator_;
-            }
-            friend bool operator<( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ < rhs.iterator_;
-            }
-            friend bool operator<=( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ <= rhs.iterator_;
-            }
-            friend bool operator>( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ > rhs.iterator_;
-            }
-            friend bool operator>=( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return lhs.iterator_ >= rhs.iterator_;
-            }
-            friend difference_type operator-( const self_type& lhs, const self_type& rhs ) noexcept
-            {
-                assert( lhs.step_ == rhs.step_ );
-                return ( lhs.iterator_ - rhs.iterator_ ) / lhs.step_;
-            }
-            difference_type step() const noexcept
-            {
-                return step_;
-            }
-            void reset_step( const difference_type step ) noexcept
-            {
-                step_ = step;
-            }
-            void step( const difference_type step ) noexcept
-            {
-                step_ = step;
-            }
-            Iterator_Type iterator_;
-            difference_type step_;
+        typedef stride_iterator                                                     self_type;
+        typedef typename std::iterator_traits< Iterator_Type >::value_type          value_type;
+        typedef typename std::iterator_traits< Iterator_Type >::reference           reference;
+        typedef typename std::iterator_traits< Iterator_Type >::difference_type     difference_type;
+        typedef typename std::iterator_traits< Iterator_Type >::pointer             pointer;
+        typedef typename std::iterator_traits< Iterator_Type >::iterator_category   iterator_category;
+
+        Iterator_Type                                                               iterator_;
+        difference_type                                                             step_;
+
+        stride_iterator( const Iterator_Type& it, const difference_type& dt ) noexcept : iterator_( it ) , step_( dt ) { }
+
+        stride_iterator() noexcept : iterator_( 0 ) , step_( 1 ) { }
+        stride_iterator( const self_type& ) noexcept = default;
+        stride_iterator( self_type&& ) noexcept = default;
+        self_type& operator=( const self_type& ) noexcept = default;
+        self_type& operator=( self_type&& ) noexcept = default;
+
+        self_type& operator++() noexcept
+        {
+            iterator_ += step_;
+            return *this;
+        }
+        const self_type operator++( int ) noexcept
+        {
+            self_type ans( *this );
+            operator++();
+            return ans;
+        }
+        self_type& operator+=( const difference_type dt ) noexcept
+        {
+            iterator_ += dt * step_;
+            return *this;
+        }
+        friend const self_type operator+( const self_type& lhs, const difference_type rhs ) noexcept
+        {
+            self_type ans( lhs );
+            ans += rhs;
+            return ans;
+        }
+        friend const self_type operator+( const difference_type lhs, const self_type& rhs ) noexcept
+        {
+            return rhs + lhs;
+        }
+        self_type& operator--() noexcept
+        {
+            iterator_ -= step_;
+            return *this;
+        }
+        const self_type operator--( int ) noexcept
+        {
+            self_type ans( *this );
+            operator--();
+            return ans;
+        }
+        self_type& operator-=( const difference_type dt ) noexcept
+        {
+            iterator_ -= dt * step_;
+            return *this;
+        }
+        friend const self_type operator-( const self_type& lhs, const difference_type rhs ) noexcept
+        {
+            self_type ans( lhs );
+            ans -= rhs;
+            return ans;
+        }
+        reference operator[]( const difference_type dt ) noexcept
+        {
+            return iterator_[dt * step_];
+        }
+        const reference operator[]( const difference_type dt ) const noexcept
+        {
+            return iterator_[dt * step_];
+        }
+        reference operator*() noexcept
+        {
+            return *iterator_;
+        }
+        const reference operator*() const noexcept
+        {
+            return *iterator_;
+        }
+        friend bool operator==( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return false;
+            return lhs.iterator_ == rhs.iterator_;
+        }
+        friend bool operator!=( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return true;
+            return lhs.iterator_ != rhs.iterator_;
+        }
+        friend bool operator<( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return false;
+            return lhs.iterator_ < rhs.iterator_;
+        }
+        friend bool operator<=( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return false;
+            return lhs.iterator_ <= rhs.iterator_;
+        }
+        friend bool operator>( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return false;
+            return lhs.iterator_ > rhs.iterator_;
+        }
+        friend bool operator>=( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            if ( lhs.step_ != rhs.step_ ) return false;
+            return lhs.iterator_ >= rhs.iterator_;
+        }
+        friend difference_type operator-( const self_type& lhs, const self_type& rhs ) noexcept
+        {
+            assert( lhs.step_ == rhs.step_ );
+            return ( lhs.iterator_ - rhs.iterator_ ) / lhs.step_;
+        }
     };
     template < typename Type, typename Allocator >
     struct crtp_typedef
     {
-        typedef typename std::decay< Type >::type value_type;
-        typedef value_type* iterator;
-        typedef const value_type* const_iterator;
-        typedef allocator< value_type, Allocator > storage_type;
-        typedef std::uint64_t size_type;
-        typedef std::ptrdiff_t difference_type;
-        typedef std::pair<size_type, size_type> range_type;
-        typedef typename Allocator::pointer pointer;
-        typedef typename Allocator::const_pointer const_pointer;
-        typedef stride_iterator< value_type* > matrix_stride_iterator;
-        typedef value_type* row_type;
-        typedef const value_type* const_row_type;
-        typedef stride_iterator< value_type* > col_type;
-        typedef stride_iterator< const value_type* > const_col_type;
-        typedef stride_iterator< value_type* > diag_type;
-        typedef stride_iterator< const value_type* > const_diag_type;
-        typedef stride_iterator< value_type* > anti_diag_type;
-        typedef stride_iterator< const value_type* > const_anti_diag_type;
-        typedef std::reverse_iterator< iterator > reverse_iterator;
-        typedef std::reverse_iterator< const_iterator > const_reverse_iterator;
-        typedef std::reverse_iterator< matrix_stride_iterator > reverse_matrix_stride_iterator;
-        typedef std::reverse_iterator< row_type > reverse_row_type;
-        typedef std::reverse_iterator< const_row_type > const_reverse_row_type;
-        typedef std::reverse_iterator< col_type > reverse_col_type;
-        typedef std::reverse_iterator< const_col_type > const_reverse_col_type;
-        typedef std::reverse_iterator< diag_type > reverse_upper_diag_type;
-        typedef std::reverse_iterator< const_diag_type > const_reverse_upper_diag_type;
-        typedef std::reverse_iterator< diag_type > reverse_lower_diag_type;
-        typedef std::reverse_iterator< const_diag_type > const_reverse_lower_diag_type;
-        typedef std::reverse_iterator< diag_type > reverse_diag_type;
-        typedef std::reverse_iterator< const_diag_type > const_reverse_diag_type;
-        typedef std::reverse_iterator< anti_diag_type > reverse_anti_diag_type;
-        typedef std::reverse_iterator< const_anti_diag_type > const_reverse_anti_diag_type;
+        typedef typename std::decay< Type >::type                       value_type;
+        typedef value_type*                                             iterator;
+        typedef const value_type*                                       const_iterator;
+        typedef Allocator                                               allocator_type;
+        typedef std::uint64_t                                           size_type;
+        typedef std::ptrdiff_t                                          difference_type;
+        typedef std::pair<size_type, size_type>                         range_type;
+        typedef typename Allocator::pointer                             pointer;
+        typedef typename Allocator::const_pointer                       const_pointer;
+        typedef stride_iterator< value_type* >                          matrix_stride_iterator;
+        typedef value_type*                                             row_type;
+        typedef const value_type*                                       const_row_type;
+        typedef stride_iterator< value_type* >                          col_type;
+        typedef stride_iterator< const value_type* >                    const_col_type;
+        typedef stride_iterator< value_type* >                          diag_type;
+        typedef stride_iterator< const value_type* >                    const_diag_type;
+        typedef stride_iterator< value_type* >                          anti_diag_type;
+        typedef stride_iterator< const value_type* >                    const_anti_diag_type;
+        typedef std::reverse_iterator< iterator >                       reverse_iterator;
+        typedef std::reverse_iterator< const_iterator >                 const_reverse_iterator;
+        typedef std::reverse_iterator< matrix_stride_iterator >         reverse_matrix_stride_iterator;
+        typedef std::reverse_iterator< row_type >                       reverse_row_type;
+        typedef std::reverse_iterator< const_row_type >                 const_reverse_row_type;
+        typedef std::reverse_iterator< col_type >                       reverse_col_type;
+        typedef std::reverse_iterator< const_col_type >                 const_reverse_col_type;
+        typedef std::reverse_iterator< diag_type >                      reverse_upper_diag_type;
+        typedef std::reverse_iterator< const_diag_type >                const_reverse_upper_diag_type;
+        typedef std::reverse_iterator< diag_type >                      reverse_lower_diag_type;
+        typedef std::reverse_iterator< const_diag_type >                const_reverse_lower_diag_type;
+        typedef std::reverse_iterator< diag_type >                      reverse_diag_type;
+        typedef std::reverse_iterator< const_diag_type >                const_reverse_diag_type;
+        typedef std::reverse_iterator< anti_diag_type >                 reverse_anti_diag_type;
+        typedef std::reverse_iterator< const_anti_diag_type >           const_reverse_anti_diag_type;
     };
 
     template < typename Matrix, typename Type, typename Allocator >
@@ -458,6 +254,17 @@ namespace feng
         {
             auto const& zen = static_cast<zen_type const&>(*this);
             return std::make_tuple( zen.row(), zen.col() );
+        }
+    };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_get_allocator
+    {
+        typedef Matrix zen_type;
+        auto get_allocator() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>(*this);
+            return zen.allocator_;
         }
     };
 
@@ -769,7 +576,11 @@ namespace feng
         void clear() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            zen.resize( 0, 0 );
+
+            zen.get_allocator().deallocate( zen.data(), zen.size() );
+            zen.dat_ = nullptr;
+            zen.row_ = 0;
+            zen.col_ = 0;
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -783,40 +594,49 @@ namespace feng
         {
             assert( r.size() == 2 && "row size should be 2!" );
             assert( c.size() == 2 && "col size should be 2!" );
-            size_type r0 = r[0]; size_type r1 = r[1];
-            size_type c0 = c[0]; size_type c1 = c[1];
-            return clone( other, r0, r1, c0, c1 );
+            return clone( other, r[0], r[1], c[0], c[1] );
         }
         template < typename Other_Matrix >
         zen_type& clone( const Other_Matrix& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) noexcept
         {
+#if 0
+            assert( r1 > r0 && "row range error!" );
+            assert( c1 > c0 && "col range error!" );
+
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( r1 > r0 );
-            assert( c1 > c0 );
             zen.resize( r1 - r0, c1 - c0 );
 
-            if ( zen.row() < zen.col() )
-                for ( size_type i = r0; i != r1; ++i )
-                    std::copy( other.row_begin( i ) + c0, other.row_begin( i ) + c1, zen.row_begin( i - r0 ) );
-            else
-                for ( size_type i = c0; i != c1; ++i )
-                    std::copy( other.col_begin( i ) + r0, other.col_begin( i ) + r1, zen.col_begin( i - c0 ) );
+            for ( size_type r = 0; r != zen.row(); ++r )
+            {
+                std::copy_n( other.row_begin(r+r0)+c0, zen.col(), zen.row_begin(r) );
+            }
 
             return zen;
+#else
+            assert( r1 > r0 && "row range error!" );
+            assert( c1 > c0 && "col range error!" );
+
+            zen_type& zen = static_cast< zen_type& >( *this );
+            zen_type tmp{ zen.get_allocator(), r1-r0, c1-c0 };
+
+            for ( size_type r = 0; r != tmp.row(); ++r )
+                std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
+
+            zen.swap( tmp );
+            return zen;
+#endif
         }
 
         zen_type const clone( std::initializer_list<size_type> r, std::initializer_list<size_type> c ) const noexcept
         {
             assert( r.size() == 2 && "row size should be 2!" );
             assert( c.size() == 2 && "col size should be 2!" );
-            size_type r0 = r[0]; size_type r1 = r[1];
-            size_type c0 = c[0]; size_type c1 = c[1];
-            return clone( r0, r1, c0, c1 );
+            return clone( r[0], r[1], c[0], c[1] );
         }
         zen_type const clone( size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            zen_type ans;
+            zen_type ans{ zen.get_allocator() };
             ans.clone( zen, r0, r1, c0, c1 );
             return ans;
         }
@@ -895,9 +715,9 @@ namespace feng
         void copy( const Other_Matrix& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            zen.row_      = rhs.row();
-            zen.col_      = rhs.col();
-            zen.data_.assign( rhs.begin(), rhs.end() );
+            zen.allocator_ = rhs.allocator_;
+            zen.resize( rhs.row(), rhs.col() );
+            std::copy( rhs.begin(), rhs.end(), zen.begin() );//<- should be overloaded when with cuda_allocator
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -910,12 +730,12 @@ namespace feng
         pointer data() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return zen.data_.data();
+            return zen.dat_;
         }
         const_pointer data() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.data();
+            return zen.dat_;
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -952,7 +772,16 @@ namespace feng
             zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
             zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
             zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
-            zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
+            //zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
+            auto const& pi = P.inverse();
+            std::cerr << "det: pi calculated successfully\n";
+            auto const& rpi = R*pi;
+            std::cerr << "det: rpi calculated successfully\n";
+            auto const& rpiq = rpi * Q;
+            std::cerr << "det: rpiq calculated successfully\n";
+            auto const& tmp = S - rpiq;
+
+            std::cerr << "det: tmp calculated successfully\n";
             return P.det() * tmp.det();
         }
     };
@@ -1242,32 +1071,32 @@ namespace feng
         iterator begin() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return zen.data_.begin();
+            return zen.data();
         }
         iterator end() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return zen.data_.end();
+            return zen.begin()+zen.size();
         }
         const_iterator begin() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.begin();
+            return zen.data();
         }
         const_iterator end() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.end();
+            return zen.begin()+zen.size();
         }
         const_iterator cbegin() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.begin();
+            return zen.data();
         }
         const_iterator cend() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.end();
+            return zen.begin()+zen.size();
         }
         reverse_iterator rbegin() noexcept
         {
@@ -1331,7 +1160,8 @@ namespace feng
             assert( zen.row() == zen.col() && "matrix is not square!" );
 
             size_type const n = zen.row();
-            zen_type a( n, n + n, value_type( 0 ) );
+            zen_type a( zen.get_allocator(),  n, n + n );
+            std::fill( a.begin(), a.end(), value_type{0} );
 
             for ( size_type i = 0; i != n; ++i )
             {
@@ -1663,7 +1493,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
-        zen_type& operator+=( const value_type& rhs )
+        zen_type& operator+=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
@@ -1672,7 +1502,7 @@ namespace feng
 
             return zen;
         }
-        zen_type& operator+=( const zen_type& rhs )
+        zen_type& operator+=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::plus< value_type >() );
@@ -1686,10 +1516,10 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
-        const zen_type operator-() const
+        const zen_type operator-() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            zen_type ans( zen );
+            zen_type ans{ zen };
             std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x )
             {
                 return -x;
@@ -1704,7 +1534,7 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
-        const zen_type operator+() const
+        const zen_type operator+() const noexcept
         {
             return static_cast< zen_type const& >( *this );
         }
@@ -1715,10 +1545,10 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
-        void reshape( const size_type new_row, const size_type new_col )
+        void reshape( const size_type new_row, const size_type new_col ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( new_row * new_col == zen.row() * zen.col() );
+            assert( new_row * new_col == zen.row() * zen.col() && "error: size before and after reshape does not agree, use resize() instead!" );
             zen.row_ = new_row;
             zen.col_ = new_col;
         }
@@ -1730,36 +1560,17 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
-        zen_type& resize( const size_type new_row, const size_type new_col, const value_type v )
+        zen_type& resize( const size_type new_row, const size_type new_col ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-
-            if ( ( zen.row() == new_row ) && ( zen.col() == new_col ) )
-            {
-                return zen;
-            }
-
-            zen_type ans( new_row, new_col, v );
-            zen.swap( ans );
-            return zen;
-        }
-        zen_type& resize( const size_type new_row, const size_type new_col )
-        {
-            zen_type& zen = static_cast< zen_type& >( *this );
-
-            if ( ( zen.row() == new_row ) && ( zen.col() == new_col ) )
-            {
-                return zen;
-            }
 
             if ( zen.size() == new_row * new_col )
             {
-                zen.row_ = new_row;
-                zen.col_ = new_col;
+                zen.reshape( new_row, new_col );
                 return zen;
             }
 
-            zen_type ans( new_row, new_col );
+            zen_type ans{ zen.get_allocator(), new_row, new_col };
             zen.swap( ans );
             return zen;
         }
@@ -1770,36 +1581,19 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
-        size_type row() const
+        size_type row() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.row_;
         }
-        size_type rows() const
-        {
-            return row();
-        }
-        size_type size1() const
-        {
-            return row();
-        }
-        size_type col() const
+        size_type col() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.col_;
         }
-        size_type cols() const
+        size_type size() const noexcept
         {
-            return col();
-        }
-        size_type size2() const
-        {
-            return col();
-        }
-        size_type size() const
-        {
-            zen_type const& zen = static_cast< zen_type const& >( *this );
-            return zen.data_.size();
+            return row()*col();
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -1812,57 +1606,58 @@ namespace feng
         typedef typename type_proxy_type::const_row_type const_row_type;
         typedef typename type_proxy_type::reverse_row_type reverse_row_type;
         typedef typename type_proxy_type::const_reverse_row_type const_reverse_row_type;
-        row_type row_begin( const size_type index = 0 )
+
+        row_type row_begin( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return row_type( zen.begin() + index * zen.col() );
         }
-        row_type row_end( const size_type index = 0 )
+        row_type row_end( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             return row_begin( index ) + zen.col();
         }
-        const_row_type row_begin( const size_type index = 0 ) const
+        const_row_type row_begin( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_row_type( zen.begin() + index * zen.col() );
         }
-        const_row_type row_end( const size_type index = 0 ) const
+        const_row_type row_end( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return row_begin( index ) + zen.col();
         }
-        const_row_type row_cbegin( const size_type index = 0 ) const
+        const_row_type row_cbegin( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return const_row_type( zen.begin() + index * zen.col() );
         }
-        const_row_type row_cend( const size_type index = 0 ) const
+        const_row_type row_cend( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return row_begin( index ) + zen.col();
         }
-        reverse_row_type row_rbegin( const size_type index = 0 )
+        reverse_row_type row_rbegin( const size_type index = 0 ) noexcept
         {
             return reverse_row_type( row_end( index ) );
         }
-        reverse_row_type row_rend( const size_type index = 0 )
+        reverse_row_type row_rend( const size_type index = 0 ) noexcept
         {
             return reverse_row_type( row_begin( index ) );
         }
-        const_reverse_row_type row_rbegin( const size_type index = 0 ) const
+        const_reverse_row_type row_rbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_row_type( row_end( index ) );
         }
-        const_reverse_row_type row_rend( const size_type index = 0 ) const
+        const_reverse_row_type row_rend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_row_type( row_begin( index ) );
         }
-        const_reverse_row_type row_crbegin( const size_type index = 0 ) const
+        const_reverse_row_type row_crbegin( const size_type index = 0 ) const noexcept
         {
             return const_reverse_row_type( row_end( index ) );
         }
-        const_reverse_row_type row_crend( const size_type index = 0 ) const
+        const_reverse_row_type row_crend( const size_type index = 0 ) const noexcept
         {
             return const_reverse_row_type( row_begin( index ) );
         }
@@ -1872,17 +1667,18 @@ namespace feng
     {
         typedef Matrix zen_type;
         typedef Type value_type;
-        bool save_as_txt( std::string const& file_name ) const
+        bool save_as_txt( std::string const& file_name ) const noexcept
         {
             return save_as_txt( file_name.c_str() );
         }
-        bool save_as_txt( const char* const file_name ) const
+        bool save_as_txt( const char* const file_name ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             std::ofstream ofs( file_name );
 
             if ( !ofs )
             {
+                std::cerr << "Error: failed write matrix to txt file - " << file_name << "\n";
                 return false;
             }
 
@@ -1908,6 +1704,7 @@ namespace feng
 
             if ( !ofs )
             {
+                std::cerr << "Error: failed write matrix to binary file - " << file_name << "!\n";
                 return false;
             }
 
@@ -1918,170 +1715,15 @@ namespace feng
             ofs.write( reinterpret_cast< char const* >( zen.data() ), sizeof( Type ) * zen.size() );
 
             if ( !ofs.good() )
+            {
+                std::cerr << "Error: failed write matrix to binary file - " << file_name << " - something bad happened!\n";
                 return false;
+            }
 
             ofs.close();
             return true;
         }
     };
-    /*
-    namespace crtp_save_as_balanced_bmp_private
-    {
-        template < typename T >
-        struct crtp_save_as_balanced_bmp_data
-        {
-            unsigned long row;
-            unsigned long col;
-            T value;
-            crtp_save_as_balanced_bmp_data() {}
-            crtp_save_as_balanced_bmp_data( unsigned long r, unsigned long c, T v )
-                : row( r )
-                , col( c )
-                , value( v )
-            {
-            }
-        };
-        template < typename T >
-        bool operator<( crtp_save_as_balanced_bmp_data< T > const& lhs, crtp_save_as_balanced_bmp_data< T > const& rhs )
-        {
-            return lhs.value < rhs.value;
-        }
-    }
-    template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_save_as_balanced_bmp
-    {
-        typedef Type value_type;
-        typedef unsigned long size_type;
-        typedef Matrix zen_type;
-        bool save_as_balanced_bmp( const std::string& file_name ) const
-        {
-            zen_type const& zen   = static_cast< zen_type const& >( *this );
-            value_type const mx   = *std::max_element( zen.begin(), zen.end() );
-            value_type const mn   = *std::min_element( zen.begin(), zen.end() );
-            double const residual = 1.0 / static_cast< double >( zen.size() );
-            using namespace crtp_save_as_balanced_bmp_private;
-            std::vector< crtp_save_as_balanced_bmp_data< double >> cache_vector;
-            cache_vector.resize( zen.size() );
-            double total_energy = 0.0;
-
-            for ( size_type r = 0; r != zen.row(); ++r )
-                for ( size_type c = 0; c != zen.col(); ++c )
-                {
-                    unsigned long offset = r * zen.col() + c;
-                    double const val     = static_cast< double >( zen[r][c] - mn ) / static_cast< double >( mx - mn ) + residual;
-                    cache_vector[offset] = crtp_save_as_balanced_bmp_data< value_type > { r, c, val };
-                    total_energy += val;
-                }
-
-            double const energy_per_bin = total_energy / 766.0;
-            std::sort( cache_vector.begin(), cache_vector.end() );
-            zen_type clone{ zen.row(), zen.col() };
-            auto setter = [energy_per_bin, &clone, &cache_vector]( unsigned long start, unsigned long end, unsigned long index, auto recursion_function )
-            {
-                if ( start >= end )
-                    return;
-
-                double current_energy    = 0.0;
-                unsigned long next_index = start;
-
-                for ( ; next_index != end; ++next_index )
-                {
-                    if ( current_energy >= energy_per_bin )
-                        break;
-
-                    clone[cache_vector[next_index].row][cache_vector[next_index].col] = index;
-                    current_energy += cache_vector[next_index].value;
-                }
-
-                recursion_function( next_index, end, index + 1, recursion_function );
-            };
-            setter( 0, cache_vector.size(), 0, setter );
-            return clone.save_as_bmp( file_name );
-        }
-        bool save_as_balanced_bmp( const char* const file_name ) const
-        {
-            return save_as_balanced_bmp( std::string{ file_name } );
-        }
-    };
-    namespace crtp_save_as_balanced_inverse_bmp_private
-    {
-        template < typename T >
-        struct crtp_save_as_balanced_inverse_bmp_data
-        {
-            unsigned long row;
-            unsigned long col;
-            T value;
-            crtp_save_as_balanced_inverse_bmp_data() {}
-            crtp_save_as_balanced_inverse_bmp_data( unsigned long r, unsigned long c, T v )
-                : row( r )
-                , col( c )
-                , value( v )
-            {
-            }
-        };
-        template < typename T >
-        bool operator<( crtp_save_as_balanced_inverse_bmp_data< T > const& lhs, crtp_save_as_balanced_inverse_bmp_data< T > const& rhs )
-        {
-            return lhs.value < rhs.value;
-        }
-    }
-    template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_save_as_balanced_inverse_bmp
-    {
-        typedef Type value_type;
-        typedef unsigned long size_type;
-        typedef Matrix zen_type;
-        bool save_as_balanced_inverse_bmp( const std::string& file_name ) const
-        {
-            zen_type const& zen   = static_cast< zen_type const& >( *this );
-            value_type const mx   = *std::max_element( zen.begin(), zen.end() );
-            value_type const mn   = *std::min_element( zen.begin(), zen.end() );
-            double const residual = 1.0 / std::sqrt( static_cast< double >( zen.size() ) );
-            using namespace crtp_save_as_balanced_inverse_bmp_private;
-            std::vector< crtp_save_as_balanced_inverse_bmp_data< double >> cache_vector;
-            cache_vector.resize( zen.size() );
-            double total_energy = 0.0;
-
-            for ( size_type r = 0; r != zen.row(); ++r )
-                for ( size_type c = 0; c != zen.col(); ++c )
-                {
-                    unsigned long offset = r * zen.col() + c;
-                    double const val     = static_cast< double >( zen[r][c] - mn ) / static_cast< double >( mx - mn ) + residual;
-                    cache_vector[offset] = crtp_save_as_balanced_inverse_bmp_data< value_type > { r, c, val };
-                    total_energy += val;
-                }
-
-            double const energy_per_bin = total_energy / 766.0;
-            std::sort( cache_vector.begin(), cache_vector.end() );
-            zen_type clone{ zen.row(), zen.col() };
-            auto setter = [energy_per_bin, &clone, &cache_vector]( unsigned long start, unsigned long end, unsigned long index, auto recursion_function )
-            {
-                if ( start >= end )
-                    return;
-
-                double current_energy    = 0.0;
-                unsigned long next_index = start;
-
-                for ( ; next_index != end; ++next_index )
-                {
-                    if ( current_energy >= energy_per_bin )
-                        break;
-
-                    clone[cache_vector[next_index].row][cache_vector[next_index].col] = index;
-                    current_energy += cache_vector[next_index].value;
-                }
-
-                recursion_function( next_index, end, index + 1, recursion_function );
-            };
-            setter( 0, cache_vector.size(), 0, setter );
-            return clone.save_as_inverse_bmp( file_name );
-        }
-        bool save_as_balanced_inverse_bmp( const char* const file_name ) const
-        {
-            return save_as_balanced_inverse_bmp( std::string{ file_name } );
-        }
-    };
-    */
     namespace crtp_save_as_bmp_private
     {
         typedef std::function< double( double ) > converter_type;
@@ -2339,68 +1981,18 @@ namespace feng
             }
 
             using namespace crtp_save_as_bmp_private;
-            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } :
-                                                color_map;
-            std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } :
-                                                transform;
+            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
+            std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
             auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            unsigned char file[14]            =
-            {
-                'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0
-            };
-            unsigned char info[40] =
-            {
-                40,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-                24,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0x13,
-                0x0B,
-                0,
-                0,
-                0x13,
-                0x0B,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            };
+            unsigned char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            unsigned char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
             unsigned long const the_col   = zen.col();
             unsigned long const the_row   = zen.row();
             unsigned long const pad_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
             unsigned long const data_size = the_col * the_row * 3 + the_row * pad_size;
             unsigned long const all_size  = data_size + sizeof( file ) + sizeof( info );
-            auto const& ul_to_uc          = []( unsigned long val )
-            {
-                return static_cast< unsigned char >( val & 0xffUL );
-            };
+            auto const& ul_to_uc          = []( unsigned long val ) { return static_cast< unsigned char >( val & 0xffUL ); };
             file[2]  = ul_to_uc( all_size );
             file[3]  = ul_to_uc( all_size >> 8 );
             file[4]  = ul_to_uc( all_size >> 16 );
@@ -2555,7 +2147,7 @@ namespace feng
     struct crtp_save_as_pgm
     {
         typedef Matrix zen_type;
-        bool save_as_pgm( const std::string& file_name, std::string const& transform = std::string{ "default" } ) const
+        bool save_as_pgm( const std::string& file_name, std::string const& transform = std::string{ "default" } ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             std::string new_file_name{ file_name };
@@ -2567,6 +2159,7 @@ namespace feng
 
             if ( !stream )
             {
+                std::cerr << "Error: failed save matrix to pgm - " << file_name << "!\n";
                 return false;
             }
 
@@ -2633,7 +2226,7 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
-        zen_type& shrink_to_size( const size_type new_row, const size_type new_col )
+        zen_type& shrink_to_size( const size_type new_row, const size_type new_col ) noexcept
         {
             assert( new_row && new_col );
             zen_type& zen = static_cast< zen_type& >( *this );
@@ -2641,7 +2234,7 @@ namespace feng
             if ( new_row == zen.row() && new_col == zen.col() )
                 return zen;
 
-            zen_type other{ new_row, new_col };
+            zen_type other{ zen.get_allocator(), new_row, new_col };
             std::fill( other.begin(), other.end(), value_type{} );
             size_type const the_rows_to_copy = std::min( zen.row(), new_row );
             size_type const the_cols_to_copy = std::min( zen.col(), new_col );
@@ -2662,7 +2255,7 @@ namespace feng
         typedef typename type_proxy_type::value_type value_type;
         friend std::ostream& operator<<( std::ostream& lhs, zen_type const& rhs )
         {
-            lhs.precision( 20 );
+            lhs.precision( 18 );
 
             for ( size_type i = 0; i < rhs.row(); ++i )
             {
@@ -2681,10 +2274,7 @@ namespace feng
                 row_element.push_back( string_line );
 
             size_type const row = row_element.size();
-            size_type const col = std::count_if( row_element[0].begin(), row_element[0].end(), []( char ch )
-            {
-                return '\t' == ch;
-            } );
+            size_type const col = std::count_if( row_element[0].begin(), row_element[0].end(), []( char ch ) { return '\t' == ch; } );
 
             if ( row == 0 || col == 0 )
             {
@@ -2707,12 +2297,14 @@ namespace feng
     struct crtp_swap
     {
         typedef Matrix zen_type;
-        void swap( zen_type& other )
+        void swap( zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
+            std::cerr << "Swapping " << zen.dat_ << "(" << zen.row_ << ", " << zen.col_ << ") and " << other.dat_ << "(" << other.row_ << ", " << other.col_ << ")\n";
             std::swap( zen.row_, other.row_ );
             std::swap( zen.col_, other.col_ );
-            zen.data_.swap( other.data_ );
+            std::swap( zen.dat_, other.dat_ );
+            std::swap( zen.allocator_, other.allocator_ );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -2721,7 +2313,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
-        const value_type tr() const
+        const value_type tr() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return std::accumulate( zen.diag_begin(), zen.diag_end(), value_type() );
@@ -2733,201 +2325,184 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
-        const zen_type transpose() const
+        const zen_type transpose() const noexcept
         {
             const zen_type& zen = static_cast< zen_type const& >( *this );
-            zen_type ans( zen.col(), zen.row() );
+            zen_type ans( zen.get_allocator(), zen.col(), zen.row() );
 
             for ( size_type i = 0; i < zen.col(); ++i )
-            {
                 std::copy( zen.col_begin( i ), zen.col_end( i ), ans.row_begin( i ) );
-            }
 
             return ans;
         }
     };
-    template < typename Type, class Allocator = std::allocator< typename std::decay_t< Type > > >
-    struct matrix : public crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_stream_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_data< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_apply< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_copy< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_clear< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_clone< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_det< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_bracket_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_col_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_direct_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_divide_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_multiply_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_plus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_prefix_minus< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_prefix_plus< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_reshape< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_resize< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_row_col_size< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_row_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_shrink_to_size< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_save_as_txt< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_save_as_binary< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_save_as_bmp< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_save_as_pgm< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_shape< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_swap< matrix< Type, Allocator >, Type, Allocator >
-        , public crtp_transpose< matrix< Type, Allocator >, Type, Allocator >
+
+    //template < typename Type, class Allocator = std::allocator<Type> >
+    template < typename Type, class Allocator = debug_allocator<Type> >
+    struct matrix : crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_apply< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_bracket_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_clear< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_clone< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_col_iterator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_copy< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_data< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_det< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_direct_iterator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_divide_equal_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_get_allocator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_multiply_equal_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_plus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_prefix_minus< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_prefix_plus< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_reshape< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_resize< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_row_col_size< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_row_iterator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_save_as_binary< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_save_as_bmp< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_save_as_pgm< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_save_as_txt< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_shape< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_shrink_to_size< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_stream_operator< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_swap< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_transpose< matrix< Type, Allocator >, Type, Allocator >
     {
         typedef matrix self_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
-        typedef typename type_proxy_type::size_type size_type;
-        typedef typename type_proxy_type::value_type value_type;
-        typedef typename type_proxy_type::range_type range_type;
-        typedef typename type_proxy_type::storage_type storage_type;
-        matrix( char const* const file_name )
-            : row_( 0 )
-            , col_( 0 )
-            , data_( storage_type{ 0 } )
+        typedef crtp_typedef< Type, Allocator >                         type_proxy_type;
+        typedef typename type_proxy_type::value_type                    value_type;
+        typedef typename type_proxy_type::size_type                     size_type;
+        typedef typename type_proxy_type::difference_type               difference_type;
+        typedef typename type_proxy_type::pointer                       pointer;
+        typedef typename type_proxy_type::allocator_type                allocator_type;
+        typedef typename type_proxy_type::range_type                    range_type;
+
+        size_type                                                       row_;
+        size_type                                                       col_;
+        pointer                                                         dat_;
+        allocator_type                                                  allocator_;
+
+        ~matrix()
         {
-            ( *this ).load( file_name );
+            (*this).clear();
         }
-        matrix( std::string const& file_name )
-            : row_( 0 )
-            , col_( 0 )
-            , data_( storage_type{ 0 } )
+
+        matrix( self_type&& other ) noexcept : matrix{}
         {
-            ( *this ).load( file_name );
+            (*this).swap( other );
         }
-        matrix( self_type&& ) = default;
-        matrix( const self_type& rhs )
+        self_type& operator = ( self_type&& other )
         {
-            operator=( rhs );
+            (*this).clear();
+            (*this).swap( other );
+            return *this;
         }
+
+        matrix( const self_type& other ) noexcept : row_{ other.row_ }, col_{ other.col_ }, dat_{ nullptr }, allocator_{ other.allocator_ }
+        {
+            if ( row_*col_ != 0 )
+            {
+                dat_ = allocator_.allocate( row_*col_ );
+                std::copy_n( other.dat_, row_*col_, dat_ );
+            }
+        }
+
         template < typename T, typename A >
-        matrix( const matrix< T, A >& rhs )
+        matrix( matrix< T, A> const& other ) noexcept : row_{ other.row_ }, col_{ other.col_ }, dat_{ nullptr }, allocator_{ other.allocator_ }
         {
-            operator=( rhs );
+            if ( row_*col_ != 0 )
+            {
+                dat_ = allocator_.allocate( row_*col_ );
+                std::copy_n( other.dat_, row_*col_, dat_ );
+            }
         }
-        template < typename Expression >
-        matrix( const Expression& expression )
-            : row_( expression.row() )
-            , col_( expression.col() )
-            , data_( storage_type( expression.row() * expression.col() ) )
+
+        explicit matrix( const size_type r = 0, const size_type c = 0, value_type const& v = value_type{} ) noexcept : row_{ r } , col_{ c }, dat_{ nullptr }
         {
-            for ( size_type r = 0; r != expression.row(); ++r )
-                for ( size_type c = 0; c != expression.col(); ++c )
-                    ( *this )( r, c ) = expression( r, c );
+            if ( r*c != 0 )
+            {
+                dat_ = allocator_.allocate( r*c );
+                std::fill_n( dat_, r*c, v );
+            }
         }
-        explicit matrix( const size_type r = 0, const size_type c = 0, const value_type& v = value_type{} )
-            : row_( r )
-            , col_( c )
-            , data_( storage_type( r * c ) )
+
+        explicit matrix( allocator_type a, const size_type r = 0, const size_type c = 0 ) noexcept : row_{ r } , col_{ c }, dat_{ nullptr }, allocator_{ a }
         {
-            std::fill( ( *this ).begin(), ( *this ).end(), v );
+            if ( r*c != 0 )
+                dat_ = allocator_.allocate( r*c );
         }
+
         template< typename T, typename A >
-        matrix( matrix<T,A> const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept
+        matrix( matrix<T,A> const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             assert( rr.size() == 2 && "row dims not match!" );
             assert( rc.size() == 2 && "col dims not match!" );
-            auto [rr0, rr1] = std::make_tuple( *rr.begin(), *(rr.begin()+1) );
-            auto [rc0, rc1] = std::make_tuple( *rc.begin(), *(rc.begin()+1) );
-            assert( rr0 <= rr1 && "row index not correct!" );
-            assert( rc0 <= rc1 && "col index not correct!" );
+            auto [rr0, rr1] = std::make_pair( *(rr.begin()), *(rr.begin()+1) );
+            auto [rc0, rc1] = std::make_pair( *(rc.begin()), *(rc.begin()+1) );
             (*this).clone( other, rr0, rr1, rc0, rc1 );
         }
-        matrix( matrix const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept
+
+        matrix( matrix const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             assert( rr.size() == 2 && "row dims not match!" );
             assert( rc.size() == 2 && "col dims not match!" );
-            auto [rr0, rr1] = std::make_tuple( *rr.begin(), *(rr.begin()+1) );
-            auto [rc0, rc1] = std::make_tuple( *rc.begin(), *(rc.begin()+1) );
-            assert( rr0 <= rr1 && "row index not correct!" );
-            assert( rc0 <= rc1 && "col index not correct!" );
+            auto [rr0, rr1] = std::make_pair( *(rr.begin()), *(rr.begin()+1) );
+            auto [rc0, rc1] = std::make_pair( *(rc.begin()), *(rc.begin()+1) );
             (*this).clone( other, rr0, rr1, rc0, rc1 );
         }
+
+#if 0
         template < typename T, typename A >
-        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc )
-            : row_( rr.second - rr.first )
-            , col_( rc.second - rc.first )
-            , data_( storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
+        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
         }
-        matrix( matrix const& other, range_type const& rr, range_type const& rc )
-            : row_( rr.second - rr.first )
-            , col_( rc.second - rc.first )
-            , data_( storage_type( ( rr.second - rr.first ) * ( rc.second - rc.first ) ) )
+        matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
         }
-        template < typename Itor >
-        matrix( const size_type r, const size_type c, Itor first, Itor last )
-            : row_( r )
-            , col_( c )
-            , data_( storage_type( r * c ) )
-        {
-            std::copy( first, last, ( *this ).begin() );
-        }
-        template < typename U >
-        matrix( const size_type r, const size_type c, std::initializer_list< U > il )
-            : row_( r )
-            , col_( c )
-            , data_( storage_type( r * c ) )
-        {
-            assert( std::distance( std::begin( il ), std::end( il ) ) <= r * c );
-            std::copy( std::begin( il ), std::end( il ), ( *this ).begin() );
-        }
         template < typename T, typename A >
-        matrix( const matrix< T, A >& other, size_type const r0, size_type r1, size_type const c0, size_type const c1 )
-            : row_( r1 - r0 )
-            , col_( c1 - c0 )
-            , data_( storage_type( ( r1 - r0 ) * ( c1 - c0 ) ) )
+        matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             ( *this ).clone( other, r0, r1, c0, c1 );
         }
-        self_type& operator=( const self_type& rhs )
+#else
+        template < typename T, typename A >
+        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} }
+        {}
+        matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} }
+        {}
+        template < typename T, typename A >
+        matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} }
+        {}
+        matrix( self_type const& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} }
+        {}
+
+#endif
+        self_type& operator = ( const self_type& rhs ) noexcept
         {
             ( *this ).copy( rhs );
             return *this;
         }
         template < typename T, typename A >
-        self_type& operator=( const matrix< T, A >& rhs )
+        self_type& operator = ( const matrix< T, A >& rhs ) noexcept
         {
             ( *this ).copy( rhs );
             return *this;
         }
-        self_type& operator=( self_type&& ) = default;
-        self_type& operator                 =( const value_type& v )
+        //self_type& operator =( self_type&& ) = default;
+        self_type& operator = ( const value_type& v )
         {
-            std::fill( ( *this ).begin(), ( *this ).end(), v );
+            std::fill( ( *this ).diag_begin(), ( *this ).diag_end(), v ); //TODO:should move to crtp_xxx
             return *this;
         }
-        template < typename U >
-        self_type& operator=( std::initializer_list< U > il )
-        {
-            assert( std::distance( std::begin( il ), std::end( il ) ) <= ( *this ).size() );
-            std::copy( std::begin( il ), std::end( il ), ( *this ).begin() );
-            return *this;
-        }
-        template < typename Expression >
-        self_type& operator=( const Expression& expression )
-        {
-            ( *this ).resize( expression.row(), expression.col() );
-
-            for ( size_type r = 0; r != expression.row(); ++r )
-                for ( size_type c = 0; c != expression.col(); ++c )
-                    ( *this )( r, c ) = expression( r, c );
-
-            return *this;
-        }
-        size_type row_;
-        size_type col_;
-        storage_type data_;
-    };
+    };//struct matrix
     template < typename T1, typename A1, typename T2, typename A2 >
     const matrix< T1, A1 >
     operator+( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
@@ -6140,9 +5715,7 @@ namespace feng
         return X;
     }
     template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
-    int forward_substitution( const matrix< T1, A1 >& A,
-                              matrix< T2, A2 >& x,
-                              const matrix< T3, A3 >& b )
+    int forward_substitution( const matrix< T1, A1 >& A, matrix< T2, A2 >& x, const matrix< T3, A3 >& b )
     {
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type::value_type value_type;
@@ -6341,9 +5914,7 @@ namespace feng
         return 0;
     }
     template < typename Type, typename Allocator >
-    int lu_solver( const matrix< Type, Allocator >& A,
-                   matrix< Type, Allocator >& x,
-                   const matrix< Type, Allocator >& b )
+    int lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& x, const matrix< Type, Allocator >& b )
     {
         typedef matrix< Type, Allocator > matrix_type;
         assert( A.row() == A.col() );

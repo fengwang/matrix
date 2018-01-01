@@ -1,7 +1,7 @@
 CXX           = g++-7
-CXXFLAGS      = -std=c++17 -O2 -Wall
+CXXFLAGS      = -std=c++17 -Wall -pg -O0 -DDEBUG -g3
 LINK          = $(CXX)
-LFLAGS        = -O2
+LFLAGS        = -O0 -pg -g3
 
 ####### Output directory
 OBJECTS_DIR   = .

@@ -1,6 +1,6 @@
 void _0000_det()
 {
-    feng::matrix<double> m{ 128, 128 };
+    feng::matrix<double> m{ 127, 127 };
 
     std::generate( m.diag_begin(), m.diag_end(), [](){ double x = 0.9; return [x]() mutable { x+= 0.156; return x; }(); } );
 
