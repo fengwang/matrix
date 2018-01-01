@@ -65,28 +65,6 @@ namespace feng
 {
     constexpr unsigned long matrix_version = 20180101;
 
-    template< typename T >
-    struct debug_allocator : std::allocator<T>
-    {
-        typedef T*              pointer;
-        typedef unsigned long   size_type;
-        debug_allocator(){}
-        debug_allocator(debug_allocator const&){}
-        template<typename U>
-        debug_allocator(debug_allocator<U> const&){}
-        pointer allocate( size_type n )
-        {
-            pointer mem = std::allocator<T>::allocate( n );
-            std::cerr << "allocate: " << mem << " with size " << n << std::endl;
-            return mem;
-        }
-        void deallocate( pointer mem, size_type n ) noexcept
-        {
-            std::cerr << "dllocate: " << mem << " with size " << n << std::endl;
-            std::allocator<T>::deallocate( mem, n );
-        }
-    };
-
     template < typename Iterator_Type >
     struct stride_iterator
     {
@@ -772,16 +750,8 @@ namespace feng
             zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
             zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
             zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
-            //zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
-            auto const& pi = P.inverse();
-            std::cerr << "det: pi calculated successfully\n";
-            auto const& rpi = R*pi;
-            std::cerr << "det: rpi calculated successfully\n";
-            auto const& rpiq = rpi * Q;
-            std::cerr << "det: rpiq calculated successfully\n";
-            auto const& tmp = S - rpiq;
+            zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
 
-            std::cerr << "det: tmp calculated successfully\n";
             return P.det() * tmp.det();
         }
     };
@@ -2300,7 +2270,6 @@ namespace feng
         void swap( zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            std::cerr << "Swapping " << zen.dat_ << "(" << zen.row_ << ", " << zen.col_ << ") and " << other.dat_ << "(" << other.row_ << ", " << other.col_ << ")\n";
             std::swap( zen.row_, other.row_ );
             std::swap( zen.col_, other.col_ );
             std::swap( zen.dat_, other.dat_ );
@@ -2337,8 +2306,7 @@ namespace feng
         }
     };
 
-    //template < typename Type, class Allocator = std::allocator<Type> >
-    template < typename Type, class Allocator = debug_allocator<Type> >
+    template < typename Type, class Allocator = std::allocator<Type> >
     struct matrix : crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_apply< matrix< Type, Allocator >, Type, Allocator >
         , crtp_bracket_operator< matrix< Type, Allocator >, Type, Allocator >
