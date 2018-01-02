@@ -727,29 +727,22 @@ namespace feng
         value_type det() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() == zen.col() );
+            assert( zen.row() == zen.col() && "det: matrix is not square!" );
 
-            if ( 0 == zen.size() )
-            {
-                return value_type();
-            }
+            if ( 0 == zen.size() ) return value_type();
 
-            if ( 1 == zen.size() )
-            {
-                return *( zen.begin() );
-            }
+            if ( 1 == zen.size() ) return *( zen.begin() );
 
-            if ( 4 == zen.size() )
-            {
-                return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1];
-            }
+            if ( 4 == zen.size() ) return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1];
 
             size_type const n = zen.row();
             size_type const m = n >> 1;
-            zen_type const P( zen, range_type( 0, m ), range_type( 0, m ) );
-            zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
-            zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
-            zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
+            zen_type const P{ zen, { 0, m }, { 0, m } }; zen_type const Q{ zen, { 0, m }, { m, n } };
+            zen_type const R{ zen, { m, n }, { 0, m } }; zen_type const S{ zen, { m, n }, { m, n } };
+            //zen_type const P( zen, range_type( 0, m ), range_type( 0, m ) );
+            //zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
+            //zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
+            //zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
             zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
 
             return P.det() * tmp.det();
@@ -778,13 +771,7 @@ namespace feng
         diag_type upper_diag_end( const size_type index ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
-            size_type depth = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return diag_type( upper_diag_begin( index ) + depth );
         }
         const_diag_type upper_diag_begin( const size_type index ) const noexcept
@@ -795,13 +782,7 @@ namespace feng
         const_diag_type upper_diag_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            size_type depth     = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return upper_diag_begin( index ) + depth;
         }
         const_diag_type upper_diag_cbegin( const size_type index ) const noexcept
@@ -812,13 +793,7 @@ namespace feng
         const_diag_type upper_diag_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            size_type depth     = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return upper_diag_cbegin( index ) + depth;
         }
         reverse_upper_diag_type upper_diag_rbegin( const size_type index = 0 ) noexcept
@@ -853,13 +828,7 @@ namespace feng
         diag_type lower_diag_end( const size_type index ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
-            size_type depth = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return lower_diag_begin( index ) + depth;
         }
         const_diag_type lower_diag_begin( const size_type index ) const noexcept
@@ -870,13 +839,7 @@ namespace feng
         const_diag_type lower_diag_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            size_type depth     = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return lower_diag_begin( index ) + depth;
         }
         const_diag_type lower_diag_cbegin( const size_type index ) const noexcept
@@ -887,13 +850,7 @@ namespace feng
         const_diag_type lower_diag_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            size_type depth     = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-
+            size_type const depth = std::min( zen.row() - index, zen.col() );
             return lower_diag_begin( index ) + depth;
         }
         reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) noexcept
