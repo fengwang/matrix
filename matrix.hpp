@@ -922,110 +922,62 @@ namespace feng
         }
         diag_type diag_begin( const difference_type index = 0 ) noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_begin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_begin( index );
             return lower_diag_begin( -index );
         }
         diag_type diag_end( const difference_type index = 0 ) noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_end( index );
-            }
-
+            if ( index > 0 ) return upper_diag_end( index );
             return lower_diag_end( -index );
         }
         const_diag_type diag_begin( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_begin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_begin( index );
             return lower_diag_begin( -index );
         }
         const_diag_type diag_end( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_end( index );
-            }
-
+            if ( index > 0 ) return upper_diag_end( index );
             return lower_diag_end( -index );
         }
         const_diag_type diag_cbegin( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_cbegin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_cbegin( index );
             return lower_diag_cbegin( -index );
         }
         const_diag_type diag_cend( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_cend( index );
-            }
-
+            if ( index > 0 ) return upper_diag_cend( index );
             return lower_diag_cend( -index );
         }
         reverse_diag_type diag_rbegin( const difference_type index = 0 ) noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_rbegin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_rbegin( index );
             return lower_diag_rbegin( -index );
         }
         reverse_diag_type diag_rend( const difference_type index = 0 ) noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_rend( index );
-            }
-
+            if ( index > 0 ) return upper_diag_rend( index );
             return lower_diag_rend( -index );
         }
         const_reverse_diag_type diag_rbegin( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_rbegin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_rbegin( index );
             return lower_diag_rbegin( -index );
         }
         const_reverse_diag_type diag_rend( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_rend( index );
-            }
-
+            if ( index > 0 ) return upper_diag_rend( index );
             return lower_diag_rend( -index );
         }
         const_reverse_diag_type diag_crbegin( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_crbegin( index );
-            }
-
+            if ( index > 0 ) return upper_diag_crbegin( index );
             return lower_diag_crbegin( -index );
         }
         const_reverse_diag_type diag_crend( const difference_type index = 0 ) const noexcept
         {
-            if ( index > 0 )
-            {
-                return upper_diag_crend( index );
-            }
-
+            if ( index > 0 ) return upper_diag_crend( index );
             return lower_diag_crend( -index );
         }
     };
