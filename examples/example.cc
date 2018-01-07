@@ -11,7 +11,8 @@ SUPPRESS_WARNINGS
 #include "./cases/0007_slicing.hpp"
 #include "./cases/0008_inverse.hpp"
 #include "./cases/0009_save_load.hpp"
-#include "./cases/0010_minux_equal.hpp"
+#include "./cases/0010_minus_equal.hpp"
+#include "./cases/0011_multiply_equal.hpp"
 
 int main()
 {
@@ -68,6 +69,9 @@ int main()
 
     std::cerr << "running minus_equal.\n";
     _0000_minus_equal();
+
+    std::cerr << "running multiply_equal.\n";
+    _0000_multiply_equal();
 
     return 0;
 }

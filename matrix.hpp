@@ -577,20 +577,6 @@ namespace feng
         template < typename Other_Matrix >
         zen_type& clone( const Other_Matrix& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) noexcept
         {
-#if 0
-            assert( r1 > r0 && "row range error!" );
-            assert( c1 > c0 && "col range error!" );
-
-            zen_type& zen = static_cast< zen_type& >( *this );
-            zen.resize( r1 - r0, c1 - c0 );
-
-            for ( size_type r = 0; r != zen.row(); ++r )
-            {
-                std::copy_n( other.row_begin(r+r0)+c0, zen.col(), zen.row_begin(r) );
-            }
-
-            return zen;
-#else
             assert( r1 > r0 && "row range error!" );
             assert( c1 > c0 && "col range error!" );
 
@@ -602,7 +588,6 @@ namespace feng
 
             zen.swap( tmp );
             return zen;
-#endif
         }
 
         zen_type const clone( std::initializer_list<size_type> r, std::initializer_list<size_type> c ) const noexcept
@@ -1257,7 +1242,7 @@ namespace feng
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::range_type range_type;
-        zen_type& operator*=( const value_type& rhs )
+        zen_type& operator*=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
@@ -1266,7 +1251,7 @@ namespace feng
 
             return zen;
         }
-        zen_type& direct_multiply( const zen_type& other )
+        zen_type& direct_multiply( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
@@ -1281,7 +1266,7 @@ namespace feng
             zen.clone( tmp, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& rr1( const zen_type& other )
+        zen_type& rr1( const zen_type& other ) noexcept
         {
             zen_type& zen            = static_cast< zen_type& >( *this );
             const zen_type& new_this = zen && value_type( 0 );
@@ -1289,7 +1274,7 @@ namespace feng
             zen.clone( new_ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& rr2( const zen_type& other )
+        zen_type& rr2( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             const zen_type new_this( zen, range_type( 0, zen.row() - 1 ), range_type( 0, zen.col() ) );
@@ -1300,7 +1285,7 @@ namespace feng
             zen.clone( ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& cc1( const zen_type& other )
+        zen_type& cc1( const zen_type& other ) noexcept
         {
             zen_type& zen             = static_cast< zen_type& >( *this );
             const zen_type& new_this  = zen || value_type( 0 );
@@ -1309,7 +1294,7 @@ namespace feng
             zen.clone( ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& cc2( const zen_type& other )
+        zen_type& cc2( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             const zen_type new_this( zen, range_type( 0, zen.row() ), range_type( 0, zen.col() - 1 ) );
@@ -1322,7 +1307,7 @@ namespace feng
             zen.clone( ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& oc1( const zen_type& other )
+        zen_type& oc1( const zen_type& other ) noexcept
         {
             zen_type& zen             = static_cast< zen_type& >( *this );
             const zen_type& new_other = other || value_type( 0 );
@@ -1330,7 +1315,7 @@ namespace feng
             zen.clone( new_ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& oc2( const zen_type& other )
+        zen_type& oc2( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             const zen_type new_other( other, range_type( 0, other.row() ), range_type( 0, other.col() - 1 ) );
@@ -1341,7 +1326,7 @@ namespace feng
             zen.clone( ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& strassen_multiply( const zen_type& other )
+        zen_type& strassen_multiply( const zen_type& other ) noexcept
         {
             zen_type& zen        = static_cast< zen_type& >( *this );
             const size_type R_2  = zen.row() >> 1;
@@ -1371,7 +1356,7 @@ namespace feng
             zen.clone( ans, 0, zen.row(), 0, other.col() );
             return zen;
         }
-        zen_type& operator*=( const zen_type& other )
+        zen_type& operator*=( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             assert( zen.col() == other.row() );

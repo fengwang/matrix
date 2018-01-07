@@ -37,6 +37,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [inverse](#matrix-inverse)
      - [save/load](#save-load)
      - [minus equal](#operator-minus-equal)
+     - [multiply equal](#operator-multiply-equal)
      + MORE TODO
 
 
@@ -516,6 +517,15 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 ![image minus equal](images/0002_minus_equal.bmp)
 
 
+#### operator multiply equal
+
+```cpp
+auto m = feng::rand( 127, 127 );
+m *= m.inverse();
+m.save_as_bmp("images/0001_multiply_equal.bmp");
+```
+
+![image multiply equal](images/0001_multiply_equal.bmp)
 
 
 -------------------------------------------
