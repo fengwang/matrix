@@ -39,6 +39,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
      - [plus equal](#operator-plus-equal)
+     - [prefix](#operator-prefix)
      + MORE TODO
 
 
@@ -548,7 +549,20 @@ m.save_as_bmp("images/0001_multiply_equal.bmp");
     image += 0.1*noise;
     image.save_as_bmp("images/0001_plus_equal.bmp", "gray");
 ```
+
 ![image plus equal](images/0001_plus_equal.bmp)
+
+#### operator prefix
+
+```cpp
+auto const& m = feng::random<double>( 127, 127 );
+auto const& pp = +m;
+auto const& pm = -m;
+auto const& shoule_be_zero = pp + pm;
+shoule_be_zero.save_as_bmp("images/0000_prefix.bmp");
+```
+
+![image prefix](images/0000_prefix.bmp)
 
 -------------------------------------------
 

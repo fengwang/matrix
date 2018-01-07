@@ -14,6 +14,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0010_minus_equal.hpp"
 #include "./cases/0011_multiply_equal.hpp"
 #include "./cases/0012_plus_equal.hpp"
+#include "./cases/0013_prefix.hpp"
 
 int main()
 {
@@ -76,6 +77,9 @@ int main()
 
     std::cerr << "running plus_equal.\n";
     _0000_plus_equal();
+
+    std::cerr << "running prefix.\n";
+    _0000_prefix();
 
     return 0;
 }
