@@ -13,6 +13,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0009_save_load.hpp"
 #include "./cases/0010_minus_equal.hpp"
 #include "./cases/0011_multiply_equal.hpp"
+#include "./cases/0012_plus_equal.hpp"
 
 int main()
 {
@@ -72,6 +73,9 @@ int main()
 
     std::cerr << "running multiply_equal.\n";
     _0000_multiply_equal();
+
+    std::cerr << "running plus_equal.\n";
+    _0000_plus_equal();
 
     return 0;
 }

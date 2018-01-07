@@ -38,6 +38,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [save/load](#save-load)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
+     - [plus equal](#operator-plus-equal)
      + MORE TODO
 
 
@@ -527,6 +528,27 @@ m.save_as_bmp("images/0001_multiply_equal.bmp");
 
 ![image multiply equal](images/0001_multiply_equal.bmp)
 
+
+#### operator plus equal
+
+```cpp
+    feng::matrix<double> image;
+    image.load_txt( "images/Lenna.txt" );
+    image.save_as_bmp("images/0000_plus_equal.bmp", "gray");
+```
+
+![image plus equal](images/0000_plus_equal.bmp)
+
+```cpp
+    double const mn = *std::min_element( image.begin(), image.end() );
+    double const mx = *std::max_element( image.begin(), image.end() );
+    image = (image - mn)/(mx - mn);
+
+    auto const& noise = feng::rand<double>( image.row(), image.col() );
+    image += 0.1*noise;
+    image.save_as_bmp("images/0001_plus_equal.bmp", "gray");
+```
+![image plus equal](images/0001_plus_equal.bmp)
 
 -------------------------------------------
 

@@ -4156,36 +4156,35 @@ namespace feng
         return std::min_element( m.begin(), m.end() );
     }
     template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator<  T  >>
     matrix< T, A > const ones( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c, T( 1 ) };
         return ans;
     }
     template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator<  T  >>
     matrix< T, A > const ones( const std::size_t n )
     {
         return ones< T, A >( n, n );
     }
     template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+               typename A    = std::allocator<  T  >>
     matrix< T, A > const ones( const matrix< T, A >& m )
     {
         return ones< T, A >( m.row(), m.col() );
     }
-    template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
+    //template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
+    template < typename T,
+               typename A_   = std::allocator<  T  >>
     std::size_t
-    singular_value_decomposition( const Matrix1& A,
-                                  Matrix2& u,
-                                  Matrix3& w,
-                                  Matrix4& v,
+    singular_value_decomposition( matrix<T,A_> const& A,
+                                  matrix<T,A_>& u,
+                                  matrix<T,A_>& w,
+                                  matrix<T,A_>& v,
                                   std::size_t const max_its = 1000 )
     {
-        typedef typename Matrix1::value_type value_type;
+        typedef T value_type;
         const value_type zero( 0 );
         const value_type one( 1 );
         const std::size_t m = A.row();
@@ -4537,26 +4536,18 @@ namespace feng
     {
         return rand< T, A >( n, n );
     }
+
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const matrix< T, A >& m )
-    {
-        return rand< T, A >( m.row(), m.col() );
-    }
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const ran( const std::size_t r, const std::size_t c )
+    matrix< T, A > const random( const std::size_t r, const std::size_t c )
     {
         return rand< T, A >( r, c );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const ran( const std::size_t n )
+    matrix< T, A > const random( const std::size_t n )
     {
         return rand< T, A >( n );
     }
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const ran( const matrix< T, A >& m )
-    {
-        return rand< T, A >( m.row(), m.col() );
-    }
+
     template < typename T, typename A >
     const matrix< T, A >
     repmat( const matrix< T, A >& m, const std::size_t r, const std::size_t c )
