@@ -2702,29 +2702,30 @@ namespace feng
             typedef complex_tag result_tag;
         };
     }
+    ///complex matrix -> real matrix
     template< typename T, typename A >
-    const matrix< T, A > real( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
+    const matrix< T, A > real( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
         return m;
     }
     template< typename T, typename A >
-    const matrix< T, A > image( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
+    const matrix< T, A > imag( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
     {
         matrix< T, A > m{ mm.row(), mm.col() };
-        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::image(c); } );
+        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
         return m;
     }
     template< typename T, typename A >
-    const matrix< T, A > abs( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
+    const matrix< T, A > abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
         return m;
     }
     template< typename T, typename A >
-    const matrix< T, A > norm( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
+    const matrix< T, A > norm( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
