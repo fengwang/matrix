@@ -3377,8 +3377,8 @@ namespace feng
     {
         std::cout << m << std::endl;
     }
-               template < typename T, typename A >
-               void disp( const matrix< T, A >& m )
+    template < typename T, typename A >
+    void disp( const matrix< T, A >& m )
     {
         display( m );
     }
@@ -3409,40 +3409,22 @@ namespace feng
             }
         };
     };
-    template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T, typename A    = std::allocator< T > >
     matrix< T, A > const eye( const std::size_t r, const std::size_t c )
     {
         matrix< T > ans{ r, c };
         std::fill( ans.diag_begin(), ans.diag_end(), eye_private::one_maker< T >()() );
         return ans;
     }
-    template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T, typename A    = std::allocator< T > >
     matrix< T, A > const eye( const std::size_t n )
     {
         return eye< T, A >( n, n );
     }
-    template < typename T,
-
-               typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
+    template < typename T, typename A    = std::allocator< T > >
     matrix< T, A > const eye( const matrix< T, A >& m )
     {
         return eye< T, A >( m.row(), m.col() );
-    }
-    template < typename Matrix >
-    Matrix const eye( const std::size_t r, const std::size_t c, const Matrix& )
-    {
-        Matrix m( r, c );
-        std::fill( m.diag_begin(), m.diag_end(), typename Matrix::value_type( 1 ) );
-        return m;
-    }
-    template < typename Matrix >
-    Matrix const eye( const std::size_t n, const Matrix& m )
-    {
-        return eye( n, n, m );
     }
     template < typename T, typename A >
     matrix< T, A > const flipdim( const matrix< T, A >& m, const std::size_t dim )

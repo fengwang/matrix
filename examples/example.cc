@@ -17,6 +17,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0013_prefix.hpp"
 #include "./cases/0014_sin.hpp"
 #include "./cases/0015_sinh.hpp"
+#include "./cases/0016_eye.hpp"
 
 int main()
 {
@@ -88,6 +89,9 @@ int main()
 
     std::cerr << "running sinh.\n";
     _0000_sinh();
+
+    std::cerr << "running eye.\n";
+    _0000_eye();
 
     return 0;
 }

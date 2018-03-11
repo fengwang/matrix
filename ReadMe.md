@@ -40,9 +40,12 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [multiply equal](#operator-multiply-equal)
      - [plus equal](#operator-plus-equal)
      - [prefix](#operator-prefix)
-     + MORE TODO
+     - MORE TODO
    + [Common mathematical functions -- elementwise](#elementwise-mathematical-functions)
      - [elementwise sin](#elementwise-sin)
+     - [elementwise sinh](#elementwise-sinh)
+   + [Common functions](#common-functions)
+     - [eye](#eye-function)
 
 
 - [License](#license)
@@ -604,6 +607,16 @@ m = feng::sinh(m);
 m.save_as_bmp( "./images/0001_sinh.bmp" );
 ```
 ![sinh image after](./images/0001_sinh.bmp)
+
+### common functions
+#### eye function
+
+```cpp
+auto const& m = feng::eye<double>( 128, 128 );
+m.save_as_bmp( "./images/0000_eye.bmp" );
+```
+
+![eye image](./images/0000_eye.bmp)
 
 
 
