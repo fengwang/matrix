@@ -2703,961 +2703,590 @@ namespace feng
         };
     }
     ///complex matrix -> real matrix
-    template< typename T, typename A >
-    const matrix< T, A > real( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
+    template< typename T, typename A > const matrix< T, A >
+    real( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
         return m;
     }
-    template< typename T, typename A >
-    const matrix< T, A > imag( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
+    template< typename T, typename A > const matrix< T, A >
+    imag( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
         return m;
     }
-    template< typename T, typename A >
-    const matrix< T, A > abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
+    template< typename T, typename A > const matrix< T, A >
+    abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
         return m;
     }
-    template< typename T, typename A >
-    const matrix< T, A > norm( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm )
+    template< typename T, typename A > const matrix< T, A >
+    norm( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
         return m;
     }
 
-    template < typename T, typename A >
-    const matrix< std::complex< T >, A > conj( const matrix< std::complex< T >, A >& mm )
+    /// complex matrix -> complex matrix
+    template < typename T, typename A > const matrix< std::complex< T >, A >
+    conj( const matrix< std::complex< T >, A >& mm ) noexcept
     {
-        matrix< std::complex< T >, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( std::complex< T >& val )
-        {
-            val = std::conj( val );
-        } );
+        matrix< std::complex< T >, A > m{ mm };
+        std::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::conj( val ); } );
         return m;
     };
-    template < typename T, typename A >
-    const matrix< std::complex< T >, A > proj( const matrix< std::complex< T >, A >& mm )
+    template < typename T, typename A > const matrix< std::complex< T >, A >
+    proj( const matrix< std::complex< T >, A >& mm ) noexcept
     {
-        matrix< std::complex< T >, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( std::complex< T >& val )
-        {
-            val = std::proj( val );
-        } );
+        matrix< std::complex< T >, A > m{ mm };
+        std::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::proj( val ); } );
         return m;
     };
+
+    /// real matrix + real matrix -> complex matrix
     template < typename T, typename A >
-    const matrix< std::complex< T >, A > polar( const matrix< T, A >& mm, const matrix< T, A > nn )
+    matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > >
+    polar( const matrix< T, A >& mm, const matrix< T, A > nn ) noexcept
     {
         assert( mm.row() == nn.row() );
         assert( mm.col() == nn.col() );
-        matrix< std::complex< T >, A > m( mm.row(), mm.col() );
-        for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m )
-        {
-            m = std::polar( _mm, _nn );
-        } );
+        matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
+        for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m ) { m = std::polar( _mm, _nn ); } );
         return m;
     }
     template < typename T, typename A >
-    const matrix< std::complex< T >, A > polar( const matrix< T, A >& mm, const T nn )
+    matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > >
+    polar( const matrix< T, A >& mm, const T nn = T{0} ) noexcept
     {
-        matrix< std::complex< T >, A > m( mm.row(), mm.col() );
-        for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m )
-        {
-            m = std::polar( _mm, nn );
-        } );
+        matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
+        for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m ) { m = std::polar( _mm, nn ); } );
+        return m;
+    }
+
+
+    template < typename T, typename A >
+    const matrix< T, A > abs( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m{ mm };
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::abs( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > acos( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::acos( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > acosh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::acosh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > asin( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::asin( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > asinh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::asinh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > atan( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::atan( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > atanh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::atanh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > cbrt( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cbrt( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > ceil( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::ceil( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > cos( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cos( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > cosh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cosh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > erf( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::erf( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > erfc( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::erfc( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > exp( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > exp2( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp2( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > expm1( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::expm1( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > fabs( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::fabs( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > floor( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::floor( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > fma( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::fma( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > frexp( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::frexp( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > ilogb( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::ilogb( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > lgamma( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lgamma( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > llrint( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::llrint( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > llround( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::llround( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > log( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > log10( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log10( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > log1p( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log1p( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > log2( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log2( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > logb( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::logb( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > lrint( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lrint( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > lround( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lround( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > modf( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::modf( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > nearbyint( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::nearbyint( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > rint( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::rint( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > round( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::round( val ); } );
+        return m;
+    };
+    ///
+    template< typename T, typename A >
+    const matrix<T, A> scalbn( matrix<T, A> const& mm, matrix< int, typename std::allocator_traits<T>:: template rebind_alloc<int> > const nn ) noexcept
+    {
+        assert( mm.row() == nn.row() && "row dim not agree" );
+        assert( mm.col() == nn.col() && "col dim not agree" );
+        matrix<T, A> m{ mm.row(), mm.col() };
+        for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, int exp ){ x = std::scalbn( x, exp ); } );
+        return m;
+    }
+    template< typename T, typename A >
+    const matrix<T, A> scalbln( matrix<T, A> const& mm, matrix< long, typename std::allocator_traits<T>:: template rebind_alloc<long> > const nn ) noexcept
+    {
+        assert( mm.row() == nn.row() && "row dim not agree" );
+        assert( mm.col() == nn.col() && "col dim not agree" );
+        matrix<T, A> m{ mm.row(), mm.col() };
+        for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, long exp ){ x = std::scalbln( x, exp ); } );
+        return m;
+    }
+
+    template < typename T, typename A >
+    const matrix< T, A > sin( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sin( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > sinh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sinh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > sqrt( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sqrt( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > tan( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tan( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > tanh( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tanh( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > tgamma( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tgamma( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > trunc( const matrix< T, A >& mm ) noexcept
+    {
+        matrix< T, A > m( mm );
+        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::trunc( val ); } );
+        return m;
+    };
+    template < typename T, typename A >
+    const matrix< T, A > atan2( const matrix< T, A >& mm, const matrix< T, A >& nn )
+    {
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix<T, A> m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::atan2( v1, v2 ); } );
         return m;
     }
     template < typename T, typename A >
-    const matrix< std::complex< T >, A > polar( const T nn, const matrix< T, A >& mm )
+    const matrix< T, A > atan2( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< std::complex< T >, A > m( mm.row(), mm.col() );
-        for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m )
-        {
-            m = std::polar( nn, _mm );
-        } );
+        matrix<T, A> m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::atan2( v1, v ); } );
+        return m;
+    }
+
+    template < typename T, typename A >
+    const matrix< T, A > copysign( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
+    {
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::copysign( v1, v2 ); } );
         return m;
     }
     template < typename T, typename A >
-    const matrix< T, A > abs( const matrix< T, A >& mm )
+    const matrix< T, A > copysign( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::abs( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::copysign( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > acos( const matrix< T, A >& mm )
+    const matrix< T, A > fdim( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::acos( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fdim( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > acosh( const matrix< T, A >& mm )
+    const matrix< T, A > fdim( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::acosh( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fdim( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > asin( const matrix< T, A >& mm )
+    const matrix< T, A > fmax( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::asin( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmax( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > asinh( const matrix< T, A >& mm )
+    const matrix< T, A > fmax( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::asinh( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmax( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > atan( const matrix< T, A >& mm )
+    const matrix< T, A > fmin( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::atan( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmin( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > atanh( const matrix< T, A >& mm )
+    const matrix< T, A > fmin( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::atanh( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmin( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > cbrt( const matrix< T, A >& mm )
+    const matrix< T, A > fmod( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::cbrt( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmod( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > ceil( const matrix< T, A >& mm )
+    const matrix< T, A > fmod( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::ceil( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmod( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > cos( const matrix< T, A >& mm )
+    const matrix< T, A > hypot( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::cos( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::hypot( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > cosh( const matrix< T, A >& mm )
+    const matrix< T, A > hypot( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::cosh( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::hypot( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > erf( const matrix< T, A >& mm )
+    const matrix< T, A > ldexp( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::erf( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::ldexp( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > erfc( const matrix< T, A >& mm )
+    const matrix< T, A > ldexp( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::erfc( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::ldexp( v1, v ); } );
         return m;
-    };
+    }
+
     template < typename T, typename A >
-    const matrix< T, A > exp( const matrix< T, A >& mm )
+    const matrix< T, A > nextafter( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::exp( val );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::nextafter( v1, v2 ); } );
         return m;
-    };
+    }
     template < typename T, typename A >
-    const matrix< T, A > exp2( const matrix< T, A >& mm )
+    const matrix< T, A > nextafter( const matrix< T, A >& mm, const T v ) noexcept
     {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::exp2( val );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::nextafter( v1, v ); } );
         return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > expm1( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::expm1( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > fabs( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::fabs( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > floor( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::floor( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > fma( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::fma( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > frexp( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::frexp( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > ilogb( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::ilogb( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lgamma( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::lgamma( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > llrint( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::llrint( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > llround( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::llround( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::log( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log10( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::log10( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log1p( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::log1p( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log2( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::log2( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > logb( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::logb( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lrint( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::lrint( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lround( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::lround( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > modf( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::modf( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nan( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::nan( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nanf( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::nanf( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nanl( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::nanl( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nearbyint( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::nearbyint( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nexttoward( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::nexttoward( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > remquo( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::remquo( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > rint( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::rint( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > round( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::round( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > scalbln( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::scalbln( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > scalbn( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::scalbn( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > sin( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::sin( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > sinh( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::sinh( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > sqrt( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::sqrt( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tan( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::tan( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tanh( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::tanh( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tgamma( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::tgamma( val );
-        } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > trunc( const matrix< T, A >& mm )
-    {
-        matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val )
-        {
-            val = std::trunc( val );
-        } );
-        return m;
-    };
+    }
+
     template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > atan2( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
+    const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn ) noexcept
     {
         assert( mm.row() == nn.row() );
         assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::atan2( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > atan2( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::atan2( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > atan2( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::atan2( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > copysign( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::copysign( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > copysign( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::copysign( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > copysign( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::copysign( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > fdim( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::fdim( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fdim( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fdim( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fdim( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fdim( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > fmax( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::fmax( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmax( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmax( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmax( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmax( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > fmin( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::fmin( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmin( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmin( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmin( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmin( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > fmod( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::fmod( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmod( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmod( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > fmod( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::fmod( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > hypot( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::hypot( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > hypot( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::hypot( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > hypot( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::hypot( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > ldexp( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::ldexp( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > ldexp( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::ldexp( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > ldexp( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::ldexp( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > nextafter( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::nextafter( v1, v2 );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > nextafter( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::nextafter( v1, v );
-        } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > nextafter( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::nextafter( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::nexttoward( v1, v2 );
-        } );
+        matrix<T1, A1> m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ) { return std::nexttoward( v1, v2 ); } );
         return m;
     }
     template < typename T1, typename A1, typename T2 >
     const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const T2 v )
     {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::nexttoward( v1, v );
-        } );
+        matrix< T1, A1 > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ) { return std::nexttoward( v1, v ); } );
         return m;
     }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > nexttoward( const T2 v, const matrix< T1, A1 >& mm )
+
+    template < typename T, typename A >
+    const matrix< T, A > pow( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::nexttoward( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > pow( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::pow( v1, v2 );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::pow( v1, v2 ); } );
         return m;
     }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > pow( const matrix< T1, A1 >& mm, const T2 v )
+    template < typename T, typename A >
+    const matrix< T, A > pow( const matrix< T, A >& mm, const T v ) noexcept
     {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::pow( v1, v );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::pow( v1, v ); } );
         return m;
     }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > pow( const T2 v, const matrix< T1, A1 >& mm )
+
+    template < typename T, typename A >
+    const matrix< T, A > remainder( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::pow( v, v1 );
-        } );
-        return m;
-    };
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > remainder( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn )
-    {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 )
-        {
-            return std::remainder( v1, v2 );
-        } );
+        assert( mm.row() == nn.row() && "row not match" );
+        assert( mm.col() == nn.col() && "col not match" );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::remainder( v1, v2 ); } );
         return m;
     }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > remainder( const matrix< T1, A1 >& mm, const T2 v )
+    template < typename T, typename A >
+    const matrix< T, A > remainder( const matrix< T, A >& mm, const T v ) noexcept
     {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::remainder( v1, v );
-        } );
+        matrix< T, A > m{ mm };
+        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::remainder( v1, v ); } );
         return m;
     }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > remainder( const T2 v, const matrix< T1, A1 >& mm )
-    {
-        auto m( mm );
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 )
-        {
-            return std::remainder( v, v1 );
-        } );
-        return m;
-    };
+
     template < typename T, typename A >
     matrix< std::complex< T >, A> const ctranspose( const matrix< std::complex< T >, A>& m )
     {
