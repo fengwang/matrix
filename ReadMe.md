@@ -570,7 +570,7 @@ shoule_be_zero.save_as_bmp("images/0000_prefix.bmp");
 ## License
 
 ```
-Copyright <2017> <Feng Wang>
+Copyright <2018> <Feng Wang>
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

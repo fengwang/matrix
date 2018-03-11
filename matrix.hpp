@@ -182,10 +182,11 @@ namespace feng
         }
         friend difference_type operator-( const self_type& lhs, const self_type& rhs ) noexcept
         {
-            assert( lhs.step_ == rhs.step_ );
+            assert( lhs.step_ == rhs.step_ && "stride iterators of different steps" );
             return ( lhs.iterator_ - rhs.iterator_ ) / lhs.step_;
         }
     };
+
     template < typename Type, typename Allocator >
     struct crtp_typedef
     {
@@ -802,14 +803,6 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth = std::min( zen.col()-index, zen.row() );
-            /*
-            size_type depth     = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-            */
             return upper_diag_cbegin( index ) + depth;
         }
         reverse_upper_diag_type upper_diag_rbegin( const size_type index = 0 ) noexcept
@@ -864,14 +857,6 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth = std::min( zen.row()-index, zen.col() );
-            /*
-            size_type depth     = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-            */
             return lower_diag_begin( index ) + depth;
         }
         const_diag_type lower_diag_cbegin( const size_type index ) const noexcept
@@ -883,14 +868,6 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth = std::min( zen.row()-index, zen.col() );
-            /*
-            size_type depth     = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-            */
             return lower_diag_begin( index ) + depth;
         }
         reverse_lower_diag_type lower_diag_rbegin( const size_type index = 0 ) noexcept
@@ -2602,7 +2579,6 @@ namespace feng
         return ans;
     }
     template < typename T,
-
                typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
                        matrix< T, A > const zeros( const std::size_t r, const std::size_t c )
     {
@@ -2610,7 +2586,6 @@ namespace feng
         return ans;
     }
     template < typename T,
-
                typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
                        matrix< T, A > const zeros( const std::size_t n )
     {
@@ -2727,56 +2702,35 @@ namespace feng
             typedef complex_tag result_tag;
         };
     }
-    template < typename T, typename A >
-    const matrix< T, A > real( const matrix< std::complex< T >, A >& mm )
+    template< typename T, typename A >
+    const matrix< T, A > real( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
     {
-        matrix< T, A > m( mm.row(), mm.col() );
-        for_each( m.begin(), m.end(), mm.begin(), []( T & t, std::complex< T > c )
-        {
-            t = std::real( c );
-        } );
+        matrix< T, A > m{ mm.row(), mm.col() };
+        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
         return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > imag( const matrix< std::complex< T >, A >& mm )
+    }
+    template< typename T, typename A >
+    const matrix< T, A > image( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
     {
-        matrix< T, A > m( mm.row(), mm.col() );
-        for_each( m.begin(), m.end(), mm.begin(), []( T & t, std::complex< T > c )
-        {
-            t = std::imag( c );
-        } );
+        matrix< T, A > m{ mm.row(), mm.col() };
+        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::image(c); } );
         return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > abs( const matrix< std::complex< T >, A >& mm )
+    }
+    template< typename T, typename A >
+    const matrix< T, A > abs( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
     {
-        matrix< T, A > m( mm.row(), mm.col() );
-        for_each( m.begin(), m.end(), mm.begin(), []( T & t, std::complex< T > c )
-        {
-            t = std::abs( c );
-        } );
+        matrix< T, A > m{ mm.row(), mm.col() };
+        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
         return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > arg( const matrix< std::complex< T >, A >& mm )
+    }
+    template< typename T, typename A >
+    const matrix< T, A > norm( matrix< std::complex<T>, std::allocator_traits<A>::rebind_alloc<std::complex<T>> > const& mm )
     {
-        matrix< T, A > m( mm.row(), mm.col() );
-        for_each( m.begin(), m.end(), mm.begin(), []( T & t, std::complex< T > c )
-        {
-            t = std::arg( c );
-        } );
+        matrix< T, A > m{ mm.row(), mm.col() };
+        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
         return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > norm( const matrix< std::complex< T >, A >& mm )
-    {
-        matrix< T, A > m( mm.row(), mm.col() );
-        for_each( m.begin(), m.end(), mm.begin(), []( T & t, std::complex< T > c )
-        {
-            t = std::norm( c );
-        } );
-        return m;
-    };
+    }
+
     template < typename T, typename A >
     const matrix< std::complex< T >, A > conj( const matrix< std::complex< T >, A >& mm )
     {
