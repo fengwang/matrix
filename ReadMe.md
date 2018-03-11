@@ -42,6 +42,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [prefix](#operator-prefix)
      + MORE TODO
    + [Common mathematical functions -- elementwise](#elementwise-mathematical-functions)
+     - [elementwise sin](#elementwise-sin)
 
 
 - [License](#license)
@@ -569,6 +570,9 @@ shoule_be_zero.save_as_bmp("images/0000_prefix.bmp");
 
 ### elementwise mathematical functions
 
+Most [common mathematical functions](http://en.cppreference.com/w/cpp/numeric/math) are supported as elementwise matrix operator. Here only `sin` and `sinh` are demonstrated
+
+
 #### elementwise sin
 
 ```cpp
@@ -584,6 +588,23 @@ m = feng::sin(m);
 m.save_as_bmp( "./images/0001_sin.bmp" );
 ```
 ![sin image after](./images/0001_sin.bmp)
+
+#### elementwise sinh
+
+```cpp
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init/500.0; }; }() );
+m.save_as_bmp( "./images/0000_sinh.bmp" );
+```
+
+![sinh image orig](./images/0000_sinh.bmp)
+
+```cpp
+m = feng::sinh(m);
+m.save_as_bmp( "./images/0001_sinh.bmp" );
+```
+![sinh image after](./images/0001_sinh.bmp)
+
 
 
 ## License

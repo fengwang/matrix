@@ -16,6 +16,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0012_plus_equal.hpp"
 #include "./cases/0013_prefix.hpp"
 #include "./cases/0014_sin.hpp"
+#include "./cases/0015_sinh.hpp"
 
 int main()
 {
@@ -84,6 +85,9 @@ int main()
 
     std::cerr << "running sin.\n";
     _0000_sin();
+
+    std::cerr << "running sinh.\n";
+    _0000_sinh();
 
     return 0;
 }
