@@ -15,6 +15,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0011_multiply_equal.hpp"
 #include "./cases/0012_plus_equal.hpp"
 #include "./cases/0013_prefix.hpp"
+#include "./cases/0014_sin.hpp"
 
 int main()
 {
@@ -80,6 +81,9 @@ int main()
 
     std::cerr << "running prefix.\n";
     _0000_prefix();
+
+    std::cerr << "running sin.\n";
+    _0000_sin();
 
     return 0;
 }

@@ -41,6 +41,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [plus equal](#operator-plus-equal)
      - [prefix](#operator-prefix)
      + MORE TODO
+   + [Common mathematical functions -- elementwise](#elementwise-mathematical-functions)
 
 
 - [License](#license)
@@ -565,6 +566,24 @@ shoule_be_zero.save_as_bmp("images/0000_prefix.bmp");
 ![image prefix](images/0000_prefix.bmp)
 
 -------------------------------------------
+
+### elementwise mathematical functions
+
+#### elementwise sin
+
+```cpp
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+m.save_as_bmp( "./images/0000_sin.bmp" );
+```
+
+![sin image orig](./images/0000_sin.bmp)
+
+```cpp
+m = feng::sin(m);
+m.save_as_bmp( "./images/0001_sin.bmp" );
+```
+![sin image after](./images/0001_sin.bmp)
 
 
 ## License
