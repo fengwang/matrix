@@ -237,6 +237,9 @@ namespace feng
     };
 
     template < typename Matrix, typename Type, typename Allocator >
+    using crtp_shape_view = crtp_shape<Matrix, Type, Allocator>;
+
+    template < typename Matrix, typename Type, typename Allocator >
     struct crtp_get_allocator
     {
         typedef Matrix zen_type;
@@ -530,7 +533,7 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( index < zen.row() && "Row index outof boundary!" );
-            return zen.row_begin( index );
+            return zen.row_cbegin( index );
         }
         value_type operator()( size_type r, size_type c ) const noexcept
         {
@@ -547,6 +550,31 @@ namespace feng
             return zen[r][c];
         }
     };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_bracket_operator_view
+    {
+        typedef Matrix zen_type;
+        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef typename type_proxy_type::value_type value_type;
+        typedef typename type_proxy_type::size_type size_type;
+        typedef typename type_proxy_type::row_type row_type;
+        typedef typename type_proxy_type::const_row_type const_row_type;
+        const_row_type operator[]( const size_type index ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            assert( index < zen.row() && "Row index outof boundary!" );
+            return zen.row_cbegin( index );
+        }
+        value_type operator()( size_type r, size_type c ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            assert( r < zen.row() && "Row index out of boundary!" );
+            assert( c < zen.col() && "Column index out of boundary!" );
+            return zen[r][c];
+        }
+    };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_clear
     {
@@ -618,7 +646,7 @@ namespace feng
         col_type col_begin( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return col_type( zen.begin() + index, zen.col() );
+            return col_type( zen.row_begin(0) + index, zen.col() );
         }
         col_type col_end( const size_type index ) noexcept
         {
@@ -628,12 +656,12 @@ namespace feng
         const_col_type col_begin( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return const_col_type( zen.begin() + index, zen.col() );
+            return const_col_type( zen.row_begin(0) + index, zen.col() );
         }
         const_col_type col_end( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return col_begin( index ) + zen.row();
+            return zen.col_begin( index ) + zen.row();
         }
         const_col_type col_cbegin( const size_type index ) const noexcept
         {
@@ -643,7 +671,7 @@ namespace feng
         const_col_type col_cend( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return col_begin( index ) + zen.row();
+            return zen.col_begin( index ) + zen.row();
         }
         reverse_col_type col_rbegin( const size_type index = 0 ) noexcept
         {
@@ -670,6 +698,10 @@ namespace feng
             return const_reverse_col_type( col_begin( index ) );
         }
     };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    using crtp_col_iterator_view =  crtp_col_iterator<Matrix, Type, Allocator>;
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_copy
     {
@@ -765,14 +797,6 @@ namespace feng
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
             size_type depth = std::min( zen.col()-index, zen.row() );
-            /*
-            size_type depth = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-            */
             return diag_type( upper_diag_begin( index ) + depth );
         }
         const_diag_type upper_diag_begin( const size_type index ) const noexcept
@@ -1471,6 +1495,7 @@ namespace feng
             return zen;
         }
     };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_row_col_size
     {
@@ -1492,6 +1517,30 @@ namespace feng
             return row()*col();
         }
     };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_row_col_size_view
+    {
+        typedef Matrix zen_type;
+        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef typename type_proxy_type::size_type size_type;
+        size_type row() const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            return zen.row_dim_.second - zen.row_dim_.first;
+        }
+        size_type col() const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            return zen.col_dim_.second - zen.col_dim_.first;
+        }
+        size_type size() const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            return zen.row()*zen.col();
+        }
+    };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_row_iterator
     {
@@ -1506,22 +1555,22 @@ namespace feng
         row_type row_begin( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return row_type( zen.begin() + index * zen.col() );
+            return row_type{ zen.begin() + index * zen.col() };
         }
         row_type row_end( const size_type index = 0 ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            return row_begin( index ) + zen.col();
+            return zen.row_begin( index ) + zen.col();
         }
         const_row_type row_begin( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return const_row_type( zen.begin() + index * zen.col() );
+            return const_row_type{ zen.begin() + index * zen.col() };
         }
         const_row_type row_end( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return row_begin( index ) + zen.col();
+            return zen.row_begin( index ) + zen.col();
         }
         const_row_type row_cbegin( const size_type index = 0 ) const noexcept
         {
@@ -1531,7 +1580,7 @@ namespace feng
         const_row_type row_cend( const size_type index = 0 ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            return row_begin( index ) + zen.col();
+            return zen.row_begin( index ) + zen.col();
         }
         reverse_row_type row_rbegin( const size_type index = 0 ) noexcept
         {
@@ -1558,6 +1607,44 @@ namespace feng
             return const_reverse_row_type( row_begin( index ) );
         }
     };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_row_iterator_view : crtp_row_iterator<Matrix, Type, Allocator >
+    {
+        typedef Matrix zen_type;
+        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef typename type_proxy_type::size_type size_type;
+        typedef typename type_proxy_type::row_type row_type;
+        typedef typename type_proxy_type::const_row_type const_row_type;
+        typedef typename type_proxy_type::reverse_row_type reverse_row_type;
+        typedef typename type_proxy_type::const_reverse_row_type const_reverse_row_type;
+/*
+        auto row_begin( const size_type index = 0 ) noexcept
+        {
+            zen_type& zen = static_cast< zen_type& >( *this );
+            size_type const row_offset = zen.row_dim_.first;
+            size_type const col_offset = zen.col_dim_.first;
+            return zen.matrix_.row_begin(row_offset+index) + col_offset;
+        }
+  */
+        auto row_begin( const size_type index = 0 ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            size_type const row_offset = zen.row_dim_.first;
+            size_type const col_offset = zen.col_dim_.first;
+            return zen.matrix_.row_cbegin(row_offset+index) + col_offset;
+        }
+
+        auto row_cbegin( const size_type index = 0 ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            size_type const row_offset = zen.row_dim_.first;
+            size_type const col_offset = zen.col_dim_.first;
+            return zen.matrix_.row_cbegin(row_offset+index) + col_offset;
+        }
+
+    };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_txt
     {
@@ -2397,6 +2484,32 @@ namespace feng
             return *this;
         }
     };//struct matrix
+
+    template < typename Type, class Allocator >
+    struct matrix_view :
+        crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
+    {
+        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef typename type_proxy_type::size_type     size_type;
+        matrix_view( matrix<Type, Allocator> const& mat,
+                     std::pair<size_type, size_type> const& row_dim,
+                     std::pair<size_type, size_type> const& col_dim ) : matrix_{ mat }
+        {
+            row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
+            col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
+            row_dim_.second = (row_dim.second <= matrix_.row()) ? row_dim.second : matrix_.row();
+            col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
+        }
+
+        matrix<Type, Allocator> const&                  matrix_;
+        std::pair<size_type, size_type>                 row_dim_;
+        std::pair<size_type, size_type>                 col_dim_;
+    };//struct matrix_view
+
     template < typename T1, typename A1, typename T2, typename A2 >
     const matrix< T1, A1 >
     operator+( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
@@ -4088,7 +4201,7 @@ namespace feng
     template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const rand( const std::size_t r, const std::size_t c ) noexcept
     {
-        matrix< T > ans{ r, c };
+        matrix< T, A > ans{ r, c };
         std::srand( static_cast< unsigned int >( static_cast< std::size_t >( std::time( nullptr ) ) + reinterpret_cast< std::size_t >( &ans ) ) );
         auto const& generator = []() noexcept
         {
@@ -5409,6 +5522,18 @@ namespace feng
 
         return 0;
     }
+/*
+    template< typename Type, typename Allocator >
+    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B )
+    {
+        if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
+            return matrix<Type, Allocator>{0, 0};
+
+        matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
+
+        return ans;
+    }
+*/
 } //namespace feng
 
 RESTORE_WARNINGS

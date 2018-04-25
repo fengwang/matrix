@@ -1,7 +1,7 @@
-CXX           = clang++
-CXXFLAGS      = -std=c++17 -Weverything -O2 -stdlib=libc++
+CXX           = g++
+CXXFLAGS      = -std=c++17 -Wall -O2
 LINK          = $(CXX)
-LFLAGS        = -O2 -lc++ -lc++abi
+LFLAGS        = -O2
 
 ####### Output directory
 OBJECTS_DIR   = .

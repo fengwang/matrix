@@ -5,4 +5,5 @@ SUPPRESS_WARNINGS
 #include "./catch.hpp"
 
 #include "./cases/size.hpp"
+#include "./cases/view_bracket.hpp"
 RESTORE_WARNINGS
