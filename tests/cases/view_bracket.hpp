@@ -10,7 +10,8 @@ TEST_CASE( "Matrix View Bracket", "[matrixviewbracket]" )
                 for ( auto rx = r+1; rx <= mat.row(); ++rx )
                     for ( auto cx = c+1; cx <= mat.row(); ++cx )
                     {
-                        auto view = feng::matrix_view{ mat, std::make_pair(r, rx), std::make_pair(c, cx) };
+                        //auto view = feng::matrix_view{ mat, std::make_pair(r, rx), std::make_pair(c, cx) };
+                        auto view = feng::make_view( mat, {r, rx}, {c, cx} );
                         auto const& [vr, vc] = view.shape();
                         REQUIRE( vr == rx-r );
                         REQUIRE( vc == cx-c );

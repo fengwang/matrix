@@ -46,6 +46,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [elementwise sinh](#elementwise-sinh)
    + [Common functions](#common-functions)
      - [eye](#eye-function)
+     - [make_view](#make-view-function)
 
 
 - [License](#license)
@@ -618,6 +619,26 @@ m.save_as_bmp( "./images/0000_eye.bmp" );
 
 ![eye image](./images/0000_eye.bmp)
 
+
+#### make view function
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.save_as_bmp( "./images/0000_make_view.bmp" );
+```
+
+![make view 1](./images/0000_make_view.bmp)
+
+
+```cpp
+auto const[r,c] = m.shape();
+auto const& v = feng::make_view( m, {r>>2, (r>>2)*3}, {c>>2, (c>>2)*3} );
+
+v.save_as_bmp( "./images/0001_make_view.bmp" );
+```
+
+![make view 2](./images/0001_make_view.bmp)
 
 
 ## License

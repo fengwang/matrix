@@ -18,10 +18,11 @@ SUPPRESS_WARNINGS
 #include "./cases/0014_sin.hpp"
 #include "./cases/0015_sinh.hpp"
 #include "./cases/0016_eye.hpp"
+#include "./cases/0017_make_view.hpp"
 
 int main()
 {
-    std::cerr << "running create.\n";
+    std::cout << "running create.\n";
     _0000_create();
     _0001_create();
     _0002_create();
@@ -45,53 +46,56 @@ int main()
     _0020_create();
 
 
-    std::cerr << "running apply.\n";
+    std::cout << "running apply.\n";
     _0000_apply();
 
-    std::cerr << "running access.\n";
+    std::cout << "running access.\n";
     _0000_access();
 
-    std::cerr << "running clone.\n";
+    std::cout << "running clone.\n";
     _0000_clone();
 
-    std::cerr << "running data.\n";
+    std::cout << "running data.\n";
     _0000_data();
 
-    std::cerr << "running det.\n";
+    std::cout << "running det.\n";
     _0000_det();
 
-    std::cerr << "running divide_equal.\n";
+    std::cout << "running divide_equal.\n";
     _0000_divide_equal();
 
-    std::cerr << "running slicing.\n";
+    std::cout << "running slicing.\n";
     _0000_slicing();
 
-    std::cerr << "running inverse.\n";
+    std::cout << "running inverse.\n";
     _0000_inverse();
 
-    std::cerr << "running save_load.\n";
+    std::cout << "running save_load.\n";
     _0000_save_load();
 
-    std::cerr << "running minus_equal.\n";
+    std::cout << "running minus_equal.\n";
     _0000_minus_equal();
 
-    std::cerr << "running multiply_equal.\n";
+    std::cout << "running multiply_equal.\n";
     _0000_multiply_equal();
 
-    std::cerr << "running plus_equal.\n";
+    std::cout << "running plus_equal.\n";
     _0000_plus_equal();
 
-    std::cerr << "running prefix.\n";
+    std::cout << "running prefix.\n";
     _0000_prefix();
 
-    std::cerr << "running sin.\n";
+    std::cout << "running sin.\n";
     _0000_sin();
 
-    std::cerr << "running sinh.\n";
+    std::cout << "running sinh.\n";
     _0000_sinh();
 
-    std::cerr << "running eye.\n";
+    std::cout << "running eye.\n";
     _0000_eye();
+    std::cout << "running make_view.\n";
+    _0000_make_view();
+
 
     return 0;
 }

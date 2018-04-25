@@ -1941,7 +1941,7 @@ namespace feng
                 } } )
         };
     }
-
+#if 0
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_bmp
     {
@@ -2029,6 +2029,108 @@ namespace feng
             return save_as_bmp( std::string{ file_name } );
         }
     };
+
+#else
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_save_as_bmp
+    {
+        typedef Matrix zen_type;
+        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" }, std::string const& transform = std::string{ "default" } ) const
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
+            assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
+
+            // open output bmp file
+            std::string new_file_name{ file_name };
+            std::string const extension{ ".bmp" };
+            if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
+                new_file_name += extension;
+            std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
+            if ( !stream ) return false;
+
+            // bmp file header
+            using namespace crtp_save_as_bmp_private;
+            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
+            std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
+            auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
+            auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
+            unsigned char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            unsigned char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+            auto const [the_row, the_col] = zen.shape();
+            unsigned long const pad_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
+            unsigned long const data_size = the_col * the_row * 3 + the_row * pad_size;
+            unsigned long const all_size  = data_size + sizeof( file ) + sizeof( info );
+            auto const& ul_to_uc          = []( unsigned long val ) { return static_cast< unsigned char >( val & 0xffUL ); };
+            file[2]  = ul_to_uc( all_size );
+            file[3]  = ul_to_uc( all_size >> 8 );
+            file[4]  = ul_to_uc( all_size >> 16 );
+            file[5]  = ul_to_uc( all_size >> 24 );
+            info[4]  = ul_to_uc( the_col );
+            info[5]  = ul_to_uc( the_col >> 8 );
+            info[6]  = ul_to_uc( the_col >> 16 );
+            info[7]  = ul_to_uc( the_col >> 24 );
+            info[8]  = ul_to_uc( the_row );
+            info[9]  = ul_to_uc( the_row >> 8 );
+            info[10] = ul_to_uc( the_row >> 16 );
+            info[11] = ul_to_uc( the_row >> 24 );
+            info[20] = ul_to_uc( data_size );
+            info[21] = ul_to_uc( data_size >> 8 );
+            info[22] = ul_to_uc( data_size >> 16 );
+            info[23] = ul_to_uc( data_size >> 24 );
+            stream.write( reinterpret_cast< char* >( file ), sizeof( file ) );
+            stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
+            unsigned char pad[3] = { 0, 0, 0 };
+            unsigned char pixel[3];
+            //
+            // ! matrix view does not have direct iterator
+            //double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
+            //double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
+            //
+            double max_val = std::numeric_limits<double>::min();
+            double min_val = std::numeric_limits<double>::max();
+            for ( auto r = 0UL; r != the_row; ++r )
+                for ( auto c = 0UL; c != the_col; ++c )
+                {
+                    max_val = std::max(zen[r][c], max_val);
+                    min_val = std::min(zen[r][c], min_val);
+                }
+
+            double const eps =  std::numeric_limits<double>::epsilon();
+            if ( max_val - min_val < eps )
+            {
+                max_val += eps;
+                min_val -= eps;
+            }
+
+            for ( unsigned long r = 0; r < the_row; r++ )
+            {
+                for ( unsigned long c = 0; c < the_col; c++ )
+                {
+                    auto const r_ = the_row - r - 1;
+                    auto const c_ = c;
+                    auto const& rgb = selected_map( selected_transform( max_val, min_val )( zen[r_][c_] ) );
+                    pixel[2]        = rgb[0];
+                    pixel[1]        = rgb[1];
+                    pixel[0]        = rgb[2];
+                    stream.write( reinterpret_cast< char* >( pixel ), 3 );
+                }
+
+                stream.write( reinterpret_cast< char* >( pad ), pad_size );
+            }
+
+            stream.close();
+            return true;
+        }
+        bool save_as_bmp( const char* const file_name ) const
+        {
+            return save_as_bmp( std::string{ file_name } );
+        }
+    };
+
+#endif
+    template < typename Matrix, typename Type, typename Allocator >
+    using crtp_save_as_bmp_view = crtp_save_as_bmp<Matrix, Type, Allocator>;
 
     namespace crtp_save_as_pgm_private
     {
@@ -2487,6 +2589,7 @@ namespace feng
 
     template < typename Type, class Allocator >
     struct matrix_view :
+        crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
@@ -2497,7 +2600,7 @@ namespace feng
         typedef typename type_proxy_type::size_type     size_type;
         matrix_view( matrix<Type, Allocator> const& mat,
                      std::pair<size_type, size_type> const& row_dim,
-                     std::pair<size_type, size_type> const& col_dim ) : matrix_{ mat }
+                     std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
         {
             row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
             col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
@@ -2510,6 +2613,23 @@ namespace feng
         std::pair<size_type, size_type>                 col_dim_;
     };//struct matrix_view
 
+    template< typename Type, typename Allocator, typename Integer_Type >
+    matrix_view<Type, Allocator> const
+    make_view( matrix<Type, Allocator> const& matrix_, std::initializer_list<Integer_Type> row_dim, std::initializer_list<Integer_Type> col_dim ) noexcept
+    {
+        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef typename type_proxy_type::size_type     size_type;
+
+        assert( row_dim.size() == 2 && "Error: row parameters for a matrix view should be 2!" );
+        assert( col_dim.size() == 2 && "Error: col parameters for a matrix view should be 2!" );
+        return matrix_view<Type, Allocator>
+        { 
+            matrix_,
+            std::make_pair( static_cast<size_type>(*(row_dim.begin())), static_cast<size_type>(*(row_dim.begin()+1)) ),
+            std::make_pair( static_cast<size_type>(*(col_dim.begin())), static_cast<size_type>(*(col_dim.begin()+1)) )
+        };
+    }
+
     template < typename T1, typename A1, typename T2, typename A2 >
     const matrix< T1, A1 >
     operator+( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
@@ -2518,6 +2638,7 @@ namespace feng
         ans += rhs;
         return ans;
     }
+
     template < typename T1, typename A1, typename T2, typename A2 >
     const matrix< T1, A1 >
     operator-( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
