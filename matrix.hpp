@@ -66,11 +66,11 @@ namespace feng
 {
     constexpr unsigned long matrix_version = 20180504;
 
-#ifdef PARALLEL
+    #ifdef PARALLEL
     constexpr unsigned long use_parallel = 1;
-#else
+    #else
     constexpr unsigned long use_parallel = 0;
-#endif
+    #endif
 
     namespace misc
     {

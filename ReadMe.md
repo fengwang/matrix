@@ -46,6 +46,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [elementwise sinh](#elementwise-sinh)
    + [Common functions](#common-functions)
      - [eye](#eye-function)
+     - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
 
 
@@ -632,6 +633,28 @@ m.save_as_bmp( "./images/0000_eye.bmp" );
 ![eye image](./images/0000_eye.bmp)
 
 
+#### matrix convolution
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.save_as_bmp( "./images/0000_conv.bmp", "gray" );
+```
+
+[convolution 1](./images/0000_conv.bmp)
+
+
+```cpp
+feng::matrix<double> filter{3, 3, {0.0, 1.0, 0.0,
+                                   1.0,-4.0, 1.0,
+                                   0.0, 1.0, 0.0}};
+auto const& edge = feng::conv( m, filter );
+edge.save_as_bmp( "./images/0001_conv.bmp", "gray" );
+```
+
+[convolution 2](./images/0001_conv.bmp)
+
+
 #### make view function
 
 ```cpp
@@ -674,6 +697,9 @@ n.save_as_bmp( "./images/0003_make_view.bmp", "gray" );
 ```
 
 ![make view 4](./images/0003_make_view.bmp)
+
+
+
 
 
 ## License
