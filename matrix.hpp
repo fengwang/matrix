@@ -2484,6 +2484,13 @@ namespace feng
             (*this).clear();
         }
 
+        matrix( size_type const row, size_type const col, std::initializer_list<value_type> const& value_list ) noexcept : matrix{}
+        {
+            (*this).resize( row, col );
+            size_type elements_to_copy = std::min( (*this).size(), value_list.size() );
+            std::copy( value_list.begin(), value_list.begin()+elements_to_copy, (*this).begin() );
+        }
+
         matrix( self_type&& other ) noexcept : matrix{}
         {
             (*this).swap( other );
@@ -5631,18 +5638,44 @@ namespace feng
 
         return 0;
     }
-/*
+
     template< typename Type, typename Allocator >
-    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B )
+    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B ) noexcept
     {
         if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
             return matrix<Type, Allocator>{0, 0};
 
+        if ( A.size() > B.size() )
+            return conv( B, A );
+
+        matrix<Type, Allocator> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
+        for ( auto row : misc::range(B.row()) )
+            std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1) );
+
         matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
+
+        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, unsigned long const row, unsigned long const col ) noexcept
+        {
+            Type ans{0};
+            for ( auto r = 0UL; r != row; ++r )
+                for ( auto c = 0UL; c != col; ++c )
+                    ans += a[r][c] * b[r][c];
+            return ans;
+        };
+
+        //TODO: parallel here
+        for ( auto row : misc::range(ans.row() ) )
+            for ( auto col : misc::range(ans.row() ) )
+            {
+                auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
+                ans[row][col] = product( A, view, A.row(), A.col() );
+            }
+
+
 
         return ans;
     }
-*/
+
 } //namespace feng
 
 RESTORE_WARNINGS

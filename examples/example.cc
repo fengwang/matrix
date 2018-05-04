@@ -19,6 +19,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0015_sinh.hpp"
 #include "./cases/0016_eye.hpp"
 #include "./cases/0017_make_view.hpp"
+#include "./cases/0018_conv.hpp"
 
 int main()
 {
@@ -44,6 +45,7 @@ int main()
     _0018_create();
     _0019_create();
     _0020_create();
+    _0021_create();
 
 
     std::cout << "running apply.\n";
@@ -93,8 +95,12 @@ int main()
 
     std::cout << "running eye.\n";
     _0000_eye();
+
     std::cout << "running make_view.\n";
     _0000_make_view();
+
+    std::cout << "running conv.\n";
+    _0000_conv();
 
 
     return 0;

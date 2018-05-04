@@ -189,8 +189,13 @@ void _0020_create()
 }
 
 
-
-
+void _0021_create()
+{
+    feng::matrix<double> m{ 3, 3, { 0.0,  1.0, 0.0,
+                                    1.0, -4.0, 1.0,
+                                    0.0,  1.0, 0.0 } };
+    std::cout << m << std::endl;
+}
 
 
 
