@@ -293,16 +293,7 @@ namespace feng
         anti_diag_type upper_anti_diag_end( const size_type index = 0 ) noexcept
         {
             zen_type& zen   = static_cast< zen_type& >( *this );
-
             size_type const depth = std::min( zen.col()-index, zen.row() );
-/*
-            size_type depth = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-*/
             return upper_anti_diag_begin( index ) + depth;
         }
         const_anti_diag_type upper_anti_diag_begin( const size_type index = 0 ) const noexcept
@@ -314,14 +305,6 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type const depth = std::min( zen.col()-index, zen.row() );
-            /*
-            size_type depth     = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-*/
             return upper_anti_diag_begin( index ) + depth;
         }
         const_anti_diag_type upper_anti_diag_cbegin( const size_type index = 0 ) const noexcept
@@ -366,14 +349,6 @@ namespace feng
             zen_type& zen   = static_cast< zen_type& >( *this );
 
             size_type const depth = std::min( zen.row()-index, zen.col() );
-/*
-            size_type depth = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-*/
             return lower_anti_diag_begin( index ) + depth;
         }
         const_anti_diag_type lower_anti_diag_begin( const size_type index = 0 ) const noexcept
@@ -386,14 +361,6 @@ namespace feng
             zen_type const& zen = static_cast< zen_type const& >( *this );
 
             size_type const depth = std::min( zen.row()-index, zen.col() );
-/*
-            size_type depth     = zen.row() - index;
-
-            if ( zen.col() < depth )
-            {
-                depth = zen.col();
-            }
-*/
             return lower_anti_diag_begin( index ) + depth;
         }
         const_anti_diag_type lower_anti_diag_cbegin( const size_type index = 0 ) const noexcept
@@ -843,14 +810,6 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             size_type depth = std::min( zen.col()-index, zen.row() );
-            /*
-            size_type depth     = zen.col() - index;
-
-            if ( zen.row() < depth )
-            {
-                depth = zen.row();
-            }
-            */
             return upper_diag_begin( index ) + depth;
         }
         const_diag_type upper_diag_cbegin( const size_type index ) const noexcept
