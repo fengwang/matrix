@@ -95,7 +95,7 @@ namespace feng
         }
 
         template< typename Function, typename Integer_Type >
-        void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last )
+        void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
             unsigned int const total_cores = std::thread::hardware_concurrency();
             if ( total_cores <= 1 )
@@ -118,7 +118,7 @@ namespace feng
 
             for ( auto idx : range( total_cores-1 ) )
             {
-                Integer_Type first = tasks_per_thread * idx;
+                Integer_Type first = tasks_per_thread * idx + dim_first;
                 Integer_Type last =  first + tasks_per_thread;
                 threads.push_back( std::thread{ job_slice, first, last } );
             }
