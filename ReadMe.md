@@ -62,6 +62,18 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 
 ## Example usage
 
+#### including the header file
+
+```cpp
+//your_source_code.cpp
+#include "matrix.hpp"
+```
+
+#### typical compile and link command
+
+```bash
+g++ -o your_exe_file your_source_code.cpp -std=c++17 -O2
+```
 
 ### basic
 
