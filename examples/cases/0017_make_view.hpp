@@ -11,5 +11,11 @@ void _0000_make_view()
 
     auto new_matrix{v};
     new_matrix.save_as_bmp( "./images/0002_make_view.bmp" );
+
+    feng::matrix<double> n{ v.row(), v.col() }; // row() and col() of a matrix view
+    for ( auto r = 0UL; r != n.row(); ++r )
+        for ( auto c = 0UL; c != n.col(); ++c )
+            n[r][c] = v[r][c]; // accessing matrix elements using operator [], read-only
+    n.save_as_bmp( "./images/0003_make_view.bmp", "gray" );
 }
 
