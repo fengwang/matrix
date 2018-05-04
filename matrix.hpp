@@ -63,8 +63,32 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long matrix_version = 20180101;
+    constexpr unsigned long matrix_version = 20180504;
 
+    namespace misc
+    {
+        //simple ranger to simplify iterations
+        template< typename Integer_Type >
+        auto range( Integer_Type first, Integer_Type last ) noexcept
+        {
+            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
+
+            std::vector<Integer_Type> ans;
+            ans.reserve( last - first );
+            while (first != last)
+                ans.push_back(first++);
+
+            return ans;
+        }
+
+        template< typename Integer_Type >
+        auto range( Integer_Type last ) noexcept
+        {
+            return range( Integer_Type{0}, last );
+        }
+    }
+
+    // for column, diagonal and anti-diagonal iteration
     template < typename Iterator_Type >
     struct stride_iterator
     {
@@ -2421,6 +2445,28 @@ namespace feng
         }
     };
 
+    template < typename Type, class Allocator>
+    struct matrix;
+
+    template < typename Type, class Allocator >
+    struct matrix_view : crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
+    {
+        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef typename type_proxy_type::size_type     size_type;
+        matrix_view( matrix<Type, Allocator> const& mat,
+                     std::pair<size_type, size_type> const& row_dim,
+                     std::pair<size_type, size_type> const& col_dim ) noexcept;
+
+        matrix<Type, Allocator> const&                  matrix_;
+        std::pair<size_type, size_type>                 row_dim_;
+        std::pair<size_type, size_type>                 col_dim_;
+    };//struct matrix_view
+
     template < typename Type, class Allocator = std::allocator<Type> >
     struct matrix : crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_apply< matrix< Type, Allocator >, Type, Allocator >
@@ -2480,6 +2526,7 @@ namespace feng
         {
             (*this).swap( other );
         }
+
         self_type& operator = ( self_type&& other )
         {
             (*this).clear();
@@ -2540,78 +2587,57 @@ namespace feng
             (*this).clone( other, rr0, rr1, rc0, rc1 );
         }
 
-#if 0
         template < typename T, typename A >
-        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
-        {
-            ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
-        }
-        matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
-        {
-            ( *this ).clone( other, rr.first, rr.second, rc.first, rc.second );
-        }
-        template < typename T, typename A >
-        matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
-        {
-            ( *this ).clone( other, r0, r1, c0, c1 );
-        }
-#else
-        template < typename T, typename A >
-        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} }
-        {}
-        matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} }
-        {}
-        template < typename T, typename A >
-        matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} }
-        {}
-        matrix( self_type const& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} }
-        {}
+        matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} } {}
 
-#endif
+        matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} } {}
+
+        template < typename T, typename A >
+        matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} } {}
+
+        matrix( self_type const& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} } {}
+
         self_type& operator = ( const self_type& rhs ) noexcept
         {
             ( *this ).copy( rhs );
             return *this;
         }
+
         template < typename T, typename A >
         self_type& operator = ( const matrix< T, A >& rhs ) noexcept
         {
             ( *this ).copy( rhs );
             return *this;
         }
-        //self_type& operator =( self_type&& ) = default;
+
         self_type& operator = ( const value_type& v )
         {
             std::fill( ( *this ).diag_begin(), ( *this ).diag_end(), v ); //TODO:should move to crtp_xxx
             return *this;
         }
+
+        matrix( matrix_view<Type, Allocator> const& view ) noexcept;
     };//struct matrix
 
     template < typename Type, class Allocator >
-    struct matrix_view :
-        crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
+    matrix_view<Type, Allocator>::matrix_view( matrix<Type, Allocator> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
     {
-        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
-        typedef typename type_proxy_type::size_type     size_type;
-        matrix_view( matrix<Type, Allocator> const& mat,
-                     std::pair<size_type, size_type> const& row_dim,
-                     std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
-        {
-            row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
-            col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
-            row_dim_.second = (row_dim.second <= matrix_.row()) ? row_dim.second : matrix_.row();
-            col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
-        }
+        row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
+        col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
+        row_dim_.second = (row_dim.second <= matrix_.row()) ? row_dim.second : matrix_.row();
+        col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
+    }
 
-        matrix<Type, Allocator> const&                  matrix_;
-        std::pair<size_type, size_type>                 row_dim_;
-        std::pair<size_type, size_type>                 col_dim_;
-    };//struct matrix_view
+        //matrix<Type, Allocator> const&                  matrix_;
+        //std::pair<size_type, size_type>                 row_dim_;
+        //std::pair<size_type, size_type>                 col_dim_;
+    template < typename Type, class Allocator >
+    matrix<Type, Allocator>::matrix( matrix_view<Type, Allocator> const& view ) noexcept
+    {
+        (*this).resize( view.row_dim_.second-view.row_dim_.first, view.col_dim_.second-view.col_dim_.first );
+        for ( auto const row : misc::range((*this).row() ) )//copy row by row
+                std::copy( view.matrix_.row_begin(row+view.row_dim_.first), view.matrix_.row_end(row+view.row_dim_.second), (*this).row_begin(row) );
+    }
 
     template< typename Type, typename Allocator, typename Integer_Type >
     matrix_view<Type, Allocator> const
@@ -2623,7 +2649,7 @@ namespace feng
         assert( row_dim.size() == 2 && "Error: row parameters for a matrix view should be 2!" );
         assert( col_dim.size() == 2 && "Error: col parameters for a matrix view should be 2!" );
         return matrix_view<Type, Allocator>
-        { 
+        {
             matrix_,
             std::make_pair( static_cast<size_type>(*(row_dim.begin())), static_cast<size_type>(*(row_dim.begin()+1)) ),
             std::make_pair( static_cast<size_type>(*(col_dim.begin())), static_cast<size_type>(*(col_dim.begin()+1)) )
@@ -2634,7 +2660,7 @@ namespace feng
     const matrix< T1, A1 >
     operator+( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
-        matrix< T1, A1 > ans( lhs );
+        matrix< T1, A1 > ans{ lhs };
         ans += rhs;
         return ans;
     }
@@ -2643,7 +2669,7 @@ namespace feng
     const matrix< T1, A1 >
     operator-( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
-        matrix< T1, A1 > ans( lhs );
+        matrix< T1, A1 > ans{ lhs };
         ans -= rhs;
         return ans;
     }

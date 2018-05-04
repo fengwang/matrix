@@ -653,6 +653,15 @@ v.save_as_bmp( "./images/0001_make_view.bmp" );
 ![make view 2](./images/0001_make_view.bmp)
 
 
+And creating new matrix from a view
+
+```cpp
+auto new_matrix{v};
+new_matrix.save_as_bmp( "./images/0002_make_view.bmp" );
+```
+
+![make view 3](./images/0002_make_view.bmp)
+
 ## License
 
 ```
