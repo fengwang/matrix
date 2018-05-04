@@ -641,7 +641,7 @@ m.load_txt( "./images/Lenna.txt" );
 m.save_as_bmp( "./images/0000_conv.bmp", "gray" );
 ```
 
-[convolution 1](./images/0000_conv.bmp)
+![convolution 1](./images/0000_conv.bmp)
 
 
 ```cpp
@@ -652,7 +652,7 @@ auto const& edge = feng::conv( m, filter );
 edge.save_as_bmp( "./images/0001_conv.bmp", "gray" );
 ```
 
-[convolution 2](./images/0001_conv.bmp)
+![convolution 2](./images/0001_conv.bmp)
 
 
 #### make view function
