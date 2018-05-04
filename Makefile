@@ -1,7 +1,7 @@
 CXX           = g++
-CXXFLAGS      = -std=c++17 -Wall -O2
+CXXFLAGS      = -std=c++17 -Wall -O2 -DPARALLEL
 LINK          = $(CXX)
-LFLAGS        = -O2
+LFLAGS        = -O2 -pthread
 
 ####### Output directory
 OBJECTS_DIR   = .

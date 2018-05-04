@@ -55,6 +55,7 @@ SUPPRESS_WARNINGS
 #include <sstream>
 #include <streambuf>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -64,6 +65,12 @@ SUPPRESS_WARNINGS
 namespace feng
 {
     constexpr unsigned long matrix_version = 20180504;
+
+#ifdef PARALLEL
+    constexpr unsigned long use_parallel = 1;
+#else
+    constexpr unsigned long use_parallel = 0;
+#endif
 
     namespace misc
     {
@@ -86,6 +93,48 @@ namespace feng
         {
             return range( Integer_Type{0}, last );
         }
+
+        template< typename Function, typename Integer_Type >
+        void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last )
+        {
+            unsigned int const total_cores = std::thread::hardware_concurrency();
+            if ( total_cores <= 1 )
+            {
+                for ( auto a : range( dim_first, dim_last ) )
+                    func( a );
+                return;
+            }
+
+            auto const& job_slice = [&func]( Integer_Type a, Integer_Type b )
+            {
+                while ( a != b )
+                    func(a++);
+            };
+
+            std::vector<std::thread> threads;
+            threads.reserve( total_cores-1 );
+
+            unsigned long tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
+
+            for ( auto idx : range( total_cores-1 ) )
+            {
+                Integer_Type first = tasks_per_thread * idx;
+                Integer_Type last =  first + tasks_per_thread;
+                threads.push_back( std::thread{ job_slice, first, last } );
+            }
+
+            job_slice( tasks_per_thread*(total_cores-1), dim_last );
+
+            for ( auto& th : threads )
+                th.join();
+        }
+
+        template< typename Function, typename Integer_Type >
+        void parallel( Function const& func, Integer_Type dim_last )
+        {
+            parallel( func, Integer_Type{0}, dim_last );
+        }
+
     }
 
     // for column, diagonal and anti-diagonal iteration
@@ -5663,15 +5712,27 @@ namespace feng
             return ans;
         };
 
-        //TODO: parallel here
-        for ( auto row : misc::range(ans.row() ) )
-            for ( auto col : misc::range(ans.row() ) )
+        if constexpr ( use_parallel == 0 )
+        {
+            for ( auto row : misc::range(ans.row() ) )
+                for ( auto col : misc::range(ans.row() ) )
+                {
+                    auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
+                    ans[row][col] = product( A, view, A.row(), A.col() );
+                }
+        }
+        else
+        {
+            auto func = [&]( unsigned long row )
             {
-                auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
-                ans[row][col] = product( A, view, A.row(), A.col() );
-            }
-
-
+                for ( auto col : misc::range(ans.row() ) )
+                {
+                    auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
+                    ans[row][col] = product( A, view, A.row(), A.col() );
+                }
+            };
+            misc::parallel( func, ans.row() );
+        }
 
         return ans;
     }
