@@ -733,14 +733,16 @@ For a random matrix
     if (lu)
     {
         auto const& [l, u] = lu.value();
-        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet" );
+        //present in log scaly
+        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet", "log" );
 ```
 
 ![lu_2](./images/0002_lu_decomposition.bmp)
 
 
 ```cpp
-        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet" );
+        //present in log scaly
+        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet", "log" );
 ```
 
 ![lu_3](./images/0003_lu_decomposition.bmp)
@@ -748,8 +750,8 @@ For a random matrix
 
 ```cpp
 
-        auto const& diff = l * u - m;
-        diff.save_as_bmp( "./images/0004_lu_decomposition.bmp", "jet" );
+        auto const& reconstructed = l * u;
+        reconstructed.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
 ```
 
 ![lu_4](./images/0004_lu_decomposition.bmp)
