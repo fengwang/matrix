@@ -733,14 +733,14 @@ For a random matrix
     if (lu)
     {
         auto const& [l, u] = lu.value();
-        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "gray" );
+        l.save_as_bmp( "./images/0002_lu_decomposition.bmp" );
 ```
 
 ![lu_2](./images/0002_lu_decomposition.bmp)
 
 
 ```cpp
-        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "gray" );
+        u.save_as_bmp( "./images/0003_lu_decomposition.bmp" );
 ```
 
 ![lu_3](./images/0003_lu_decomposition.bmp)
@@ -749,7 +749,7 @@ For a random matrix
 ```cpp
 
         auto const& diff = l * u - m;
-        u.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
+        diff.save_as_bmp( "./images/0004_lu_decomposition.bmp" );
 ```
 
 ![lu_4](./images/0004_lu_decomposition.bmp)
