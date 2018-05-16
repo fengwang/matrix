@@ -727,6 +727,9 @@ For a random matrix
 ![lu_1](./images/0001_lu_decomposition.bmp)
 
 
+we can do LU decomposition simply with `lu_decomposition` function
+
+
 ```cpp
     // lu decomposition
     auto const& lu = feng::lu_decomposition( m );
@@ -737,6 +740,11 @@ For a random matrix
         l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet", "log" );
 ```
 
+the result of the LU decompositon is a Maybe monad of a tuple of two matrices, i.e., `std::optional<std::tuple<feng::matrix<Type, Allocator>, feng::matrix<Type, Allocator>>>`,
+therefor, we need to check its value before using it.
+
+Then we can draw the lower matrix `L`
+
 ![lu_2](./images/0002_lu_decomposition.bmp)
 
 
@@ -744,6 +752,8 @@ For a random matrix
         //present in log scaly
         u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet", "log" );
 ```
+
+And the upper matrix `U`
 
 ![lu_3](./images/0003_lu_decomposition.bmp)
 
@@ -753,6 +763,9 @@ For a random matrix
         auto const& reconstructed = l * u;
         reconstructed.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
 ```
+
+We can multiply `L` and `U` back to see if the decomposition is correct or not.
+
 
 ![lu_4](./images/0004_lu_decomposition.bmp)
 
@@ -766,7 +779,10 @@ For a random matrix
 
 ```
 
-And we can also calculate the mean absolute value error
+A typical use of LU Decomposition is to solve an equation in the form of `Ax=b`,
+this is done by calling `auto const& x = feng::lu_solver(A,b)`, and, again, the returned value is a Maybe monad,
+we need to check its value before using it.
+
 
 ```cpp
     auto const X = feng::rand<double>( row, 1 );
@@ -785,7 +801,7 @@ And we can also calculate the mean absolute value error
     }
 ```
 
- with output as small as
+And we can also calculate the mean absolute value error, the output as small as
 
 
  ```
