@@ -5637,11 +5637,13 @@ namespace feng
 
         return X;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
-    int lu_decomposition( const matrix< T1, A1 >& A, matrix< T2, A2 >& L, matrix< T3, A3 >& U )
+
+    template < typename Type, typename Allocator>
+    int lu_decomposition( const matrix< Typer, Allocator >& A, matrix< Type, Allocator >& L, matrix< Type, Allocator >& U )
     {
-        typedef T1 value_type;
-        assert( A.row() == A.col() );
+        typedef Type value_type;
+        assert( A.row() == A.col() && "Square Matrix Requred!" );
+
         const std::size_t n = A.row();
         L.resize( n, n );
         U.resize( n, n );
