@@ -20,6 +20,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0016_eye.hpp"
 #include "./cases/0017_make_view.hpp"
 #include "./cases/0018_conv.hpp"
+#include "./cases/0019_lu_decomposition.hpp"
 
 int main()
 {
@@ -102,6 +103,8 @@ int main()
     std::cout << "running conv.\n";
     _0000_conv();
 
+    std::cout << "running lu_decomposition.\n";
+    _0000_lu_decomposition();
 
     return 0;
 }

@@ -1,6 +1,8 @@
 #ifndef FENG_MATRIX_HPP_INCLUDED_
 #define FENG_MATRIX_HPP_INCLUDED_
 
+static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please update your compiler!" );
+
 #ifdef __clang__
 #define SUPPRESS_WARNINGS \
     _Pragma("clang diagnostic push ") \
@@ -64,7 +66,7 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long matrix_version = 20180504;
+    constexpr unsigned long matrix_version = 20180516;
 
     #ifdef PARALLEL
     constexpr unsigned long use_parallel = 1;
@@ -5639,7 +5641,7 @@ namespace feng
     }
 
     template < typename Type, typename Allocator>
-    int lu_decomposition( const matrix< Typer, Allocator >& A, matrix< Type, Allocator >& L, matrix< Type, Allocator >& U )
+    int lu_decomposition( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& L, matrix< Type, Allocator >& U )
     {
         typedef Type value_type;
         assert( A.row() == A.col() && "Square Matrix Requred!" );
@@ -5667,6 +5669,16 @@ namespace feng
 
         return 0;
     }
+
+    template < typename Type, typename Allocator>
+    std::optional<std::tuple<matrix<Type, Allocator>, matrix<Type, Allocator>>> lu_decomposition( const matrix< Type, Allocator >& A )
+    {
+        if ( matrix<Type, Allocator> L, U; lu_decomposition( A, L, U ) == 1 )
+            return {};
+        else
+            return std::make_tuple( L, U );
+    }
+
     template < typename Type, typename Allocator >
     int lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& x, const matrix< Type, Allocator >& b )
     {
@@ -5688,6 +5700,15 @@ namespace feng
             return 1;
 
         return 0;
+    }
+
+    template < typename Type, typename Allocator >
+    std::optional<matrix<Type, Allocator>> lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator > const& b )
+    {
+        if ( matrix<Type, Allocator> x; lu_solver(A, x, b) == 1 )
+            return {};
+        else
+            return x;
     }
 
     template< typename Type, typename Allocator >

@@ -48,6 +48,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [eye](#eye-function)
      - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
+     - [lu_decomposition](#lu-decomposition)
 
 
 - [License](#license)
@@ -699,6 +700,95 @@ n.save_as_bmp( "./images/0003_make_view.bmp", "gray" );
 ![make view 4](./images/0003_make_view.bmp)
 
 
+#### lu decomposition
+
+For a random matrix
+
+```cpp
+    // initial matrix
+    feng::matrix<double> m;
+    m.load_txt( "./images/Lenna.txt" );
+    m.save_as_bmp( "./images/0000_lu_decomposition.bmp", "gray" );
+```
+
+![lu_0](./images/0000_lu_decomposition.bmp)
+
+
+```cpp
+    // adding noise
+    double mn = *std::min_element( m.begin(), m.end() );
+    double mx = *std::max_element( m.begin(), m.end() );
+    m = (m-mn) / (mx - mn + 1.0e-10);
+    auto const& [row, col] = m.shape();
+    m += feng::rand<double>( row, col ) * 0.1;
+    m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
+```
+
+![lu_1](./images/0001_lu_decomposition.bmp)
+
+
+```cpp
+    // lu decomposition
+    auto const& lu = feng::lu_decomposition( m );
+    if (lu)
+    {
+        auto const& [l, u] = lu.value();
+        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "gray" );
+```
+
+![lu_2](./images/0002_lu_decomposition.bmp)
+
+
+```cpp
+        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "gray" );
+```
+
+![lu_3](./images/0003_lu_decomposition.bmp)
+
+
+```cpp
+
+        auto const& diff = l * u - m;
+        u.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
+```
+
+![lu_4](./images/0004_lu_decomposition.bmp)
+
+
+```cpp
+    }
+    else
+    {
+        std::cout << "Error: Failed to execute lu decomposition for matrix m!\n";
+    }
+
+```
+
+And we can also calculate the mean absolute value error
+
+```cpp
+    auto const X = feng::rand<double>( row, 1 );
+    auto const b = m * X;
+    auto const& ox = feng::lu_solver( m, b );
+
+    if (ox)
+    {
+        auto const& diff = ox.value() - X;
+        auto const mae = std::sqrt( std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) / diff.size() );
+        std::cout << "mean absolute error for lu solver is " << mae << "\n";
+    }
+    else
+    {
+        std::cout << "Error: Failed to solve equation with lu solver!\n";
+    }
+```
+
+ with output as small as
+
+
+ ```
+ mean absolute error for lu solver is 2.34412875135465e-10
+ ```
 
 
 
