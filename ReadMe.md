@@ -720,7 +720,7 @@ For a random matrix
     double mx = *std::max_element( m.begin(), m.end() );
     m = (m-mn) / (mx - mn + 1.0e-10);
     auto const& [row, col] = m.shape();
-    m += feng::rand<double>( row, col ) * 0.1;
+    m += feng::rand<double>( row, col );
     m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
 ```
 
