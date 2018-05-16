@@ -18,11 +18,11 @@ void _0000_lu_decomposition()
     if (lu)
     {
         auto const& [l, u] = lu.value();
-        l.save_as_bmp( "./images/0002_lu_decomposition.bmp" );
-        u.save_as_bmp( "./images/0003_lu_decomposition.bmp" );
+        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet" );
+        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet" );
 
         auto const& diff = l * u - m;
-        diff.save_as_bmp( "./images/0004_lu_decomposition.bmp" );
+        diff.save_as_bmp( "./images/0004_lu_decomposition.bmp", "jet" );
     }
     else
     {
