@@ -5648,8 +5648,11 @@ namespace feng
 
         const std::size_t n = A.row();
         L.resize( n, n );
-        U.resize( n, n );
+        std::fill( L.begin(), L.end(), value_type{0} );
         std::fill( L.diag_begin(), L.diag_end(), value_type( 1 ) );
+
+        U.resize( n, n );
+        std::fill( U.begin(), U.end(), value_type{0} );
 
         for ( std::size_t j = 0; j < n; ++j )
         {
