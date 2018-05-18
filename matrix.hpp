@@ -206,28 +206,6 @@ namespace feng
             return { Integer_Type{0}, last };
         }
 
-#if 0
-        //simple ranger to simplify iterations
-        template< typename Integer_Type >
-        auto range( Integer_Type first, Integer_Type last ) noexcept
-        {
-            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
-
-            std::vector<Integer_Type> ans;
-            ans.reserve( last - first );
-            while (first != last)
-                ans.push_back(first++);
-
-            return ans;
-        }
-
-        template< typename Integer_Type >
-        auto range( Integer_Type last ) noexcept
-        {
-            return range( Integer_Type{0}, last );
-        }
-#endif
-
         template< typename Function, typename Integer_Type >
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
