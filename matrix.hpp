@@ -76,6 +76,137 @@ namespace feng
 
     namespace misc
     {
+
+        template< typename Integer_Type >
+        struct integer_iterator
+        {
+            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
+
+            typedef Integer_Type                    value_type;
+            typedef value_type&                     reference;
+            typedef const reference                 const_reference;
+            typedef std::random_access_iterator_tag	iterator_category;
+            typedef std::ptrdiff_t                  difference_type;
+            typedef integer_iterator<value_type>    self_type;
+
+            value_type                              value_;
+
+            explicit integer_iterator( value_type value ) noexcept : value_{value} {}
+            integer_iterator( self_type const& ) noexcept= default;
+            integer_iterator( self_type && ) noexcept = default;
+            self_type& operator = ( self_type const& ) noexcept = default;
+            self_type& operator = ( self_type && ) noexcept = default;
+
+            reference& operator*() noexcept
+            {
+                return value_;
+            }
+
+            const_reference& operator*() const noexcept
+            {
+                return value_;
+            }
+
+            self_type& operator += ( difference_type val ) noexcept
+            {
+                value_ += val;
+                return *this;
+            }
+
+            self_type& operator -= ( difference_type val ) noexcept
+            {
+                value_ -= val;
+                return *this;
+            }
+
+            self_type& operator++() noexcept
+            {
+                ++value_;
+                return *this;
+            }
+
+            self_type const operator++(int) noexcept
+            {
+                self_type ans{*this};
+                ++(*this);
+                return ans;
+            }
+
+            friend self_type const operator + ( self_type const& lhs, difference_type const& rhs ) noexcept
+            {
+                return self_type{ lhs.value_ + rhs };
+            }
+
+            friend self_type const operator + ( difference_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return rhs + lhs;
+            }
+
+            friend bool operator == ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ == rhs.value_;
+            }
+
+            friend bool operator != ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ == rhs.value_;
+            }
+
+            friend bool operator < ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ < rhs.value_;
+            }
+
+            friend bool operator > ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ > rhs.value_;
+            }
+
+            friend bool operator <= ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ <= rhs.value_;
+            }
+
+            friend bool operator >= ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ >= rhs.value_;
+            }
+        };
+
+        template< typename Integer_Type >
+        struct integer_range
+        {
+            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
+            typedef Integer_Type value_type;
+            value_type first_;
+            value_type last_;
+
+            integer_range( value_type first, value_type last ) noexcept : first_{first}, last_{last} {}
+
+            auto const begin() const noexcept
+            {
+                return integer_iterator<value_type>{first_};
+            }
+
+            auto const end() const noexcept
+            {
+                return integer_iterator<value_type>{last_};
+            }
+        };
+
+        template< typename Integer_Type >
+        integer_range<Integer_Type> range( Integer_Type first, Integer_Type last ) noexcept
+        {
+            return {first, last};
+        }
+
+        template< typename Integer_Type >
+        integer_range<Integer_Type> range( Integer_Type last ) noexcept
+        {
+            return { Integer_Type{0}, last };
+        }
+
+#if 0
         //simple ranger to simplify iterations
         template< typename Integer_Type >
         auto range( Integer_Type first, Integer_Type last ) noexcept
@@ -95,6 +226,7 @@ namespace feng
         {
             return range( Integer_Type{0}, last );
         }
+#endif
 
         template< typename Function, typename Integer_Type >
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel

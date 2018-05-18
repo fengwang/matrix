@@ -1,5 +1,5 @@
 CXX           = g++
-CXXFLAGS      = -std=c++17 -Wall -O2 -DPARALLEL
+CXXFLAGS      = -std=c++17 -Wall -O2 -fmax-errors=2 -DPARALLEL
 LINK          = $(CXX)
 LFLAGS        = -O2 -pthread
 
