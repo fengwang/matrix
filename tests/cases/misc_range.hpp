@@ -2,10 +2,10 @@ TEST_CASE( "Misc Range", "[miscrange]" )
 {
     {
         auto start = 0UL;
-        auto end = 1000UL;
+        auto end = 100UL;
 
         for ( auto x = start; x != end; ++x )
-            for ( auto y = start; y != end; ++y )
+            for ( auto y = x; y != end; ++y )
             {
                 auto ranger = feng::misc::range( x, y );
                 auto begin = std::begin(ranger);
