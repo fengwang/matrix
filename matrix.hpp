@@ -5654,28 +5654,20 @@ namespace feng
 
         for ( size_type i = 0; i < n; ++i )
         {
-            const size_type
-            p
-                = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), abs_compare() ) );
+            const size_type p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), abs_compare() ) );
 
             if ( p != i )
-            {
                 std::swap_ranges( a.row_begin( i ) + i, a.row_end( i ), a.row_begin( p ) + i );
-            }
 
             const value_type factor = a[i][i];
 
-            if ( factor == value_type() )
-                return 1;
+            if ( factor == value_type() ) return 1;
 
             std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, scale_by( factor ) );
 
             for ( size_type j = 0; j < n; ++j )
             {
-                if ( i == j )
-                {
-                    continue;
-                }
+                if ( i == j ) continue;
 
                 const value_type ratio = a[j][i];
                 std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), ratio_by( ratio ) );
@@ -5685,11 +5677,57 @@ namespace feng
         x = matrix_type( a, range_type( 0, n ), range_type( n, m + n ) );
         return 0;
     }
+
     template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
     int gje( const matrix< T1, A1 >& A, matrix< T2, A2 >& x, const matrix< T3, A3 >& b )
     {
         return gauss_jordan_elimination( A, x, b );
     }
+
+    template < typename T, typename A >
+    std::optional<matrix<T,A>> gauss_jordan_elimination( matrix< T, A > const& m ) noexcept
+    {
+        auto const& [row, col] = m.shape();
+        assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
+
+        auto a = m;
+
+        for ( auto i : misc::range(row) )
+        {
+            auto const p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), [](auto x, auto y){ return std::abs(x) < std::abs(y); } ) );
+
+            if ( p != static_cast<std::ptrdiff_t>(i) )
+                std::swap_ranges( a.row_begin( i ) + i, a.row_end( i ), a.row_begin( p ) + i );
+
+            auto const factor = a[i][i];
+
+            //if ( factor == value_type() ) return {};
+            if ( std::abs(factor) < 1.0e-10) return {};
+
+            ///std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, scale_by( factor ) );
+            std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor](auto& v){ v /= factor; } );
+
+            //for ( size_type j = 0; j < row; ++j )
+            for ( auto j : misc::range(row) )
+            {
+                if ( i == j ) continue;
+
+                auto const ratio = a[j][i];
+                //std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), ratio_by( ratio ) );
+                std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio](auto x, auto y){ return x - y*ratio; } );
+            }
+        }
+
+        return a;
+    }
+
+    // matlab alias
+    template < typename T, typename A >
+    std::optional<matrix<T,A>> rref( matrix< T, A > const& m ) noexcept
+    {
+        return gauss_jordan_elimination( m );
+    }
+
     namespace ifft_private
     {
         template < typename T >
@@ -5848,8 +5886,6 @@ namespace feng
         auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, unsigned long const row, unsigned long const col ) noexcept
         {
             Type ans{0};
-            //for ( auto r = 0UL; r != row; ++r )
-                //for ( auto c = 0UL; c != col; ++c )
             for ( auto r : misc::range(row) )
                 for ( auto c : misc::range(col) )
                     ans += a[r][c] * b[r][c];

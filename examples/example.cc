@@ -21,6 +21,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0017_make_view.hpp"
 #include "./cases/0018_conv.hpp"
 #include "./cases/0019_lu_decomposition.hpp"
+#include "./cases/0020_gauss_jordan_elimination.hpp"
 
 int main()
 {
@@ -105,6 +106,9 @@ int main()
 
     std::cout << "running lu_decomposition.\n";
     _0000_lu_decomposition();
+
+    std::cout << "running gauss_jordan_elimination.\n";
+    _0000_gauss_jordan_elimination();
 
     return 0;
 }
