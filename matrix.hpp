@@ -155,7 +155,7 @@ namespace feng
 
             friend bool operator != ( self_type const& lhs, self_type const& rhs ) noexcept
             {
-                return lhs.value_ == rhs.value_;
+                return lhs.value_ != rhs.value_;
             }
 
             friend bool operator < ( self_type const& lhs, self_type const& rhs ) noexcept
@@ -5848,8 +5848,10 @@ namespace feng
         auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, unsigned long const row, unsigned long const col ) noexcept
         {
             Type ans{0};
-            for ( auto r = 0UL; r != row; ++r )
-                for ( auto c = 0UL; c != col; ++c )
+            //for ( auto r = 0UL; r != row; ++r )
+                //for ( auto c = 0UL; c != col; ++c )
+            for ( auto r : misc::range(row) )
+                for ( auto c : misc::range(col) )
                     ans += a[r][c] * b[r][c];
             return ans;
         };
