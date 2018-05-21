@@ -84,6 +84,7 @@ namespace feng
 
             typedef Integer_Type                    value_type;
             typedef value_type&                     reference;
+            typedef value_type*                     pointer;
             typedef const reference                 const_reference;
             typedef std::random_access_iterator_tag	iterator_category;
             typedef std::ptrdiff_t                  difference_type;
@@ -130,6 +131,11 @@ namespace feng
                 self_type ans{*this};
                 ++(*this);
                 return ans;
+            }
+
+            friend difference_type const operator - ( self_type const& lhs, self_type const& rhs ) noexcept
+            {
+                return lhs.value_ - rhs.value_;
             }
 
             friend self_type const operator + ( self_type const& lhs, difference_type const& rhs ) noexcept
