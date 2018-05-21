@@ -49,6 +49,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
      - [lu_decomposition](#lu-decomposition)
+     - [guass_jordan_elimination](#gauss-jordan-elimination)
 
 
 - [License](#license)
@@ -698,6 +699,32 @@ n.save_as_bmp( "./images/0003_make_view.bmp", "gray" );
 ```
 
 ![make view 4](./images/0003_make_view.bmp)
+
+#### gauss jordan elimination
+
+for a random matrix
+
+```cpp
+auto const& m = feng::rand<double>( 64, 128);
+m.save_as_bmp( "./images/0000_gauss_jordan_elimination.bmp", "gray" );
+```
+
+![gauss_jordan_elimination_0](./images/0000_gauss_jordan_elimination.bmp)
+
+
+```cpp
+auto const& n = feng::gauss_jordan_elimination( m ); //<- also `feng::rref(m);`, alias name from Matlab
+
+if (n)
+    (*n).save_as_bmp( "./images/0001_gauss_jordan_elimination.bmp", "gray" );
+else
+    std::cout << "Failed to execute Gauss-Jordan Elimination for matrix m.\n";
+```
+
+after applying Gauss Jordan elimination, the matrix is reduced to a form of
+
+
+![gauss_jordan_elimination_1](./images/0001_gauss_jordan_elimination.bmp)
 
 
 #### lu decomposition
