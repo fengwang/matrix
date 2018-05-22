@@ -729,7 +729,7 @@ after applying Gauss Jordan elimination, the matrix is reduced to a form of
 
 #### lu decomposition
 
-For a random matrix
+We load a Lena from harddisk file `./images/Lenna.txt` using function `load_txt(std::string const&)`:
 
 ```cpp
     // initial matrix
@@ -738,8 +738,13 @@ For a random matrix
     m.save_as_bmp( "./images/0000_lu_decomposition.bmp", "gray" );
 ```
 
+
+The loaded image lookes like below:
+
 ![lu_0](./images/0000_lu_decomposition.bmp)
 
+
+Then we scale this image to range `[0,1]` and add some uniform random noise to it (to remove singularity of the original image)
 
 ```cpp
     // adding noise
@@ -751,10 +756,13 @@ For a random matrix
     m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
 ```
 
+The noised image lookes like:
+
 ![lu_1](./images/0001_lu_decomposition.bmp)
 
 
-we can do LU decomposition simply with `lu_decomposition` function
+
+we can do LU decomposition simply with `std::optional<std::tuple<matrix, matrix>>lu_decomposition( matrix const& )` function
 
 
 ```cpp
@@ -807,8 +815,8 @@ We can multiply `L` and `U` back to see if the decomposition is correct or not.
 ```
 
 A typical use of LU Decomposition is to solve an equation in the form of `Ax=b`,
-this is done by calling `auto const& x = feng::lu_solver(A,b)`, and, again, the returned value is a Maybe monad,
-we need to check its value before using it.
+this is done by calling `auto const& x = feng::lu_solver(A,b)`, and, again, the returned value is a Maybe monad, `std::optional<matrix> lu_solver( matrix const&, matrix const& )`,
+therefore we need to check its value before using it.
 
 
 ```cpp
@@ -828,7 +836,7 @@ we need to check its value before using it.
     }
 ```
 
-And we can also calculate the mean absolute value error, the output as small as
+And we can also evaluate the solver's accuracy with the mean absolute value error; the output as small as
 
 
  ```
