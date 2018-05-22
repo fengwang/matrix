@@ -22,6 +22,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0018_conv.hpp"
 #include "./cases/0019_lu_decomposition.hpp"
 #include "./cases/0020_gauss_jordan_elimination.hpp"
+#include "./cases/0021_singular_value_decomposition.hpp"
 
 int main()
 {
@@ -109,6 +110,9 @@ int main()
 
     std::cout << "running gauss_jordan_elimination.\n";
     _0000_gauss_jordan_elimination();
+
+    std::cout << "running singular value decomposition.\n";
+    _0000_singular_value_decomposition();
 
     return 0;
 }

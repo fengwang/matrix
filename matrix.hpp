@@ -2698,10 +2698,13 @@ namespace feng
             }
         }
 
-        explicit matrix( allocator_type a, const size_type r = 0, const size_type c = 0 ) noexcept : row_{ r } , col_{ c }, dat_{ nullptr }, allocator_{ a }
+        explicit matrix( allocator_type a, const size_type r = 0, const size_type c = 0, value_type const& v = value_type{} ) noexcept : row_{ r } , col_{ c }, dat_{ nullptr }, allocator_{ a }
         {
             if ( r*c != 0 )
+            {
                 dat_ = allocator_.allocate( r*c );
+                std::fill_n( dat_, r*c, v );
+            }
         }
 
         template< typename T, typename A >
@@ -4136,6 +4139,7 @@ namespace feng
     {
         return ones< T, A >( m.row(), m.col() );
     }
+
     //template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
     template < typename T,
                typename A_   = std::allocator<  T  >>
@@ -4147,10 +4151,11 @@ namespace feng
                                   std::size_t const max_its = 1000 )
     {
         typedef T value_type;
-        const value_type zero( 0 );
-        const value_type one( 1 );
-        const std::size_t m = A.row();
-        const std::size_t n = A.col();
+        const value_type zero{ 0 };
+        const value_type one{ 1 };
+        //const std::size_t m = A.row();
+        //const std::size_t n = A.col();
+        auto const [m, n] = A.shape();
         u                   = A;
         w.resize( n, n );
         v.resize( n, n );
@@ -4172,17 +4177,11 @@ namespace feng
 
             if ( i < m )
             {
-                scale = std::accumulate( u.col_begin( i ) + i, u.col_end( i ), value_type( 0 ), []( value_type v1, value_type v2 )
-                {
-                    return v1 + std::abs( v2 );
-                } );
+                scale = std::accumulate( u.col_begin( i ) + i, u.col_end( i ), value_type( 0 ), []( value_type v1, value_type v2 ) { return v1 + std::abs( v2 ); } );
 
                 if ( scale != zero )
                 {
-                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v )
-                    {
-                        v /= scale;
-                    } );
+                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     const value_type tmp_s = std::inner_product( u.col_begin( i ) + i, u.col_end( i ), u.col_begin( i ) + i, value_type( 0 ) );
                     g                      = ( u[i][i] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     const value_type tmp_h = u[i][i] * g - tmp_s;
@@ -4191,16 +4190,10 @@ namespace feng
                     for ( std::size_t j = l - 1; j < n; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.col_begin( i ) + i, u.col_end( i ), u.col_begin( j ) + i, value_type( 0 ) );
-                        std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_ss, tmp_h]( value_type v1, value_type v2 )
-                        {
-                            return v1 + tmp_ss * v2 / tmp_h;
-                        } );
+                        std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_ss, tmp_h]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2 / tmp_h; } );
                     }
 
-                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v )
-                    {
-                        v *= scale;
-                    } );
+                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v *= scale; } );
                 }
             }
 
@@ -4211,33 +4204,21 @@ namespace feng
 
             if ( i + 1 <= m && i != n )
             {
-                scale = std::accumulate( u.row_begin( i ) + l - 1, u.row_end( i ), value_type( 0 ), []( value_type v1, value_type v2 )
-                {
-                    return v1 + std::abs( v2 );
-                } );
+                scale = std::accumulate( u.row_begin( i ) + l - 1, u.row_end( i ), value_type( 0 ), []( value_type v1, value_type v2 ) { return v1 + std::abs( v2 ); } );
 
                 if ( scale != zero )
                 {
-                    std::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
-                    {
-                        v /= scale;
-                    } );
+                    std::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     auto const tmp_s = std::inner_product( u.row_begin( i ) + l - 1, u.row_end( i ), u.row_begin( i ) + l - 1, value_type( 0 ) );
                     g                = ( u[i][l - 1] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     auto const tmp_h = u[i][l - 1] * g - tmp_s;
                     u[i][l - 1] -= g;
-                    std::transform( u.row_begin( i ) + l - 1, u.row_end( i ), arr.begin() + l - 1, [tmp_h]( value_type v )
-                    {
-                        return v / tmp_h;
-                    } );
+                    std::transform( u.row_begin( i ) + l - 1, u.row_end( i ), arr.begin() + l - 1, [tmp_h]( value_type v ) { return v / tmp_h; } );
 
                     for ( std::size_t j = l - 1; j < m; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.row_begin( j ) + l - 1, u.row_end( j ), u.row_begin( i ) + l - 1, value_type( 0 ) );
-                        std::transform( u.row_begin( j ) + l - 1, u.row_end( j ), arr.begin() + l - 1, u.row_begin( j ) + l - 1, [tmp_ss]( value_type v1, value_type v2 )
-                        {
-                            return v1 + tmp_ss * v2;
-                        } );
+                        std::transform( u.row_begin( j ) + l - 1, u.row_end( j ), arr.begin() + l - 1, u.row_begin( j ) + l - 1, [tmp_ss]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2; } );
                     }
 
                     std::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
@@ -4257,18 +4238,12 @@ namespace feng
                 if ( g != zero )
                 {
                     auto const tmp_uil = u[i][l];
-                    std::transform( u.row_begin( i ) + l, u.row_end( i ), v.col_begin( i ) + l, [g, tmp_uil]( value_type val )
-                    {
-                        return val / ( tmp_uil * g );
-                    } );
+                    std::transform( u.row_begin( i ) + l, u.row_end( i ), v.col_begin( i ) + l, [g, tmp_uil]( value_type val ) { return val / ( tmp_uil * g ); } );
 
                     for ( std::size_t j = l; j < n; j++ )
                     {
                         const auto tmp_s = std::inner_product( u.row_begin( i ) + l, u.row_end( i ), v.col_begin( j ) + l, value_type( 0 ) );
-                        std::transform( v.col_begin( j ) + l, v.col_end( j ), v.col_begin( i ) + l, v.col_begin( j ) + l, [tmp_s]( value_type v1, value_type v2 )
-                        {
-                            return v1 + v2 * tmp_s;
-                        } );
+                        std::transform( v.col_begin( j ) + l, v.col_end( j ), v.col_begin( i ) + l, v.col_begin( j ) + l, [tmp_s]( value_type v1, value_type v2 ) { return v1 + v2 * tmp_s; } );
                     }
                 }
 
@@ -4296,16 +4271,10 @@ namespace feng
                 {
                     auto const tmp_s = std::inner_product( u.col_begin( i ) + tmp_l, u.col_end( i ), u.col_begin( j ) + tmp_l, value_type( 0 ) );
                     auto const tmp_f = tmp_s / ( u[i][i] * tmp_g );
-                    std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_f]( value_type v1, value_type v2 )
-                    {
-                        return v1 + tmp_f * v2;
-                    } );
+                    std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_f]( value_type v1, value_type v2 ) { return v1 + tmp_f * v2; } );
                 }
 
-                std::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v )
-                {
-                    v /= tmp_g;
-                } );
+                std::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v ) { v /= tmp_g; } );
             }
             else
                 std::fill( u.col_begin( i ) + i, u.col_end( i ), zero );
@@ -4381,10 +4350,7 @@ namespace feng
                     if ( z < zero )
                     {
                         w[k][k] = -z;
-                        std::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v )
-                        {
-                            v = -v;
-                        } );
+                        std::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v ) { v = -v; } );
                     }
 
                     break;
@@ -4455,18 +4421,33 @@ namespace feng
 
         return 0;
     }
-    template < typename Matrix >
-    Matrix const svd_inverse( Matrix const& A )
+
+    template< typename T, typename A >
+    std::optional< std::tuple<matrix<T, A>, matrix<T, A>, matrix<T, A>> >
+    singular_value_decomposition( matrix<T,A> const& a ) noexcept
     {
-        Matrix u;
-        Matrix w;
-        Matrix v;
-        singular_value_decomposition( A, u, v, w );
-        std::for_each( v.begin(), v.end(), []( auto & val )
-        {
-            if ( std::abs( val ) > 1.0e-10 )
-                val = 1.0 / val;
-        } );
+        auto const [row, col] = a.shape();
+        auto const max_iteration = std::max( 100UL, std::max( row, col ) );
+        if ( matrix<T, A> u, w, v; singular_value_decomposition( a, u, w, v, max_iteration ) ) // fail
+            return {};
+        else // success
+            return std::forward_as_tuple( u, w, v );
+    }
+
+    template< typename T, typename A >
+    auto svd( matrix<T,A> const& a ) noexcept
+    {
+        return singular_value_decomposition( a );
+    }
+
+    template < typename T, typename A >
+    matrix<T,A> const svd_inverse( matrix<T, A> const& a )
+    {
+        matrix<T, A> u;
+        matrix<T, A> w;
+        matrix<T, A> v;
+        singular_value_decomposition( a, u, v, w );
+        std::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
         return w * v.transpose() * u.transpose();
     }
     template < typename Matrix >

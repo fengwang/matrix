@@ -50,6 +50,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [make_view](#make-view-function)
      - [lu_decomposition](#lu-decomposition)
      - [guass_jordan_elimination](#gauss-jordan-elimination)
+     - [singular_value_decomposition](#singular-value-decomposition)
 
 
 - [License](#license)
@@ -699,6 +700,139 @@ n.save_as_bmp( "./images/0003_make_view.bmp", "gray" );
 ```
 
 ![make view 4](./images/0003_make_view.bmp)
+
+#### singular value decomposition
+
+We first Load an image from hardisk and normalize it to range `[0,1]`
+
+```cpp
+// load
+feng::matrix<double> m;
+m.load_txt( "./images/Teacher.txt" );
+// normalize
+auto const mx = *std::max_element( m.begin(), m.end() );
+auto const mn = *std::min_element( m.begin(), m.end() );
+m = ( m - mn ) / ( mx - mn + 1.0e-10 );
+// take a snapshot
+m.save_as_bmp( "./images/0000_singular_value_decomposition.bmp", "gray" );
+```
+
+This image looks like:
+
+![svd_1](./images/0000_singular_value_decomposition.bmp)
+
+
+Then we add some white noise to remove possible singularity in it:
+
+
+```cpp
+// adding noise
+auto const[r, c] = m.shape();
+m += feng::rand<double>( r, c );
+// record noisy matrix
+m.save_as_bmp( "./images/0001_singular_value_decomposition.bmp", "gray" );
+```
+
+The noisy image now looks like
+
+![svd_2](./images/0001_singular_value_decomposition.bmp)
+
+
+We execute Singular Value Decomposition by calling function `std::optional<std::tuple<matrix, matrix, matrix>> singular_value_decomposition( matrix const& )`, or `svd`
+
+
+```cpp
+// execute svd
+auto const& svd = feng::singular_value_decomposition( m );
+```
+
+If the svd is successfully, we can verify the accuricy by reconstructing the noisy image by matrix multiplications
+
+
+```
+// check svd result
+if (svd) // case successful
+{
+	// extracted svd result matrices, u, v w
+	auto const& [u, v, w] = (*svd);
+	// try to reconstruct matrix using  u * v * w'
+	auto const& m_ = u * v * (w.transpose());
+	// record reconstructed matrix
+	m_.save_as_bmp( "./images/0002_singular_value_decomposition.bmp", "gray" );
+```
+
+The reconstructed image looks like:
+
+![svd_3](./images/0002_singular_value_decomposition.bmp)
+
+
+One interesting application of SVD is data compression. In the code above, we use full rank to restore the original noisy image.
+However, we can select only 1/2 or 1/4 or even less ranks to approximate the original image.
+The code below demonstrates how:
+
+```cpp
+	auto dm = std::min( r, c );
+	auto factor = 2UL;
+	while ( dm >= factor )
+	{
+		auto new_dm = dm / factor;
+
+		feng::matrix<double> const new_u{ u, std::make_pair(0UL, r), std::make_pair(0UL, new_dm) };
+		feng::matrix<double> const new_v{ v, std::make_pair(0UL, new_dm), std::make_pair(0UL, new_dm) };
+		feng::matrix<double> const new_w{ w, std::make_pair(0UL, c), std::make_pair(0UL, new_dm) };
+
+		auto const& new_m = new_u * new_v * new_w.transpose();
+
+		new_m.save_as_bmp( "./images/0003_singular_value_decomposition_"+std::to_string(new_dm)+".bmp", "gray" );
+
+		factor *= 2UL;
+	}
+}
+else
+{
+	std::cout << "Failed to execute Singular Value Decomposition for this matrix!\n";
+}
+
+```
+
+When using `256` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_256.bmp)
+
+When using `128` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_128.bmp)
+
+
+When using `64` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_64.bmp)
+
+When using `32` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_32.bmp)
+
+When using `16` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_16.bmp)
+
+When using `8` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_8.bmp)
+
+When using `4` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_4.bmp)
+
+When using `2` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_2.bmp)
+
+When using `1` ranks, the reconstructed image lookes like:
+
+![svd_4](./images/0003_singular_value_decomposition_1.bmp)
+
+
 
 #### gauss jordan elimination
 
