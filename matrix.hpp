@@ -39,6 +39,8 @@ SUPPRESS_WARNINGS
 #include <cmath>
 #include <complex>
 #include <cstring>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <fstream>
 #include <functional>
@@ -66,13 +68,16 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr unsigned long matrix_version = 20180516;
+    constexpr std::uint_least64_t matrix_version = 20180516;
 
     #ifdef PARALLEL
-    constexpr unsigned long use_parallel = 1;
+    constexpr std::uint_least64_t use_parallel = 1;
     #else
-    constexpr unsigned long use_parallel = 0;
+    constexpr std::uint_least64_t use_parallel = 0;
     #endif
+
+    template < typename Type, class Allocator>
+    struct matrix;
 
     namespace misc
     {
@@ -80,7 +85,7 @@ namespace feng
         template< typename Integer_Type >
         struct integer_iterator
         {
-            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
+            static_assert(std::is_integral_v<Integer_Type>, "Integral required");
 
             typedef Integer_Type                    value_type;
             typedef value_type&                     reference;
@@ -182,7 +187,7 @@ namespace feng
         template< typename Integer_Type >
         struct integer_range
         {
-            static_assert(std::is_integral_v<Integer_Type>, "Integral required.");
+            static_assert(std::is_integral_v<Integer_Type>, "Integral required");
             typedef Integer_Type value_type;
             value_type first_;
             value_type last_;
@@ -232,7 +237,7 @@ namespace feng
             std::vector<std::thread> threads;
             threads.reserve( total_cores-1 );
 
-            unsigned long tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
+            std::uint_least64_t tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
 
             for ( auto idx : range( total_cores-1 ) )
             {
@@ -253,7 +258,211 @@ namespace feng
             parallel( func, Integer_Type{0}, dim_last );
         }
 
-    }
+        namespace bmp_details
+        {
+            static std::vector<char> const generate_bmp_header( std::uint_least64_t const the_row, std::uint_least64_t const the_col )
+            {
+                auto const& ul_to_byte = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
+                char file[14] = { 0x42, 0x4D, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+                char info[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                std::uint_least64_t const padding_size = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
+                std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
+                std::uint_least64_t const all_size = data_size + sizeof( file ) + sizeof( info );
+                file[2]  = ul_to_byte( all_size );
+                file[3]  = ul_to_byte( all_size >> 8 );
+                file[4]  = ul_to_byte( all_size >> 16 );
+                file[5]  = ul_to_byte( all_size >> 24 );
+                info[4]  = ul_to_byte( the_col );
+                info[5]  = ul_to_byte( the_col >> 8 );
+                info[6]  = ul_to_byte( the_col >> 16 );
+                info[7]  = ul_to_byte( the_col >> 24 );
+                info[8]  = ul_to_byte( the_row );
+                info[9]  = ul_to_byte( the_row >> 8 );
+                info[10] = ul_to_byte( the_row >> 16 );
+                info[11] = ul_to_byte( the_row >> 24 );
+                info[20] = ul_to_byte( data_size );
+                info[21] = ul_to_byte( data_size >> 8 );
+                info[22] = ul_to_byte( data_size >> 16 );
+                info[23] = ul_to_byte( data_size >> 24 );
+                std::vector<char> header( 14+40, char{} );
+                std::copy( file, file+14, header.begin() );
+                std::copy( info, info+40, header.begin()+14 );
+                return header;
+            }
+
+            typedef std::function< std::array< char, 3 >( double ) > color_value_type;
+            static const std::map< std::string, color_value_type > color_maps
+            {
+                std::make_pair
+                (
+                    std::string{ "default" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
+
+                            if ( 3.0 * x < 1.0 )
+                                return std::make_tuple( type{ 0 }, type{ 0 }, type{ ch( x ) } );
+
+                            if ( 3.0 * x < 2.0 )
+                                return std::make_tuple( type{ 0 }, type{ ch( x - 1.0 / 3.0 ) }, type{ 255 } );
+                            return std::make_tuple( type{ ch( x - 2.0 / 3.0 ) }, type{ 255 }, type{ 255 } );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "parula" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto const& r = [](double v)
+                            {
+                                if (v*3.0<1.0)
+                                {
+                                    double const ratio = 1.0 - v*3.0;
+                                    return static_cast< type >( static_cast< int >(7 + 47.0*ratio) );
+                                }
+                                double const ratio = (3.0*v - 1.0) / 2.0;
+                                return static_cast< type >( static_cast< int >(7+242*ratio));
+                            };
+                            auto const& g = [](double v)
+                            {
+                                return static_cast< type >( static_cast< int >(42+210.0*v));
+                            };
+                            auto const& b = [](double v)
+                            {
+                                if (v*9.0<1.0)
+                                {
+                                    double const ratio = v*9.0;
+                                    return static_cast< type >( static_cast< int >(135+87*ratio));
+                                }
+                                double const ratio = (9.0 - 9.0*v) / 8.0;
+                                return static_cast< type >( static_cast< int >(14*208*ratio));
+                            };
+
+                            return std::make_tuple( type{r(x)}, type{g(x)}, type{b(x)} );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "hotblue" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
+
+                            if ( 3.0 * x < 1.0 )
+                                return std::make_tuple( type{ ch( 1.0 / 3.0 - x ) }, type{ 255 }, type{ 255 } );
+
+                            if ( 3.0 * x < 2.0 )
+                                return std::make_tuple( type{ 0 }, type{ ch( 2.0 / 3.0 - x ) }, type{ 255 } );
+                            return std::make_tuple( type{ 0 }, type{ 0 }, type{ ch( 1.0 - x ) } );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "jet" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
+
+                            if ( 3.0 * x < 1.0 )
+                                return std::make_tuple( type{ 0 }, type{ ch( x ) }, type{ 255 } );
+
+                            if ( 3.0 * x < 2.0 )
+                                return std::make_tuple( type{ ch( x - 1.0 / 3.0 ) }, type{ 255 }, type{ ch( 2.0 / 3.0 - x ) } );
+                            return std::make_tuple( type{ 255 }, type{ ch( 1.0 - x ) }, type{ 0 } );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "obscure" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
+                            type const b = ch( 1.0 - x );
+
+                            if ( 4.0 * x < 1 )
+                                return std::make_tuple( ch( 1.0 - 4.0 * x ), ch( 1.0 - 4.0 * x ), b );
+
+                            type const r = ch( ( x - 0.25 ) * 4.0 / 3.0 );
+
+                            if ( 2.0 * x < 1 )
+                                return std::make_tuple( r, ch( ( x - 0.25 ) * 4.0 ), b );
+
+                            return std::make_tuple( r, ch( ( 1.0 - x ) * 2.0 ), b );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "gray" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef char type;
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
+                            char val = ch( x );
+                            return std::make_tuple( val, val, val );
+                        }
+                    }
+                )
+            };
+
+        }//namespace bmp_details
+
+        template< template<class, class> class Matrix, template<class> class Allocator >
+        std::optional<std::vector<char>> encode_bmp_stream(
+                Matrix<char, Allocator<char>> const& channel_r,
+                Matrix<char, Allocator<char>> const& channel_g,
+                Matrix<char, Allocator<char>> const& channel_b
+                ) noexcept
+        {
+            auto const [r_r, r_c] = channel_r.shape();
+            auto const [g_r, g_c] = channel_g.shape();
+            auto const [b_r, b_c] = channel_b.shape();
+            // all 3 channels must be of the same size
+            if ( r_r != g_r || g_r != b_r || r_c != g_c || g_c != b_c )
+                return {std::nullopt};
+
+            auto const [the_row, the_col] = std::make_tuple( r_r, r_c );
+
+            //generate header
+            auto const& header = bmp_details::generate_bmp_header( the_row, the_col );
+
+            std::vector<char> encoding( header.size()+3*channel_r.size(), char{} );
+            std::copy( header.begin(), header.end(), encoding.begin() );
+            encoding.resize( header.size() );
+
+            //generate body
+            for ( auto r : range( the_row ) )
+                for ( auto c : range( the_col ) )
+                {
+                    encoding.push_back( channel_b[r][c] );
+                    encoding.push_back( channel_g[r][c] );
+                    encoding.push_back( channel_r[r][c] );
+                }
+            return {encoding};
+        }
+
+    }//namespace misc
 
     // for column, diagonal and anti-diagonal iteration
     template < typename Iterator_Type >
@@ -1955,15 +2164,15 @@ namespace feng
                 } };
             } } )
         };
-        auto&& make_array = []( unsigned char a, unsigned char b, unsigned char c )
+        auto&& make_array = []( char a, char b, char c )
         {
-            std::array< unsigned char, 3 > ans;
+            std::array< char, 3 > ans;
             ans[0] = a;
             ans[1] = b;
             ans[2] = c;
             return ans;
         };
-        typedef std::function< std::array< unsigned char, 3 >( double ) > color_value_type;
+        typedef std::function< std::array< char, 3 >( double ) > color_value_type;
         static const std::map< std::string, color_value_type > color_maps
         {
             std::make_pair(
@@ -1971,7 +2180,7 @@ namespace feng
                 color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -1991,7 +2200,7 @@ namespace feng
                 color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto const& r = [](double v)
                     {
                         if (v*3.0<1.0)
@@ -2026,7 +2235,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -2044,7 +2253,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -2062,7 +2271,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 256.0 ) );
@@ -2084,12 +2293,12 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef unsigned char type;
+                    typedef char type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 256.0 ) );
                     };
-                    unsigned char val = ch( x );
+                    char val = ch( x );
                     return make_array( val, val, val );
                 } } )
         };
@@ -2121,34 +2330,34 @@ namespace feng
             std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
             auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            unsigned char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            unsigned char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-            unsigned long const the_col   = zen.col();
-            unsigned long const the_row   = zen.row();
-            unsigned long const pad_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
-            unsigned long const data_size = the_col * the_row * 3 + the_row * pad_size;
-            unsigned long const all_size  = data_size + sizeof( file ) + sizeof( info );
-            auto const& ul_to_uc          = []( unsigned long val ) { return static_cast< unsigned char >( val & 0xffUL ); };
-            file[2]  = ul_to_uc( all_size );
-            file[3]  = ul_to_uc( all_size >> 8 );
-            file[4]  = ul_to_uc( all_size >> 16 );
-            file[5]  = ul_to_uc( all_size >> 24 );
-            info[4]  = ul_to_uc( the_col );
-            info[5]  = ul_to_uc( the_col >> 8 );
-            info[6]  = ul_to_uc( the_col >> 16 );
-            info[7]  = ul_to_uc( the_col >> 24 );
-            info[8]  = ul_to_uc( the_row );
-            info[9]  = ul_to_uc( the_row >> 8 );
-            info[10] = ul_to_uc( the_row >> 16 );
-            info[11] = ul_to_uc( the_row >> 24 );
-            info[20] = ul_to_uc( data_size );
-            info[21] = ul_to_uc( data_size >> 8 );
-            info[22] = ul_to_uc( data_size >> 16 );
-            info[23] = ul_to_uc( data_size >> 24 );
+            char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+            std::uint_least64_t const the_col   = zen.col();
+            std::uint_least64_t const the_row   = zen.row();
+            std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
+            std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
+            std::uint_least64_t const all_size  = data_size + sizeof( file ) + sizeof( info );
+            auto const& ul_to_byte          = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
+            file[2]  = ul_to_byte( all_size );
+            file[3]  = ul_to_byte( all_size >> 8 );
+            file[4]  = ul_to_byte( all_size >> 16 );
+            file[5]  = ul_to_byte( all_size >> 24 );
+            info[4]  = ul_to_byte( the_col );
+            info[5]  = ul_to_byte( the_col >> 8 );
+            info[6]  = ul_to_byte( the_col >> 16 );
+            info[7]  = ul_to_byte( the_col >> 24 );
+            info[8]  = ul_to_byte( the_row );
+            info[9]  = ul_to_byte( the_row >> 8 );
+            info[10] = ul_to_byte( the_row >> 16 );
+            info[11] = ul_to_byte( the_row >> 24 );
+            info[20] = ul_to_byte( data_size );
+            info[21] = ul_to_byte( data_size >> 8 );
+            info[22] = ul_to_byte( data_size >> 16 );
+            info[23] = ul_to_byte( data_size >> 24 );
             stream.write( reinterpret_cast< char* >( file ), sizeof( file ) );
             stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
-            unsigned char pad[3] = { 0, 0, 0 };
-            unsigned char pixel[3];
+            char pad[3] = { 0, 0, 0 };
+            char pixel[3];
             double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
             double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
 
@@ -2158,9 +2367,9 @@ namespace feng
                 min_val -= 1.0e-10;
             }
 
-            for ( unsigned long r = 0; r < the_row; r++ )
+            for ( std::uint_least64_t r = 0; r < the_row; r++ )
             {
-                for ( unsigned long c = 0; c < the_col; c++ )
+                for ( std::uint_least64_t c = 0; c < the_col; c++ )
                 {
                     auto const r_ = the_row - r - 1;
                     auto const c_ = c;
@@ -2171,7 +2380,7 @@ namespace feng
                     stream.write( reinterpret_cast< char* >( pixel ), 3 );
                 }
 
-                stream.write( reinterpret_cast< char* >( pad ), pad_size );
+                stream.write( reinterpret_cast< char* >( padding ), padding_size );
             }
 
             stream.close();
@@ -2184,6 +2393,7 @@ namespace feng
     };
 
 #else
+# if 0
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_bmp
     {
@@ -2208,33 +2418,33 @@ namespace feng
             std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
             auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            unsigned char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            unsigned char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+            char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
             auto const [the_row, the_col] = zen.shape();
-            unsigned long const pad_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
-            unsigned long const data_size = the_col * the_row * 3 + the_row * pad_size;
-            unsigned long const all_size  = data_size + sizeof( file ) + sizeof( info );
-            auto const& ul_to_uc          = []( unsigned long val ) { return static_cast< unsigned char >( val & 0xffUL ); };
-            file[2]  = ul_to_uc( all_size );
-            file[3]  = ul_to_uc( all_size >> 8 );
-            file[4]  = ul_to_uc( all_size >> 16 );
-            file[5]  = ul_to_uc( all_size >> 24 );
-            info[4]  = ul_to_uc( the_col );
-            info[5]  = ul_to_uc( the_col >> 8 );
-            info[6]  = ul_to_uc( the_col >> 16 );
-            info[7]  = ul_to_uc( the_col >> 24 );
-            info[8]  = ul_to_uc( the_row );
-            info[9]  = ul_to_uc( the_row >> 8 );
-            info[10] = ul_to_uc( the_row >> 16 );
-            info[11] = ul_to_uc( the_row >> 24 );
-            info[20] = ul_to_uc( data_size );
-            info[21] = ul_to_uc( data_size >> 8 );
-            info[22] = ul_to_uc( data_size >> 16 );
-            info[23] = ul_to_uc( data_size >> 24 );
+            std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
+            std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
+            std::uint_least64_t const all_size  = data_size + sizeof( file ) + sizeof( info );
+            auto const& ul_to_byte          = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
+            file[2]  = ul_to_byte( all_size );
+            file[3]  = ul_to_byte( all_size >> 8 );
+            file[4]  = ul_to_byte( all_size >> 16 );
+            file[5]  = ul_to_byte( all_size >> 24 );
+            info[4]  = ul_to_byte( the_col );
+            info[5]  = ul_to_byte( the_col >> 8 );
+            info[6]  = ul_to_byte( the_col >> 16 );
+            info[7]  = ul_to_byte( the_col >> 24 );
+            info[8]  = ul_to_byte( the_row );
+            info[9]  = ul_to_byte( the_row >> 8 );
+            info[10] = ul_to_byte( the_row >> 16 );
+            info[11] = ul_to_byte( the_row >> 24 );
+            info[20] = ul_to_byte( data_size );
+            info[21] = ul_to_byte( data_size >> 8 );
+            info[22] = ul_to_byte( data_size >> 16 );
+            info[23] = ul_to_byte( data_size >> 24 );
             stream.write( reinterpret_cast< char* >( file ), sizeof( file ) );
             stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
-            unsigned char pad[3] = { 0, 0, 0 };
-            unsigned char pixel[3];
+            char pad[3] = { 0, 0, 0 };
+            char pixel[3];
             //
             // ! matrix view does not have direct iterator
             //double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
@@ -2256,9 +2466,9 @@ namespace feng
                 min_val -= eps;
             }
 
-            for ( unsigned long r = 0; r < the_row; r++ )
+            for ( std::uint_least64_t r = 0; r < the_row; r++ )
             {
-                for ( unsigned long c = 0; c < the_col; c++ )
+                for ( std::uint_least64_t c = 0; c < the_col; c++ )
                 {
                     auto const r_ = the_row - r - 1;
                     auto const c_ = c;
@@ -2269,7 +2479,7 @@ namespace feng
                     stream.write( reinterpret_cast< char* >( pixel ), 3 );
                 }
 
-                stream.write( reinterpret_cast< char* >( pad ), pad_size );
+                stream.write( reinterpret_cast< char* >( padding ), padding_size );
             }
 
             stream.close();
@@ -2280,8 +2490,67 @@ namespace feng
             return save_as_bmp( std::string{ file_name } );
         }
     };
+#else
+
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_save_as_bmp
+    {
+        typedef Matrix zen_type;
+        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" } ) const
+        {
+            typedef Type value_type;
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
+            assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
+
+            using misc::bmp_details::color_maps;
+            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
+            auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
+
+            auto const [the_row, the_col] = zen.shape();
+            matrix<char, std::allocator<char>> channel_r( the_row, the_col );
+            matrix<char, std::allocator<char>> channel_g( the_row, the_col );
+            matrix<char, std::allocator<char>> channel_b( the_row, the_col );
+
+            auto const& [mx, mn] = std::make_tuple( *std::max_element(zen.begin(), zen.end()), *std::min_element(zen.begin(), zen.end()) );
+            for ( auto r : misc::range( the_row ) )
+                for ( auto c : misc::range( the_col ) )
+                {
+                    auto const[ r_, g_, b_ ] = selected_map( (zen[r][c]-mn)/(mx-mn+1.0e-10) );
+                    channel_r[r][c] = r_;
+                    channel_g[r][c] = g_;
+                    channel_b[r][c] = b_;
+                }
+
+            auto const& encoding = misc::encode_bmp_stream( channel_r, channel_g, channel_b );
+
+            if ( encoding )
+            {
+
+                std::string new_file_name{ file_name };
+                std::string const extension{ ".bmp" };
+                if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
+                    new_file_name += extension;
+                std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
+                if ( !stream )
+                    return false;
+
+                stream.write( (*encoding).data(), (*encoding).size() );
+                return true;
+            }
+            return false;
+        }
+
+        bool save_as_bmp( const char* const file_name ) const
+        {
+            return save_as_bmp( std::string{ file_name } );
+        }
+    }; //crtp_save_as_bmp
 
 #endif
+#endif
+
     template < typename Matrix, typename Type, typename Allocator >
     using crtp_save_as_bmp_view = crtp_save_as_bmp<Matrix, Type, Allocator>;
 
@@ -2429,11 +2698,11 @@ namespace feng
             double const mmin         = selected_transform( max_val, min_val )( min_val );
             double const divider      = mmax - mmin;
 
-            for ( unsigned long r = 0; r < zen.row(); r++ )
+            for ( std::uint_least64_t r = 0; r < zen.row(); r++ )
             {
-                for ( unsigned long c = 0; c < zen.col(); c++ )
+                for ( std::uint_least64_t c = 0; c < zen.col(); c++ )
                 {
-                    unsigned long const r_ = zen.row() - r - 1;
+                    std::uint_least64_t const r_ = zen.row() - r - 1;
                     auto rgb = selected_map( ( selected_transform( max_val, min_val )( zen[zen.row() - 1 - r_][c] ) - mmin ) / divider );
                     //auto rgb = selected_map( ( selected_transform( max_val, min_val )( zen[zen.row() - 1 - r][c] ) - mmin ) / divider );
 
@@ -2573,9 +2842,6 @@ namespace feng
             return ans;
         }
     };
-
-    template < typename Type, class Allocator>
-    struct matrix;
 
     template < typename Type, class Allocator >
     struct matrix_view : crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
@@ -2913,7 +3179,7 @@ namespace feng
     {
         matrix< T, A > ans( lhs.row(), 1 );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             ans[i][0] = std::inner_product( lhs.row_begin( i ), lhs.row_end( i ), rhs, T() );
 
         return ans;
@@ -2924,7 +3190,7 @@ namespace feng
     {
         matrix< T, A > ans( 1, rhs.col() );
 
-        for ( std::size_t i = 0; i < rhs.col(); ++i )
+        for ( std::uint_least64_t i = 0; i < rhs.col(); ++i )
             ans[0][i] = std::inner_product( lhs, lhs + rhs.row(), rhs.col_begin( i ), T() );
 
         return ans;
@@ -2936,7 +3202,7 @@ namespace feng
         assert( lhs.col() == rhs.size() );
         matrix< T, A > ans( lhs.row(), 1 );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             ans[i][0] = std::inner_product( lhs.row_begin( i ), lhs.row_end( i ), std::begin( rhs ), T() );
 
         return ans;
@@ -2948,7 +3214,7 @@ namespace feng
         assert( rhs.row() == lhs.size() );
         matrix< T, A > ans( 1, lhs.row() );
 
-        for ( std::size_t i = 0; i < rhs.col(); ++i )
+        for ( std::uint_least64_t i = 0; i < rhs.col(); ++i )
             ans[0][i] = std::inner_product( std::begin( lhs ), std::begin( lhs ) + rhs.row(), rhs.col_begin( i ), T() );
 
         return ans;
@@ -2960,7 +3226,7 @@ namespace feng
         assert( lhs.col() == rhs.size() );
         matrix< T, A > ans( lhs.row(), 1 );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             ans[i][0] = std::inner_product( lhs.row_begin( i ), lhs.row_end( i ), rhs.begin(), T() );
 
         return ans;
@@ -2972,21 +3238,21 @@ namespace feng
         assert( rhs.col() == lhs.size() );
         matrix< T, A > ans( 1, rhs.col() );
 
-        for ( std::size_t i = 0; i < rhs.col(); ++i )
+        for ( std::uint_least64_t i = 0; i < rhs.col(); ++i )
             ans[0][i] = std::inner_product( lhs.begin(), lhs.end(), rhs.col_begin( i ), T() );
 
         return ans;
     }
     template < typename T,
                typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
-                       matrix< T, A > const zeros( const std::size_t r, const std::size_t c )
+                       matrix< T, A > const zeros( const std::uint_least64_t r, const std::uint_least64_t c )
     {
         matrix< T, A > ans{ r, c, T( 0 ) };
         return ans;
     }
     template < typename T,
                typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
-                       matrix< T, A > const zeros( const std::size_t n )
+                       matrix< T, A > const zeros( const std::uint_least64_t n )
     {
         return zeros< T, A >( n, n );
     }
@@ -2996,7 +3262,7 @@ namespace feng
         return zeros< T, A >( m.row(), m.col() );
     }
     template < typename T, typename A >
-    matrix< T, A > const zeros( const matrix< T, A >&, const std::size_t r, const std::size_t c )
+    matrix< T, A > const zeros( const matrix< T, A >&, const std::uint_least64_t r, const std::uint_least64_t c )
     {
         return zeros< T, A >( r, c );
     }
@@ -3022,7 +3288,7 @@ namespace feng
     }
     namespace for_each_impl_private
     {
-        template < std::size_t Index, typename Type, typename... Types >
+        template < std::uint_least64_t Index, typename Type, typename... Types >
         struct extract_type_forward
         {
             typedef typename extract_type_forward < Index - 1, Types... >::result_type result_type;
@@ -3038,12 +3304,12 @@ namespace feng
             struct index_parameter_for_extract_type_forwrod_should_not_be_0;
             typedef index_parameter_for_extract_type_forwrod_should_not_be_0 result_type;
         };
-        template < std::size_t Index, typename... Types >
+        template < std::uint_least64_t Index, typename... Types >
         struct extract_type_backward
         {
             typedef typename extract_type_forward < sizeof...( Types ) - Index + 1, Types... >::result_type result_type;
         };
-        template < std::size_t Index, typename... Types >
+        template < std::uint_least64_t Index, typename... Types >
         struct extract_type
         {
             typedef typename extract_type_forward< Index, Types... >::result_type result_type;
@@ -3699,7 +3965,7 @@ namespace feng
     template < typename T, typename A >
     matrix< T, A > const diag( const matrix< T, A >& m, const std::ptrdiff_t offset = 0 )
     {
-        const std::size_t dim = std::min( m.row(), m.col() ) + ( offset > 0 ? offset : -offset );
+        const std::uint_least64_t dim = std::min( m.row(), m.col() ) + ( offset > 0 ? offset : -offset );
         matrix< T, A > ans{ dim, dim };
         std::copy( m.diag_begin(), m.diag_end(), ans.diag_begin( offset ) );
         return ans;
@@ -3710,7 +3976,7 @@ namespace feng
         matrix< typename std::iterator_traits< Itor >::value_type > const
         impl_diag( Itor first, Itor last, const std::ptrdiff_t offset = 0 )
         {
-            std::size_t dim = std::distance( first, last ) + ( offset > 0 ? offset : -offset );
+            std::uint_least64_t dim = std::distance( first, last ) + ( offset > 0 ? offset : -offset );
             matrix< typename std::iterator_traits< Itor >::value_type > ans{ dim, dim };
             std::copy( first, last, ans.diag_begin( offset ) );
             return ans;
@@ -3745,8 +4011,8 @@ namespace feng
     {
         struct impl_make_diag
         {
-            std::size_t pos;
-            impl_make_diag( const std::size_t pos_ = 0 )
+            std::uint_least64_t pos;
+            impl_make_diag( const std::uint_least64_t pos_ = 0 )
                 : pos( pos_ )
             {
             }
@@ -3766,7 +4032,7 @@ namespace feng
     template < typename T, typename... Tn >
     matrix< T > const make_diag( const T& v1, const Tn& ... vn )
     {
-        const std::size_t n = 1 + sizeof...( vn );
+        const std::uint_least64_t n = 1 + sizeof...( vn );
         matrix< T > ans{ n, n };
         make_diag_private::impl_make_diag()( ans, v1, vn... );
         return ans;
@@ -3809,14 +4075,14 @@ namespace feng
         };
     };
     template < typename T, typename A    = std::allocator< T > >
-    matrix< T, A > const eye( const std::size_t r, const std::size_t c )
+    matrix< T, A > const eye( const std::uint_least64_t r, const std::uint_least64_t c )
     {
         matrix< T > ans{ r, c };
         std::fill( ans.diag_begin(), ans.diag_end(), eye_private::one_maker< T >()() );
         return ans;
     }
     template < typename T, typename A    = std::allocator< T > >
-    matrix< T, A > const eye( const std::size_t n )
+    matrix< T, A > const eye( const std::uint_least64_t n )
     {
         return eye< T, A >( n, n );
     }
@@ -3826,14 +4092,14 @@ namespace feng
         return eye< T, A >( m.row(), m.col() );
     }
     template < typename T, typename A >
-    matrix< T, A > const flipdim( const matrix< T, A >& m, const std::size_t dim )
+    matrix< T, A > const flipdim( const matrix< T, A >& m, const std::uint_least64_t dim )
     {
         matrix< T, A > ans{ m };
 
         if ( 1 == dim )
         {
-            std::size_t index_upper = 0;
-            std::size_t index_lower = m.row() - 1;
+            std::uint_least64_t index_upper = 0;
+            std::uint_least64_t index_lower = m.row() - 1;
 
             while ( index_lower > index_upper )
             {
@@ -3847,8 +4113,8 @@ namespace feng
 
         if ( 2 == dim )
         {
-            std::size_t index_left  = 0;
-            std::size_t index_right = m.col() - 1;
+            std::uint_least64_t index_left  = 0;
+            std::uint_least64_t index_right = m.col() - 1;
 
             while ( index_right > index_left )
             {
@@ -3876,12 +4142,12 @@ namespace feng
     template < typename T,
 
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
-    matrix< T, A > const hilb( const std::size_t n )
+    matrix< T, A > const hilb( const std::uint_least64_t n )
     {
         matrix< T, A > ans( n, n );
 
-        for ( std::size_t i = 0; i < n; ++i )
-            for ( std::size_t j = i; j < n; ++j )
+        for ( std::uint_least64_t i = 0; i < n; ++i )
+            for ( std::uint_least64_t j = i; j < n; ++j )
             {
                 ans[i][j] = T( 1 ) / ( i + j + 1 );
                 ans[j][i] = ans[i][j];
@@ -3892,18 +4158,18 @@ namespace feng
     template < typename T,
 
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
-    matrix< T, A > const hilbert( const std::size_t n )
+    matrix< T, A > const hilbert( const std::uint_least64_t n )
     {
         return hilb< T, A >( n );
     }
     template < typename Matrix >
-    Matrix const hilb( const std::size_t n, const Matrix& )
+    Matrix const hilb( const std::uint_least64_t n, const Matrix& )
     {
         typedef typename Matrix::value_type value_type;
         Matrix ans( n, n );
 
-        for ( std::size_t i = 0; i < n; ++i )
-            for ( std::size_t j = i; j < n; ++j )
+        for ( std::uint_least64_t i = 0; i < n; ++i )
+            for ( std::uint_least64_t j = i; j < n; ++j )
             {
                 ans[i][j] = value_type( 1 ) / ( i + j + 1 );
                 ans[j][i] = ans[i][j];
@@ -3912,7 +4178,7 @@ namespace feng
         return ans;
     }
     template < typename Matrix >
-    Matrix const hilbert( const std::size_t n, const Matrix& m )
+    Matrix const hilbert( const std::uint_least64_t n, const Matrix& m )
     {
         return hilb( n, m );
     }
@@ -4036,7 +4302,7 @@ namespace feng
         if ( m.row() != m.col() )
             return false;
 
-        for ( std::size_t i = 1; i != m.row(); ++i )
+        for ( std::uint_least64_t i = 1; i != m.row(); ++i )
         {
             const matrix_type a{ m, range_type{ 0, i }, range_type{ 0, i } };
 
@@ -4067,7 +4333,7 @@ namespace feng
         if ( m.row() != m.col() )
             return false;
 
-        for ( std::size_t i = 1; i != m.row(); ++i )
+        for ( std::uint_least64_t i = 1; i != m.row(); ++i )
             if ( !std::equal( m.upper_diag_cbegin( i ), m.upper_diag_cend( i ), m.lower_diag_cbegin( i ), f ) )
                 return false;
 
@@ -4081,14 +4347,14 @@ namespace feng
             return v1 == v2;
         } );
     }
-    const matrix< std::size_t > magic( const std::size_t n )
+    const matrix< std::uint_least64_t > magic( const std::uint_least64_t n )
     {
-        matrix< std::size_t > ans( n, n );
+        matrix< std::uint_least64_t > ans( n, n );
 
         if ( n & 1 )
         {
-            for ( std::size_t i = 0; i < n; ++i )
-                for ( std::size_t j = 0; j < n; ++j )
+            for ( std::uint_least64_t i = 0; i < n; ++i )
+                for ( std::uint_least64_t j = 0; j < n; ++j )
                     ans[( ( n - 1 ) / 2 + i - j + n ) % n][( 3 * n - 1 + j - 2 * i ) % n] = i * n + j + 1;
 
             return ans;
@@ -4122,14 +4388,14 @@ namespace feng
     }
     template < typename T,
                typename A    = std::allocator<  T  >>
-    matrix< T, A > const ones( const std::size_t r, const std::size_t c )
+    matrix< T, A > const ones( const std::uint_least64_t r, const std::uint_least64_t c )
     {
         matrix< T > ans{ r, c, T( 1 ) };
         return ans;
     }
     template < typename T,
                typename A    = std::allocator<  T  >>
-    matrix< T, A > const ones( const std::size_t n )
+    matrix< T, A > const ones( const std::uint_least64_t n )
     {
         return ones< T, A >( n, n );
     }
@@ -4143,23 +4409,23 @@ namespace feng
     //template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
     template < typename T,
                typename A_   = std::allocator<  T  >>
-    std::size_t
+    std::uint_least64_t
     singular_value_decomposition( matrix<T,A_> const& A,
                                   matrix<T,A_>& u,
                                   matrix<T,A_>& w,
                                   matrix<T,A_>& v,
-                                  std::size_t const max_its = 1000 )
+                                  std::uint_least64_t const max_its = 1000 )
     {
         typedef T value_type;
         const value_type zero{ 0 };
         const value_type one{ 1 };
-        //const std::size_t m = A.row();
-        //const std::size_t n = A.col();
+        //const std::uint_least64_t m = A.row();
+        //const std::uint_least64_t n = A.col();
         auto const [m, n] = A.shape();
         u                   = A;
         w.resize( n, n );
         v.resize( n, n );
-        std::size_t i{ 0 }, l{ 0 };
+        std::uint_least64_t i{ 0 }, l{ 0 };
         value_type c{ 0 }, f{ 0 }, h{ 0 };
         std::vector< value_type > arr( n );
         value_type g     = zero;
@@ -4187,7 +4453,7 @@ namespace feng
                     const value_type tmp_h = u[i][i] * g - tmp_s;
                     u[i][i] -= g;
 
-                    for ( std::size_t j = l - 1; j < n; ++j )
+                    for ( std::uint_least64_t j = l - 1; j < n; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.col_begin( i ) + i, u.col_end( i ), u.col_begin( j ) + i, value_type( 0 ) );
                         std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_ss, tmp_h]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2 / tmp_h; } );
@@ -4215,7 +4481,7 @@ namespace feng
                     u[i][l - 1] -= g;
                     std::transform( u.row_begin( i ) + l - 1, u.row_end( i ), arr.begin() + l - 1, [tmp_h]( value_type v ) { return v / tmp_h; } );
 
-                    for ( std::size_t j = l - 1; j < m; ++j )
+                    for ( std::uint_least64_t j = l - 1; j < m; ++j )
                     {
                         const value_type tmp_ss = std::inner_product( u.row_begin( j ) + l - 1, u.row_end( j ), u.row_begin( i ) + l - 1, value_type( 0 ) );
                         std::transform( u.row_begin( j ) + l - 1, u.row_end( j ), arr.begin() + l - 1, u.row_begin( j ) + l - 1, [tmp_ss]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2; } );
@@ -4240,7 +4506,7 @@ namespace feng
                     auto const tmp_uil = u[i][l];
                     std::transform( u.row_begin( i ) + l, u.row_end( i ), v.col_begin( i ) + l, [g, tmp_uil]( value_type val ) { return val / ( tmp_uil * g ); } );
 
-                    for ( std::size_t j = l; j < n; j++ )
+                    for ( std::uint_least64_t j = l; j < n; j++ )
                     {
                         const auto tmp_s = std::inner_product( u.row_begin( i ) + l, u.row_end( i ), v.col_begin( j ) + l, value_type( 0 ) );
                         std::transform( v.col_begin( j ) + l, v.col_end( j ), v.col_begin( i ) + l, v.col_begin( j ) + l, [tmp_s]( value_type v1, value_type v2 ) { return v1 + v2 * tmp_s; } );
@@ -4267,7 +4533,7 @@ namespace feng
 
             if ( tmp_g != zero )
             {
-                for ( std::size_t j = tmp_l; j < n; j++ )
+                for ( std::uint_least64_t j = tmp_l; j < n; j++ )
                 {
                     auto const tmp_s = std::inner_product( u.col_begin( i ) + tmp_l, u.col_end( i ), u.col_begin( j ) + tmp_l, value_type( 0 ) );
                     auto const tmp_f = tmp_s / ( u[i][i] * tmp_g );
@@ -4285,12 +4551,12 @@ namespace feng
                 break;
         }
 
-        for ( std::size_t k = n - 1;; --k )
+        for ( std::uint_least64_t k = n - 1;; --k )
         {
-            for ( std::size_t its = 0; its < max_its; its++ )
+            for ( std::uint_least64_t its = 0; its < max_its; its++ )
             {
                 bool flag          = true;
-                std::size_t tmp_nm = 0;
+                std::uint_least64_t tmp_nm = 0;
 
                 for ( l = k;; l-- )
                 {
@@ -4333,7 +4599,7 @@ namespace feng
                         c       = g * h;
                         s       = -f * h;
 
-                        for ( std::size_t j = 0; j < m; ++j )
+                        for ( std::uint_least64_t j = 0; j < m; ++j )
                         {
                             value_type y = u[j][tmp_nm];
                             value_type z = u[j][i];
@@ -4369,7 +4635,7 @@ namespace feng
                 f            = ( ( x - z ) * ( x + z ) + h * ( ( y / ( f + g ) ) ) - h ) / x;
                 c = s = one;
 
-                for ( std::size_t j = l; j <= k - 1; j++ )
+                for ( std::uint_least64_t j = l; j <= k - 1; j++ )
                 {
                     g      = arr[j + 1];
                     y      = w[j + 1][j + 1];
@@ -4463,10 +4729,10 @@ namespace feng
         return pinverse( m );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::size_t r, const std::size_t c ) noexcept
+    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
     {
         matrix< T, A > ans{ r, c };
-        std::srand( static_cast< unsigned int >( static_cast< std::size_t >( std::time( nullptr ) ) + reinterpret_cast< std::size_t >( &ans ) ) );
+        std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
         auto const& generator = []() noexcept
         {
             return static_cast<T>( std::rand() ) / static_cast<T>( RAND_MAX );
@@ -4475,25 +4741,25 @@ namespace feng
         return ans;
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::size_t n )
+    matrix< T, A > const rand( const std::uint_least64_t n )
     {
         return rand< T, A >( n, n );
     }
 
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::size_t r, const std::size_t c )
+    matrix< T, A > const random( const std::uint_least64_t r, const std::uint_least64_t c )
     {
         return rand< T, A >( r, c );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::size_t n )
+    matrix< T, A > const random( const std::uint_least64_t n )
     {
         return rand< T, A >( n );
     }
 
     template < typename T, typename A >
     const matrix< T, A >
-    repmat( const matrix< T, A >& m, const std::size_t r, const std::size_t c )
+    repmat( const matrix< T, A >& m, const std::uint_least64_t r, const std::uint_least64_t c )
     {
         assert( r );
         assert( c );
@@ -4514,14 +4780,14 @@ namespace feng
                typename A = std::allocator< typename std::remove_const< typename std::remove_reference< typename std::iterator_traits< Itor1 >::value_type >::result_type >::result_type >>
     matrix< typename std::iterator_traits< Itor1 >::value_type, A > const toeplitz( Itor1 i1_, Itor1 _i1, Itor2 i2_, Itor2 _i2 )
     {
-        std::size_t r = std::distance( i1_, _i1 );
-        std::size_t c = std::distance( i2_, _i2 );
+        std::uint_least64_t r = std::distance( i1_, _i1 );
+        std::uint_least64_t c = std::distance( i2_, _i2 );
         matrix< typename std::iterator_traits< Itor1 >::value_type, A > m( r, c );
 
-        for ( std::size_t i = 0; i != r; ++i )
+        for ( std::uint_least64_t i = 0; i != r; ++i )
             std::fill( m.lower_diag_begin( i ), m.lower_diag_end( i ), *( i1_ + i ) );
 
-        for ( std::size_t i = 1; i != c; ++i )
+        for ( std::uint_least64_t i = 1; i != c; ++i )
             std::fill( m.upper_diag_begin( i ), m.upper_diag_end( i ), *( i2_ + i ) );
 
         return m;
@@ -4548,7 +4814,7 @@ namespace feng
     {
         matrix< T, A > ans{ m.row(), m.col() };
 
-        for ( std::size_t i = 0; i != m.col(); ++i )
+        for ( std::uint_least64_t i = 0; i != m.col(); ++i )
             std::copy( m.lower_diag_cbegin( i ), m.lower_diag_cend( i ), ans.lower_diag_begin( i ) );
 
         return ans;
@@ -4558,7 +4824,7 @@ namespace feng
     {
         matrix< T, A > ans{ m.row(), m.col() };
 
-        for ( std::size_t i = 0; i != m.col(); ++i )
+        for ( std::uint_least64_t i = 0; i != m.col(); ++i )
             std::copy( m.upper_diag_cbegin( i ), m.upper_diag_cend( i ), ans.upper_diag_begin( i ) );
 
         return ans;
@@ -4715,7 +4981,7 @@ namespace feng
     {
         matrix< T, A > ans( lhs.row(), lhs.col() + 1 );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             std::copy( lhs.row_begin( i ), lhs.row_end( i ), ans.row_begin( i ) );
 
         std::fill( ans.col_begin( lhs.col() ), ans.col_end( lhs.col() ), rhs );
@@ -4727,7 +4993,7 @@ namespace feng
     {
         matrix< T, A > ans( rhs.row(), rhs.col() + 1 );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             std::copy( lhs.row_begin( i ), lhs.row_end( i ), ans.row_begin( i ) + 1 );
 
         std::fill( ans.col_begin( 0 ), ans.col_end( 0 ), rhs );
@@ -4739,7 +5005,7 @@ namespace feng
     {
         matrix< T, A > ans( lhs.row() + 1, lhs.col() );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             std::copy( lhs.row_begin( i ), lhs.row_end( i ), ans.row_begin( i ) );
 
         std::fill( ans.row_begin( lhs.row() ), ans.row_end( lhs.row() ), rhs );
@@ -4751,7 +5017,7 @@ namespace feng
     {
         matrix< T, A > ans( rhs.row() + 1, rhs.col() );
 
-        for ( std::size_t i = 0; i < lhs.row(); ++i )
+        for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
             std::copy( lhs.row_begin( i ), lhs.row_end( i ), ans.row_begin( i + 1 ) );
 
         std::fill( ans.row_begin( 0 ), ans.row_end( 0 ), rhs );
@@ -4759,7 +5025,7 @@ namespace feng
     }
     template < typename T, typename A >
     const matrix< T, A >
-    operator^( const matrix< T, A >& lhs, std::size_t n )
+    operator^( const matrix< T, A >& lhs, std::uint_least64_t n )
     {
         assert( lhs.row() == lhs.col() );
         auto const r = lhs.row();
@@ -4807,7 +5073,7 @@ namespace feng
     int biconjugate_gradient_stabilized_method( const matrix< T1, A1 >& A,
             matrix< T2, A2 >& x,
             const matrix< T3, A3 >& b,
-            const std::size_t max_loops = 100,
+            const std::uint_least64_t max_loops = 100,
             const T1 eps                = 1.0e-10 )
     {
         typedef T1 value_type;
@@ -4835,7 +5101,7 @@ namespace feng
         if ( dot( r, r ) < EPS )
             return 0;
 
-        for ( std::size_t loops = 0; loops != max_loops; ++loops )
+        for ( std::uint_least64_t loops = 0; loops != max_loops; ++loops )
         {
             ap               = A * p;
             auto const alpha = dot( r, r_ ) / dot( ap, r_ );
@@ -4874,7 +5140,7 @@ namespace feng
     int bicgstab( const matrix< T1, A1 >& A,
                   matrix< T2, A2 >& x,
                   const matrix< T3, A3 >& b,
-                  const std::size_t max_loops = 100,
+                  const std::uint_least64_t max_loops = 100,
                   const T1 eps                = 1.0e-10 )
     {
         return biconjugate_gradient_stablized_method( A, x, b, max_loops, eps );
@@ -4885,23 +5151,23 @@ namespace feng
         typedef typename Matrix1::value_type value_type;
         assert( m.row() == m.col() );
         a                   = m;
-        const std::size_t n = m.row();
+        const std::uint_least64_t n = m.row();
 
-        for ( std::size_t i = 0; i < n; ++i )
-            for ( std::size_t j = i; j < n; ++j )
+        for ( std::uint_least64_t i = 0; i < n; ++i )
+            for ( std::uint_least64_t j = i; j < n; ++j )
             {
                 const value_type sum = a[i][j] - std::inner_product( a.row_begin( i ), a.row_begin( i ) + i, a.row_begin( j ), value_type( 0 ) );
                 a[j][i]              = ( i == j ) ? std::sqrt( sum ) : ( sum / a[i][i] );
             }
 
-        for ( std::size_t i = 1; i < n; ++i )
+        for ( std::uint_least64_t i = 1; i < n; ++i )
             std::fill( a.upper_diag_begin( i ), a.upper_diag_end( i ), value_type() );
     }
     template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
     int conjugate_gradient_squared( const matrix< T1, A1 >& A,
                                     matrix< T2, A2 >& x,
                                     const matrix< T3, A3 >& b,
-                                    const std::size_t max_loops = 100,
+                                    const std::uint_least64_t max_loops = 100,
                                     const T1 eps                = 1.0e-10 )
     {
         typedef matrix< T1, A1 > matrix_type;
@@ -4930,7 +5196,7 @@ namespace feng
         if ( dot( r_, r_ ) < EPS )
             return 0;
 
-        for ( std::size_t i = 0; i != max_loops; ++i )
+        for ( std::uint_least64_t i = 0; i != max_loops; ++i )
         {
             ap                     = A * p;
             value_type const alpha = dot( r, r_ ) / dot( ap, r_ );
@@ -4967,7 +5233,7 @@ namespace feng
     int cgs( const matrix< T1, A1 >& A,
              matrix< T2, A2 >& x,
              const matrix< T3, A3 >& b,
-             const std::size_t max_loops = 100,
+             const std::uint_least64_t max_loops = 100,
              const T1 eps                = 1.0e-10 )
     {
         return conjugate_gradient_squared( A, x, b, max_loops, eps );
@@ -5039,7 +5305,7 @@ namespace feng
             return std::sqrt( sum ) * max_elem;
         }
         template < typename Matrix1, typename Matrix2 >
-        void rotate( Matrix1& A, Matrix2& V, const std::size_t p, const std::size_t q )
+        void rotate( Matrix1& A, Matrix2& V, const std::uint_least64_t p, const std::uint_least64_t q )
         {
             typedef typename Matrix1::value_type value_type;
             auto const one   = value_type( 1 );
@@ -5049,7 +5315,7 @@ namespace feng
             auto const c     = one / std::hypot( t, one );
             auto const s     = t * c;
 
-            for ( std::size_t i = 0; i != n; ++i )
+            for ( std::uint_least64_t i = 0; i != n; ++i )
             {
                 auto const vip = V[i][p] * c - V[i][q] * s;
                 auto const viq = V[i][q] * c + V[i][p] * s;
@@ -5061,7 +5327,7 @@ namespace feng
                 A[q][i]        = aqi;
             }
 
-            for ( std::size_t i = 0; i != n; ++i )
+            for ( std::uint_least64_t i = 0; i != n; ++i )
             {
                 auto const aip = A[i][p] * c - A[i][q] * s;
                 auto const aiq = A[i][q] * c + A[i][p] * s;
@@ -5071,26 +5337,26 @@ namespace feng
         }
     }
     template < typename Matrix1, typename Matrix2, typename T = double >
-    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector< T >& Lambda, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector< T >& Lambda, const T eps = T( 1.0e-10 ) )
     {
         Lambda.resize( A.row() );
         return eigen_jacobi( A, V, Lambda.begin(), eps );
     }
     template < typename Matrix1, typename Matrix2, typename T = double >
-    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray< T >& Lambda, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray< T >& Lambda, const T eps = T( 1.0e-10 ) )
     {
         Lambda.resize( A.row() );
         return eigen_jacobi( A, V, Lambda.begin(), eps );
     }
     template < typename Matrix1, typename Matrix2, typename T, typename A_, typename T_ = double >
-    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, matrix< T, A_ >& Lambda, const T_ eps = T_( 1.0e-10 ) )
+    std::uint_least64_t eigen_jacobi( const Matrix1& A, Matrix2& V, matrix< T, A_ >& Lambda, const T_ eps = T_( 1.0e-10 ) )
     {
         Lambda.resize( A.row(), A.col() );
         Lambda = T( 0 );
         return eigen_jacobi( A, V, Lambda.diag_begin(), eps );
     }
     template < typename Matrix1, typename Matrix2, typename Otor, typename T = double >
-    std::size_t eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, const T eps = T( 1.0e-10 ) )
     {
         typedef typename Matrix1::value_type value_type;
         typedef typename Matrix1::size_type size_type;
@@ -5134,7 +5400,7 @@ namespace feng
         return size_type( -1 );
     }
     template < typename Matrix1, typename Matrix2, typename Otor, typename T = double >
-    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, std::size_t max_rot = 80, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, Otor o, std::uint_least64_t max_rot = 80, const T eps = T( 1.0e-10 ) )
     {
         typedef typename Matrix1::value_type value_type;
         typedef typename Matrix1::size_type size_type;
@@ -5168,19 +5434,19 @@ namespace feng
         return i * n * n;
     }
     template < typename Matrix1, typename Matrix2, typename T = double >
-    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector< T >& Lambda, std::size_t const max_rot = 80, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::vector< T >& Lambda, std::uint_least64_t const max_rot = 80, const T eps = T( 1.0e-10 ) )
     {
         Lambda.resize( A.row() );
         return cyclic_eigen_jacobi( A, V, Lambda.begin(), max_rot, eps );
     }
     template < typename Matrix1, typename Matrix2, typename T = double >
-    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray< T >& Lambda, std::size_t const max_rot = 80, const T eps = T( 1.0e-10 ) )
+    std::uint_least64_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, std::valarray< T >& Lambda, std::uint_least64_t const max_rot = 80, const T eps = T( 1.0e-10 ) )
     {
         Lambda.resize( A.row() );
         return cyclic_eigen_jacobi( A, V, Lambda.begin(), max_rot, eps );
     }
     template < typename Matrix1, typename Matrix2, typename T, typename A_, typename T_ = double >
-    std::size_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, matrix< T, A_ >& Lambda, std::size_t const max_rot = 80, const T_ eps = T_( 1.0e-10 ) )
+    std::uint_least64_t cyclic_eigen_jacobi( const Matrix1& A, Matrix2& V, matrix< T, A_ >& Lambda, std::uint_least64_t const max_rot = 80, const T_ eps = T_( 1.0e-10 ) )
     {
         Lambda.resize( A.row(), A.col() );
         Lambda = T( 0 );
@@ -5238,7 +5504,7 @@ namespace feng
     void eigen_hermitian_impl( const matrix< std::complex< T1 >, A1 >& A, matrix< std::complex< T2 >, A2 >& V, Otor o, const T eps = T( 1.0e-20 ) )
     {
         assert( A.row() == A.col() );
-        std::size_t const n = A.row();
+        std::uint_least64_t const n = A.row();
         auto const A_       = real( A );
         auto const B_       = imag( A );
         auto const AA       = ( A_ || ( -B_ ) ) && ( B_ || A_ );
@@ -5250,9 +5516,9 @@ namespace feng
         std::sort( vec.begin(), vec.end() );
         V.resize( n, n );
 
-        for ( std::size_t i = 0; i != n; ++i )
+        for ( std::uint_least64_t i = 0; i != n; ++i )
         {
-            std::size_t const offset = std::distance( LL.diag_begin(), std::find( LL.diag_begin(), LL.diag_end(), vec[i + i] ) );
+            std::uint_least64_t const offset = std::distance( LL.diag_begin(), std::find( LL.diag_begin(), LL.diag_end(), vec[i + i] ) );
             assert( offset < n + n );
             for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
             {
@@ -5362,7 +5628,7 @@ namespace feng
         typedef typename Matrix::value_type value_type;
         std::vector< value_type > m( A.row() );
 
-        for ( std::size_t i = 0; i != A.row(); ++i )
+        for ( std::uint_least64_t i = 0; i != A.row(); ++i )
             m[i] = std::accumulate( A.row_cbegin( i ), A.row_cend( i ), value_type( 0 ), []( value_type u, value_type v )
         {
             return u + std::abs( v );
@@ -5371,7 +5637,7 @@ namespace feng
     }
     template < typename Matrix >
     typename Matrix::value_type
-    norm( const Matrix& A, const std::size_t n )
+    norm( const Matrix& A, const std::uint_least64_t n )
     {
         typedef typename Matrix::value_type value_type;
 
@@ -5379,7 +5645,7 @@ namespace feng
         {
             std::vector< value_type > m( A.col() );
 
-            for ( std::size_t i = 0; i != A.col(); ++i )
+            for ( std::uint_least64_t i = 0; i != A.col(); ++i )
                 m[i] = std::accumulate( A.col_cbegin( i ), A.col_cend( i ), value_type( 0 ), []( value_type u, value_type v )
             {
                 return u + std::abs( v );
@@ -5402,7 +5668,7 @@ namespace feng
         typedef typename Matrix::value_type value_type;
         std::vector< value_type > m( A.col() );
 
-        for ( std::size_t i = 0; i != A.col(); ++i )
+        for ( std::uint_least64_t i = 0; i != A.col(); ++i )
             m[i] = std::accumulate( A.col_cbegin( i ), A.col_cend( i ), value_type( 0 ), []( value_type u, value_type v )
         {
             return u + std::abs( v );
@@ -5414,7 +5680,7 @@ namespace feng
     {
         std::vector< T > m( A.col() );
 
-        for ( std::size_t i = 0; i != A.col(); ++i )
+        for ( std::uint_least64_t i = 0; i != A.col(); ++i )
             m[i] = std::accumulate( A.col_cbegin( i ), A.col_cend( i ), T( 0 ), []( const T u, const std::complex< T >& v )
         {
             return u + std::abs( v );
@@ -5524,19 +5790,19 @@ namespace feng
             double const theta = -pi * 2.0 * k * n / static_cast< double >( N );
             return complex_type{ std::cos( theta ), std::sin( theta ) };
         };
-        unsigned long const R = X.row();
-        unsigned long const C = X.col();
+        std::uint_least64_t const R = X.row();
+        std::uint_least64_t const C = X.col();
 
-        for ( unsigned long r = 0; r != R; ++r )
-            for ( unsigned long c = 0; c != C; ++c )
+        for ( std::uint_least64_t r = 0; r != R; ++r )
+            for ( std::uint_least64_t c = 0; c != C; ++c )
             {
                 complex_type X_rc{ 0.0, 0.0 };
 
-                for ( unsigned long r_ = 0; r_ != R; ++r_ )
+                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
                 {
                     complex_type tmp{ 0.0, 0.0 };
 
-                    for ( unsigned long c_ = 0; c_ != C; ++c_ )
+                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
                         tmp += x[r][c] * make_omege( c, c_, C );
 
                     X_rc += tmp * make_omege( r, r_, R );
@@ -5551,16 +5817,16 @@ namespace feng
     auto fftshift( matrix< T > const& x )
     {
         auto X                          = fft( x );
-        unsigned long const R           = X.row();
-        unsigned long const C           = X.col();
-        unsigned long const row_starter = ( R >> 1 ) + ( R & 1 );
+        std::uint_least64_t const R           = X.row();
+        std::uint_least64_t const C           = X.col();
+        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
 
-        for ( unsigned long index = 0; row_starter + index < R; ++index )
+        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
             std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
 
-        unsigned long const col_starter = ( C >> 1 ) + ( C & 1 );
+        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
 
-        for ( unsigned long index = 0; col_starter + index < C; ++index )
+        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
             std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
 
         return X;
@@ -5654,19 +5920,19 @@ namespace feng
             double const theta = pi * 2.0 * k * n / static_cast< double >( N );
             return complex_type{ std::cos( theta ), std::sin( theta ) };
         };
-        unsigned long const R = X.row();
-        unsigned long const C = X.col();
+        std::uint_least64_t const R = X.row();
+        std::uint_least64_t const C = X.col();
 
-        for ( unsigned long r = 0; r != R; ++r )
-            for ( unsigned long c = 0; c != C; ++c )
+        for ( std::uint_least64_t r = 0; r != R; ++r )
+            for ( std::uint_least64_t c = 0; c != C; ++c )
             {
                 complex_type X_rc{ 0.0, 0.0 };
 
-                for ( unsigned long r_ = 0; r_ != R; ++r_ )
+                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
                 {
                     complex_type tmp{ 0.0, 0.0 };
 
-                    for ( unsigned long c_ = 0; c_ != C; ++c_ )
+                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
                         tmp += x[r][c] * make_omege( c, c_, C );
 
                     X_rc += tmp * make_omege( r, r_, R );
@@ -5681,16 +5947,16 @@ namespace feng
     auto ifftshift( matrix< T > const& x )
     {
         auto X                          = ifft( x );
-        unsigned long const R           = X.row();
-        unsigned long const C           = X.col();
-        unsigned long const row_starter = ( R >> 1 ) + ( R & 1 );
+        std::uint_least64_t const R           = X.row();
+        std::uint_least64_t const C           = X.col();
+        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
 
-        for ( unsigned long index = 0; row_starter + index < R; ++index )
+        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
             std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
 
-        unsigned long const col_starter = ( C >> 1 ) + ( C & 1 );
+        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
 
-        for ( unsigned long index = 0; col_starter + index < C; ++index )
+        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
             std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
 
         return X;
@@ -5702,7 +5968,7 @@ namespace feng
         typedef Type value_type;
         assert( A.row() == A.col() && "Square Matrix Requred!" );
 
-        const std::size_t n = A.row();
+        const std::uint_least64_t n = A.row();
         L.resize( n, n );
         std::fill( L.begin(), L.end(), value_type{0} );
         std::fill( L.diag_begin(), L.diag_end(), value_type( 1 ) );
@@ -5710,14 +5976,14 @@ namespace feng
         U.resize( n, n );
         std::fill( U.begin(), U.end(), value_type{0} );
 
-        for ( std::size_t j = 0; j < n; ++j )
+        for ( std::uint_least64_t j = 0; j < n; ++j )
         {
-            for ( std::size_t i = 0; i < j + 1; ++i )
+            for ( std::uint_least64_t i = 0; i < j + 1; ++i )
             {
                 U[i][j] = A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() );
             }
 
-            for ( std::size_t i = j + 1; i < n; ++i )
+            for ( std::uint_least64_t i = j + 1; i < n; ++i )
             {
                 L[i][j] = ( A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j];
 
@@ -5785,7 +6051,7 @@ namespace feng
 
         matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
-        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, unsigned long const row, unsigned long const col ) noexcept
+        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, std::uint_least64_t const row, std::uint_least64_t const col ) noexcept
         {
             Type ans{0};
             for ( auto r : misc::range(row) )
@@ -5805,7 +6071,7 @@ namespace feng
         }
         else
         {
-            auto func = [&]( unsigned long row )
+            auto func = [&]( std::uint_least64_t row )
             {
                 for ( auto col : misc::range(ans.row() ) )
                 {
