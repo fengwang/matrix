@@ -26,7 +26,7 @@ SUPPRESS_WARNINGS
 
 int main()
 {
-    std::cout << "running create.\n";
+    std::cout << "running create.\n" << std::endl;
     _0000_create();
     _0001_create();
     _0002_create();
@@ -51,67 +51,67 @@ int main()
     _0021_create();
 
 
-    std::cout << "running apply.\n";
+    std::cout << "running apply.\n" << std::endl;
     _0000_apply();
 
-    std::cout << "running access.\n";
+    std::cout << "running access.\n" << std::endl;
     _0000_access();
 
-    std::cout << "running clone.\n";
+    std::cout << "running clone.\n" << std::endl;
     _0000_clone();
 
-    std::cout << "running data.\n";
+    std::cout << "running data.\n" << std::endl;
     _0000_data();
 
-    std::cout << "running det.\n";
+    std::cout << "running det.\n" << std::endl;
     _0000_det();
 
-    std::cout << "running divide_equal.\n";
+    std::cout << "running divide_equal.\n" << std::endl;
     _0000_divide_equal();
 
-    std::cout << "running slicing.\n";
+    std::cout << "running slicing.\n" << std::endl;
     _0000_slicing();
 
-    std::cout << "running inverse.\n";
+    std::cout << "running inverse.\n" << std::endl;
     _0000_inverse();
 
-    std::cout << "running save_load.\n";
+    std::cout << "running save_load.\n" << std::endl;
     _0000_save_load();
 
-    std::cout << "running minus_equal.\n";
+    std::cout << "running minus_equal.\n" << std::endl;
     _0000_minus_equal();
 
-    std::cout << "running multiply_equal.\n";
+    std::cout << "running multiply_equal.\n" << std::endl;
     _0000_multiply_equal();
 
-    std::cout << "running plus_equal.\n";
+    std::cout << "running plus_equal.\n" << std::endl;
     _0000_plus_equal();
 
-    std::cout << "running prefix.\n";
+    std::cout << "running prefix.\n" << std::endl;
     _0000_prefix();
 
-    std::cout << "running sin.\n";
+    std::cout << "running sin.\n" << std::endl;
     _0000_sin();
 
-    std::cout << "running sinh.\n";
+    std::cout << "running sinh.\n" << std::endl;
     _0000_sinh();
 
-    std::cout << "running eye.\n";
+    std::cout << "running eye.\n" << std::endl;
     _0000_eye();
 
-    std::cout << "running make_view.\n";
+    std::cout << "running make_view.\n" << std::endl;
     _0000_make_view();
 
-    std::cout << "running conv.\n";
+    std::cout << "running conv.\n" << std::endl;
     _0000_conv();
 
-    std::cout << "running lu_decomposition.\n";
+    std::cout << "running lu_decomposition.\n" << std::endl;
     _0000_lu_decomposition();
 
-    std::cout << "running gauss_jordan_elimination.\n";
+    std::cout << "running gauss_jordan_elimination.\n" << std::endl;
     _0000_gauss_jordan_elimination();
 
-    std::cout << "running singular value decomposition.\n";
+    std::cout << "running singular value decomposition.\n" << std::endl;
     _0000_singular_value_decomposition();
 
     return 0;

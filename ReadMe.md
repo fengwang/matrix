@@ -905,8 +905,7 @@ we can do LU decomposition simply with `std::optional<std::tuple<matrix, matrix>
     if (lu)
     {
         auto const& [l, u] = lu.value();
-        //present in log scaly
-        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet", "log" );
+        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet" );
 ```
 
 the result of the LU decompositon is a Maybe monad of a tuple of two matrices, i.e., `std::optional<std::tuple<feng::matrix<Type, Allocator>, feng::matrix<Type, Allocator>>>`,
@@ -918,8 +917,7 @@ Then we can draw the lower matrix `L`
 
 
 ```cpp
-        //present in log scaly
-        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet", "log" );
+        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet" );
 ```
 
 And the upper matrix `U`

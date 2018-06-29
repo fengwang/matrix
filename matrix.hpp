@@ -260,11 +260,11 @@ namespace feng
 
         namespace bmp_details
         {
-            static std::vector<char> const generate_bmp_header( std::uint_least64_t const the_row, std::uint_least64_t const the_col )
+            static std::vector<std::uint8_t> const generate_bmp_header( std::uint_least64_t const the_row, std::uint_least64_t const the_col )
             {
-                auto const& ul_to_byte = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
-                char file[14] = { 0x42, 0x4D, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-                char info[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                auto const& ul_to_byte = []( std::uint_least64_t val ) { return static_cast< std::uint8_t >( val & 0xffUL ); };
+                std::uint8_t file[14] = { 0x42, 0x4D, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+                std::uint8_t info[40] = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                 std::uint_least64_t const padding_size = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
                 std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
                 std::uint_least64_t const all_size = data_size + sizeof( file ) + sizeof( info );
@@ -284,13 +284,13 @@ namespace feng
                 info[21] = ul_to_byte( data_size >> 8 );
                 info[22] = ul_to_byte( data_size >> 16 );
                 info[23] = ul_to_byte( data_size >> 24 );
-                std::vector<char> header( 14+40, char{} );
+                std::vector<std::uint8_t> header( 14+40, std::uint8_t{} );
                 std::copy( file, file+14, header.begin() );
                 std::copy( info, info+40, header.begin()+14 );
                 return header;
             }
 
-            typedef std::function< std::array< char, 3 >( double ) > color_value_type;
+            typedef std::function< std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>( double ) > color_value_type;
             static const std::map< std::string, color_value_type > color_maps
             {
                 std::make_pair
@@ -300,7 +300,7 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
 
                             if ( 3.0 * x < 1.0 )
@@ -319,7 +319,7 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto const& r = [](double v)
                             {
                                 if (v*3.0<1.0)
@@ -356,7 +356,7 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
 
                             if ( 3.0 * x < 1.0 )
@@ -375,7 +375,7 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
 
                             if ( 3.0 * x < 1.0 )
@@ -394,7 +394,7 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
                             type const b = ch( 1.0 - x );
 
@@ -417,9 +417,9 @@ namespace feng
                     {
                         []( double x )
                         {
-                            typedef char type;
+                            typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
-                            char val = ch( x );
+                            std::uint8_t val = ch( x );
                             return std::make_tuple( val, val, val );
                         }
                     }
@@ -429,10 +429,10 @@ namespace feng
         }//namespace bmp_details
 
         template< template<class, class> class Matrix, template<class> class Allocator >
-        std::optional<std::vector<char>> encode_bmp_stream(
-                Matrix<char, Allocator<char>> const& channel_r,
-                Matrix<char, Allocator<char>> const& channel_g,
-                Matrix<char, Allocator<char>> const& channel_b
+        std::optional<std::vector<std::uint8_t>> encode_bmp_stream(
+                Matrix<std::uint8_t, Allocator<std::uint8_t>> const& channel_r,
+                Matrix<std::uint8_t, Allocator<std::uint8_t>> const& channel_g,
+                Matrix<std::uint8_t, Allocator<std::uint8_t>> const& channel_b
                 ) noexcept
         {
             auto const [r_r, r_c] = channel_r.shape();
@@ -447,7 +447,7 @@ namespace feng
             //generate header
             auto const& header = bmp_details::generate_bmp_header( the_row, the_col );
 
-            std::vector<char> encoding( header.size()+3*channel_r.size(), char{} );
+            std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size(), std::uint8_t{} );
             std::copy( header.begin(), header.end(), encoding.begin() );
             encoding.resize( header.size() );
 
@@ -1112,6 +1112,7 @@ namespace feng
             return zen.dat_;
         }
     };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_det
     {
@@ -1405,6 +1406,7 @@ namespace feng
             return const_reverse_iterator( begin() );
         }
     };
+
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_divide_equal_operator
     {
@@ -1562,16 +1564,16 @@ namespace feng
                 return false;
 
             size_type r;
-            std::copy( buffer.begin(), buffer.begin() + sizeof( r ), reinterpret_cast< char* >( std::addressof( r ) ) );
+            std::copy( buffer.begin(), buffer.begin() + sizeof( r ), reinterpret_cast< std::int8_t* >( std::addressof( r ) ) );
             size_type c;
-            std::copy( buffer.begin() + sizeof( r ), buffer.begin() + sizeof( r ) + sizeof( c ), reinterpret_cast< char* >( std::addressof( c ) ) );
+            std::copy( buffer.begin() + sizeof( r ), buffer.begin() + sizeof( r ) + sizeof( c ), reinterpret_cast< std::int8_t* >( std::addressof( c ) ) );
             zen.resize( r, c );
             assert( buffer.size() == sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() && "matrix::load_binary -- data does not match, maybe damaged" );
 
             if ( buffer.size() != sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() )
                 return false;
 
-            std::copy( buffer.begin() + sizeof( r ) + sizeof( c ), buffer.end(), reinterpret_cast< char* >( zen.data() ) );
+            std::copy( buffer.begin() + sizeof( r ) + sizeof( c ), buffer.end(), reinterpret_cast< std::int8_t* >( zen.data() ) );
             return true;
         }
     };
@@ -2016,7 +2018,7 @@ namespace feng
         {
             return save_as_txt( file_name.c_str() );
         }
-        bool save_as_txt( const char* const file_name ) const noexcept
+        bool save_as_txt( char const * const file_name ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             std::ofstream ofs( file_name );
@@ -2164,15 +2166,15 @@ namespace feng
                 } };
             } } )
         };
-        auto&& make_array = []( char a, char b, char c )
+        auto&& make_array = []( std::uint8_t a, std::uint8_t b, std::uint8_t c )
         {
-            std::array< char, 3 > ans;
+            std::array< std::int8_t, 3 > ans;
             ans[0] = a;
             ans[1] = b;
             ans[2] = c;
             return ans;
         };
-        typedef std::function< std::array< char, 3 >( double ) > color_value_type;
+        typedef std::function< std::array< std::int8_t, 3 >( double ) > color_value_type;
         static const std::map< std::string, color_value_type > color_maps
         {
             std::make_pair(
@@ -2180,7 +2182,7 @@ namespace feng
                 color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -2200,7 +2202,7 @@ namespace feng
                 color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto const& r = [](double v)
                     {
                         if (v*3.0<1.0)
@@ -2235,7 +2237,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -2253,7 +2255,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 766.0 ) );
@@ -2271,7 +2273,7 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 256.0 ) );
@@ -2293,12 +2295,12 @@ namespace feng
             color_value_type{
                 []( double x )
                 {
-                    typedef char type;
+                    typedef std::uint8_t type;
                     auto&& ch = []( double x )
                     {
                         return static_cast< type >( static_cast< int >( x * 256.0 ) );
                     };
-                    char val = ch( x );
+                    std::uint8_t val = ch( x );
                     return make_array( val, val, val );
                 } } )
         };
@@ -2330,8 +2332,8 @@ namespace feng
             std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
             auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+            std::uint8_t file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            std::uint8_t info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
             std::uint_least64_t const the_col   = zen.col();
             std::uint_least64_t const the_row   = zen.row();
             std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
@@ -2354,10 +2356,10 @@ namespace feng
             info[21] = ul_to_byte( data_size >> 8 );
             info[22] = ul_to_byte( data_size >> 16 );
             info[23] = ul_to_byte( data_size >> 24 );
-            stream.write( reinterpret_cast< char* >( file ), sizeof( file ) );
-            stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
-            char pad[3] = { 0, 0, 0 };
-            char pixel[3];
+            stream.write( reinterpret_cast< std::int8_t* >( file ), sizeof( file ) );
+            stream.write( reinterpret_cast< std::int8_t* >( info ), sizeof( info ) );
+            std::uint8_t pad[3] = { 0, 0, 0 };
+            std::uint8_t pixel[3];
             double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
             double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
 
@@ -2377,16 +2379,16 @@ namespace feng
                     pixel[2]        = rgb[0];
                     pixel[1]        = rgb[1];
                     pixel[0]        = rgb[2];
-                    stream.write( reinterpret_cast< char* >( pixel ), 3 );
+                    stream.write( reinterpret_cast< std::int8_t* >( pixel ), 3 );
                 }
 
-                stream.write( reinterpret_cast< char* >( padding ), padding_size );
+                stream.write( reinterpret_cast< std::int8_t* >( padding ), padding_size );
             }
 
             stream.close();
             return true;
         }
-        bool save_as_bmp( const char* const file_name ) const
+        bool save_as_bmp( const std::int8_t* const file_name ) const
         {
             return save_as_bmp( std::string{ file_name } );
         }
@@ -2418,8 +2420,8 @@ namespace feng
             std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
             auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            char file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            char info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+            std::uint8_t file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
+            std::uint8_t info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
             auto const [the_row, the_col] = zen.shape();
             std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
             std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
@@ -2441,10 +2443,10 @@ namespace feng
             info[21] = ul_to_byte( data_size >> 8 );
             info[22] = ul_to_byte( data_size >> 16 );
             info[23] = ul_to_byte( data_size >> 24 );
-            stream.write( reinterpret_cast< char* >( file ), sizeof( file ) );
-            stream.write( reinterpret_cast< char* >( info ), sizeof( info ) );
-            char pad[3] = { 0, 0, 0 };
-            char pixel[3];
+            stream.write( reinterpret_cast< std::int8_t* >( file ), sizeof( file ) );
+            stream.write( reinterpret_cast< std::int8_t* >( info ), sizeof( info ) );
+            std::uint8_t pad[3] = { 0, 0, 0 };
+            std::uint8_t pixel[3];
             //
             // ! matrix view does not have direct iterator
             //double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
@@ -2476,16 +2478,16 @@ namespace feng
                     pixel[2]        = rgb[0];
                     pixel[1]        = rgb[1];
                     pixel[0]        = rgb[2];
-                    stream.write( reinterpret_cast< char* >( pixel ), 3 );
+                    stream.write( reinterpret_cast< std::int8_t* >( pixel ), 3 );
                 }
 
-                stream.write( reinterpret_cast< char* >( padding ), padding_size );
+                stream.write( reinterpret_cast< std::int8_t* >( padding ), padding_size );
             }
 
             stream.close();
             return true;
         }
-        bool save_as_bmp( const char* const file_name ) const
+        bool save_as_bmp( const std::int8_t* const file_name ) const
         {
             return save_as_bmp( std::string{ file_name } );
         }
@@ -2499,7 +2501,6 @@ namespace feng
         typedef Matrix zen_type;
         bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" } ) const
         {
-            typedef Type value_type;
             zen_type const& zen = static_cast< zen_type const& >( *this );
             assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
             assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
@@ -2509,15 +2510,16 @@ namespace feng
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
 
             auto const [the_row, the_col] = zen.shape();
-            matrix<char, std::allocator<char>> channel_r( the_row, the_col );
-            matrix<char, std::allocator<char>> channel_g( the_row, the_col );
-            matrix<char, std::allocator<char>> channel_b( the_row, the_col );
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_r( the_row, the_col );
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_g( the_row, the_col );
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_b( the_row, the_col );
 
-            auto const& [mx, mn] = std::make_tuple( *std::max_element(zen.begin(), zen.end()), *std::min_element(zen.begin(), zen.end()) );
+            auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
+
             for ( auto r : misc::range( the_row ) )
                 for ( auto c : misc::range( the_col ) )
                 {
-                    auto const[ r_, g_, b_ ] = selected_map( (zen[r][c]-mn)/(mx-mn+1.0e-10) );
+                    auto const[ r_, g_, b_ ] = selected_map( (zen[the_row-r-1][c]-mn)/(mx-mn+1.0e-10) );
                     channel_r[r][c] = r_;
                     channel_g[r][c] = g_;
                     channel_b[r][c] = b_;
@@ -2536,13 +2538,13 @@ namespace feng
                 if ( !stream )
                     return false;
 
-                stream.write( (*encoding).data(), (*encoding).size() );
+                stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
                 return true;
             }
             return false;
         }
 
-        bool save_as_bmp( const char* const file_name ) const
+        bool save_as_bmp( char const* const file_name ) const
         {
             return save_as_bmp( std::string{ file_name } );
         }
@@ -2721,7 +2723,7 @@ namespace feng
             stream.close();
             return true;
         }
-        bool save_as_pgm( const char* const file_name ) const
+        bool save_as_pgm( char const* const file_name ) const
         {
             return save_as_pgm( std::string{ file_name } );
         }
@@ -2843,10 +2845,46 @@ namespace feng
         }
     };
 
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_max_min
+    {
+        typedef Type value_type;
+        typedef Matrix zen_type;
+
+        value_type max() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            value_type max_val = std::numeric_limits<value_type>::min();
+            auto const [the_row, the_col] = zen.shape();
+            for ( auto r : misc::range(the_row) )
+                for ( auto c : misc::range(the_col) )
+                    max_val = zen[r][c] > max_val ? zen[r][c] : max_val;
+
+            return max_val;
+        }
+
+        value_type min() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            value_type min_val = std::numeric_limits<value_type>::max();
+            auto const [the_row, the_col] = zen.shape();
+            for ( auto r : misc::range(the_row) )
+                for ( auto c : misc::range(the_col) )
+                    min_val = zen[r][c] < min_val ? zen[r][c] : min_val;
+
+            return min_val;
+        }
+    };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    using crtp_max_min_view = crtp_max_min<Matrix, Type, Allocator>;
+
     template < typename Type, class Allocator >
-    struct matrix_view : crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
+    struct matrix_view :
+        crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_max_min_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
@@ -2879,6 +2917,7 @@ namespace feng
         , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_max_min< matrix< Type, Allocator >, Type, Allocator >
         , crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_multiply_equal_operator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_plus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
@@ -4693,7 +4732,7 @@ namespace feng
     singular_value_decomposition( matrix<T,A> const& a ) noexcept
     {
         auto const [row, col] = a.shape();
-        auto const max_iteration = std::max( 100UL, std::max( row, col ) );
+        auto const max_iteration = std::max( std::uint_least64_t{100}, std::max( row, col ) );
         if ( matrix<T, A> u, w, v; singular_value_decomposition( a, u, w, v, max_iteration ) ) // fail
             return {};
         else // success
@@ -6051,7 +6090,8 @@ namespace feng
 
         matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
-        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, std::uint_least64_t const row, std::uint_least64_t const col ) noexcept
+        //auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, std::uint_least64_t const row, std::uint_least64_t const col ) noexcept
+        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, auto row, auto const col ) noexcept
         {
             Type ans{0};
             for ( auto r : misc::range(row) )
