@@ -4427,7 +4427,7 @@ namespace feng
     singular_value_decomposition( matrix<T,A> const& a ) noexcept
     {
         auto const [row, col] = a.shape();
-        auto const max_iteration = std::max( 100UL, std::max( row, col ) );
+        auto const max_iteration = std::max( 100ULL, std::max( row, col ) );
         if ( matrix<T, A> u, w, v; singular_value_decomposition( a, u, w, v, max_iteration ) ) // fail
             return {};
         else // success

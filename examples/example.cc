@@ -113,6 +113,7 @@ int main()
 
     std::cout << "running singular value decomposition.\n";
     _0000_singular_value_decomposition();
+    _0001_singular_value_decomposition();
 
     return 0;
 }
