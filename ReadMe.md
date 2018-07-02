@@ -35,6 +35,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [det -- matrix determinant](#det----matrix-determinant)
      - [operator `/=`](#operator-divide-equal)
      - [inverse](#matrix-inverse)
+     - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
      - [save/load](#save-load)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
@@ -487,6 +488,75 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 
 ----------------------------------------
 
+#### save matrix to images with colormap
+
+Here we demonstrate how to save matrix to images with specified colormap.
+There are 5 builtin colormaps:
++ parula
++ hotblue
++ jet
++ obscure
++ gray
+
+First we load the matrix from a '.txt' file
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+```
+
+Then we can save this matrix to a '.bmp' file with `default` colormap:
+
+
+``` cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_default.bmp" );
+```
+
+The `default` image looks like:
+
+![colormap-default](./images/0000_save_with_colormap_default.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_parula.bmp", "parula" );
+```
+
+The `parula` image looks like:
+
+![colormap-parula](./images/0000_save_with_colormap_parula.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_hotblue.bmp", "hotblue" );
+```
+
+The `hotblue` image looks like:
+
+![colormap-hotblue](./images/0000_save_with_colormap_hotblue.bmp)
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_jet.bmp", "jet" );
+```
+
+The `jet` image looks like:
+
+![colormap-jet](./images/0000_save_with_colormap_jet.bmp)
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_obscure.bmp", "obscure" );
+```
+
+The `obscure` image looks like:
+
+![colormap-obscure](./images/0000_save_with_colormap_obscure.bmp)
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
+```
+
+The `gray` image looks like:
+
+![colormap-gray](./images/0000_save_with_colormap_gray.bmp)
 
 #### save load
 ```cpp
