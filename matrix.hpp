@@ -2510,9 +2510,9 @@ namespace feng
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
 
             auto const [the_row, the_col] = zen.shape();
-            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_r( the_row, the_col );
-            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_g( the_row, the_col );
-            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_b( the_row, the_col );
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_r{ the_row, the_col };
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_g{ the_row, the_col };
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_b{ the_row, the_col };
 
             auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
 
@@ -2529,7 +2529,6 @@ namespace feng
 
             if ( encoding )
             {
-
                 std::string new_file_name{ file_name };
                 std::string const extension{ ".bmp" };
                 if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )

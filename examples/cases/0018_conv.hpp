@@ -10,5 +10,6 @@ void _0000_conv()
     auto const& edge = feng::conv( m, filter );
     edge.save_as_bmp( "./images/0001_conv.bmp", "gray" );
     edge.save_as_txt( "./images/0001_conv.txt" );
+    edge.save_as_pgm( "./images/0001_conv.pgm" );
 }
 
