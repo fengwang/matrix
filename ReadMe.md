@@ -492,6 +492,7 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 
 Here we demonstrate how to save matrix to images with specified colormap.
 There are 5 builtin colormaps:
+
 + parula
 + hotblue
 + jet
