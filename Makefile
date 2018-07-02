@@ -17,7 +17,7 @@ test: tests/test.cc ./matrix.hpp
 
 example: examples/example.cc ./matrix.hpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJECTS_DIR)/example.o examples/example.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/example $(OBJECTS_DIR)/example.o
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_example $(OBJECTS_DIR)/example.o
 
 .PHONY: clean clean_obj clean_test clean_example
 clean: clean_obj clean_test clean_example
@@ -26,5 +26,5 @@ clean_obj:
 clean_test:
 	rm ./test
 clean_example:
-	rm ./example
+	rm ./test_example
 
