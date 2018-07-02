@@ -217,6 +217,13 @@ namespace feng
             return { Integer_Type{0}, last };
         }
 
+        template<typename Integer_Type, typename Function>
+        void repeat( Function function, Integer_Type n )
+        {
+            while ( n-- )
+                function();
+        }
+
         template< typename Function, typename Integer_Type >
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
@@ -443,22 +450,30 @@ namespace feng
                 return {std::nullopt};
 
             auto const [the_row, the_col] = std::make_tuple( r_r, r_c );
+            std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
 
             //generate header
             auto const& header = bmp_details::generate_bmp_header( the_row, the_col );
 
-            std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size(), std::uint8_t{} );
+            // pre-allocate all memory for bmp mapping
+            std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size()+the_row*padding_size, std::uint8_t{} );
             std::copy( header.begin(), header.end(), encoding.begin() );
             encoding.resize( header.size() );
 
             //generate body
             for ( auto r : range( the_row ) )
+            {
                 for ( auto c : range( the_col ) )
                 {
                     encoding.push_back( channel_b[r][c] );
                     encoding.push_back( channel_g[r][c] );
                     encoding.push_back( channel_r[r][c] );
                 }
+                //for ( auto idx : range( padding_size ) )
+                //    encoding.push_back( std::uint8_t{} );
+                repeat( [&encoding](){ encoding.push_back( std::uint8_t{} ); }, padding_size );
+
+            }
             return {encoding};
         }
 
@@ -2071,429 +2086,6 @@ namespace feng
             return true;
         }
     };
-    namespace crtp_save_as_bmp_private
-    {
-        typedef std::function< double( double ) > converter_type;
-        typedef std::function< converter_type( double, double ) > transform_value_type;
-        static const std::map< std::string, transform_value_type > transforms
-        {
-            std::make_pair( std::string{ "default" }, transform_value_type{
-                []( double mx, double mn )
-                {
-                    return converter_type
-                    {
-                        [ = ]( double v )
-                        {
-                            return ( v - mn ) / ( mx - mn ) + 1.0e-10;
-                        }
-                    };
-                } } ),
-            std::make_pair( std::string{ "log" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log1" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 10.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "logpi" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 3.14159265358979323846 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "logx" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 1.64872127070012814685 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log_1" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) / 10.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log2" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 100.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log_2" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) / 100.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log3" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 1000.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log_3" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) / 1000.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log4" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) * 10000.0 + 1.0e-10 );
-                } };
-            } } ),
-            std::make_pair( std::string{ "log_4" }, transform_value_type{ []( double mx, double mn )
-            {
-                return converter_type{ [ = ]( double v )
-                {
-                    return std::log( 1.0 + ( v - mn ) / ( mx - mn ) / 10000.0 + 1.0e-10 );
-                } };
-            } } )
-        };
-        auto&& make_array = []( std::uint8_t a, std::uint8_t b, std::uint8_t c )
-        {
-            std::array< std::int8_t, 3 > ans;
-            ans[0] = a;
-            ans[1] = b;
-            ans[2] = c;
-            return ans;
-        };
-        typedef std::function< std::array< std::int8_t, 3 >( double ) > color_value_type;
-        static const std::map< std::string, color_value_type > color_maps
-        {
-            std::make_pair(
-                std::string{ "default" },
-                color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto&& ch = []( double x )
-                    {
-                        return static_cast< type >( static_cast< int >( x * 766.0 ) );
-                    };
-
-                    if ( 3.0 * x < 1.0 )
-                        return make_array( type{ 0 }, type{ 0 }, type{ ch( x ) } );
-
-                    if ( 3.0 * x < 2.0 )
-                        return make_array( type{ 0 }, type{ ch( x - 1.0 / 3.0 ) }, type{ 255 } );
-                    return make_array( type{ ch( x - 2.0 / 3.0 ) }, type{ 255 }, type{ 255 } );
-                }
-                            }
-                        ),
-            std::make_pair(
-                std::string{ "parula" },
-                color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto const& r = [](double v)
-                    {
-                        if (v*3.0<1.0)
-                        {
-                            double const ratio = 1.0 - v*3.0;
-                            return static_cast< type >( static_cast< int >(7 + 47.0*ratio) );
-                        }
-                        double const ratio = (3.0*v - 1.0) / 2.0;
-                        return static_cast< type >( static_cast< int >(7+242*ratio));
-                    };
-                    auto const& g = [](double v)
-                    {
-                        return static_cast< type >( static_cast< int >(42+210.0*v));
-                    };
-                    auto const& b = [](double v)
-                    {
-                        if (v*9.0<1.0)
-                        {
-                            double const ratio = v*9.0;
-                            return static_cast< type >( static_cast< int >(135+87*ratio));
-                        }
-                        double const ratio = (9.0 - 9.0*v) / 8.0;
-                        return static_cast< type >( static_cast< int >(14*208*ratio));
-                    };
-
-                    return make_array( type{r(x)}, type{g(x)}, type{b(x)} );
-                }
-                            }
-                        ),
-            std::make_pair(
-                std::string{ "hotblue" },
-            color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto&& ch = []( double x )
-                    {
-                        return static_cast< type >( static_cast< int >( x * 766.0 ) );
-                    };
-
-                    if ( 3.0 * x < 1.0 )
-                        return make_array( type{ ch( 1.0 / 3.0 - x ) }, type{ 255 }, type{ 255 } );
-
-                    if ( 3.0 * x < 2.0 )
-                        return make_array( type{ 0 }, type{ ch( 2.0 / 3.0 - x ) }, type{ 255 } );
-                    return make_array( type{ 0 }, type{ 0 }, type{ ch( 1.0 - x ) } );
-                } } ),
-            std::make_pair(
-                std::string{ "jet" },
-            color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto&& ch = []( double x )
-                    {
-                        return static_cast< type >( static_cast< int >( x * 766.0 ) );
-                    };
-
-                    if ( 3.0 * x < 1.0 )
-                        return make_array( type{ 0 }, type{ ch( x ) }, type{ 255 } );
-
-                    if ( 3.0 * x < 2.0 )
-                        return make_array( type{ ch( x - 1.0 / 3.0 ) }, type{ 255 }, type{ ch( 2.0 / 3.0 - x ) } );
-                    return make_array( type{ 255 }, type{ ch( 1.0 - x ) }, type{ 0 } );
-                } } ),
-            std::make_pair(
-                std::string{ "obscure" },
-            color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto&& ch = []( double x )
-                    {
-                        return static_cast< type >( static_cast< int >( x * 256.0 ) );
-                    };
-                    type const b = ch( 1.0 - x );
-
-                    if ( 4.0 * x < 1 )
-                        return make_array( ch( 1.0 - 4.0 * x ), ch( 1.0 - 4.0 * x ), b );
-
-                    type const r = ch( ( x - 0.25 ) * 4.0 / 3.0 );
-
-                    if ( 2.0 * x < 1 )
-                        return make_array( r, ch( ( x - 0.25 ) * 4.0 ), b );
-
-                    return make_array( r, ch( ( 1.0 - x ) * 2.0 ), b );
-                } } ),
-            std::make_pair(
-                std::string{ "gray" },
-            color_value_type{
-                []( double x )
-                {
-                    typedef std::uint8_t type;
-                    auto&& ch = []( double x )
-                    {
-                        return static_cast< type >( static_cast< int >( x * 256.0 ) );
-                    };
-                    std::uint8_t val = ch( x );
-                    return make_array( val, val, val );
-                } } )
-        };
-    }
-#if 0
-    template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_save_as_bmp
-    {
-        typedef Matrix zen_type;
-        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" }, std::string const& transform = std::string{ "default" } ) const
-        {
-            zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
-            assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
-            std::string new_file_name{ file_name };
-            std::string const extension{ ".bmp" };
-
-            if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
-                new_file_name += extension;
-            std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
-
-            if ( !stream )
-            {
-                return false;
-            }
-
-            using namespace crtp_save_as_bmp_private;
-            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
-            std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
-            auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
-            auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            std::uint8_t file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            std::uint8_t info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-            std::uint_least64_t const the_col   = zen.col();
-            std::uint_least64_t const the_row   = zen.row();
-            std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
-            std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
-            std::uint_least64_t const all_size  = data_size + sizeof( file ) + sizeof( info );
-            auto const& ul_to_byte          = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
-            file[2]  = ul_to_byte( all_size );
-            file[3]  = ul_to_byte( all_size >> 8 );
-            file[4]  = ul_to_byte( all_size >> 16 );
-            file[5]  = ul_to_byte( all_size >> 24 );
-            info[4]  = ul_to_byte( the_col );
-            info[5]  = ul_to_byte( the_col >> 8 );
-            info[6]  = ul_to_byte( the_col >> 16 );
-            info[7]  = ul_to_byte( the_col >> 24 );
-            info[8]  = ul_to_byte( the_row );
-            info[9]  = ul_to_byte( the_row >> 8 );
-            info[10] = ul_to_byte( the_row >> 16 );
-            info[11] = ul_to_byte( the_row >> 24 );
-            info[20] = ul_to_byte( data_size );
-            info[21] = ul_to_byte( data_size >> 8 );
-            info[22] = ul_to_byte( data_size >> 16 );
-            info[23] = ul_to_byte( data_size >> 24 );
-            stream.write( reinterpret_cast< std::int8_t* >( file ), sizeof( file ) );
-            stream.write( reinterpret_cast< std::int8_t* >( info ), sizeof( info ) );
-            std::uint8_t pad[3] = { 0, 0, 0 };
-            std::uint8_t pixel[3];
-            double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
-            double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
-
-            if ( max_val - min_val < 1.0e-10 )
-            {
-                max_val += 1.0e-10;
-                min_val -= 1.0e-10;
-            }
-
-            for ( std::uint_least64_t r = 0; r < the_row; r++ )
-            {
-                for ( std::uint_least64_t c = 0; c < the_col; c++ )
-                {
-                    auto const r_ = the_row - r - 1;
-                    auto const c_ = c;
-                    auto const& rgb = selected_map( selected_transform( max_val, min_val )( zen[r_][c_] ) );
-                    pixel[2]        = rgb[0];
-                    pixel[1]        = rgb[1];
-                    pixel[0]        = rgb[2];
-                    stream.write( reinterpret_cast< std::int8_t* >( pixel ), 3 );
-                }
-
-                stream.write( reinterpret_cast< std::int8_t* >( padding ), padding_size );
-            }
-
-            stream.close();
-            return true;
-        }
-        bool save_as_bmp( const std::int8_t* const file_name ) const
-        {
-            return save_as_bmp( std::string{ file_name } );
-        }
-    };
-
-#else
-# if 0
-    template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_save_as_bmp
-    {
-        typedef Matrix zen_type;
-        bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" }, std::string const& transform = std::string{ "default" } ) const
-        {
-            zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
-            assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
-
-            // open output bmp file
-            std::string new_file_name{ file_name };
-            std::string const extension{ ".bmp" };
-            if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
-                new_file_name += extension;
-            std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
-            if ( !stream ) return false;
-
-            // bmp file header
-            using namespace crtp_save_as_bmp_private;
-            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
-            std::string const& transform_name = ( transforms.find( transform ) == transforms.end() ) ? std::string{ "default" } : transform;
-            auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
-            auto&& selected_transform         = ( *( transforms.find( transform_name ) ) ).second;
-            std::uint8_t file[14]            = { 'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
-            std::uint8_t info[40]            = { 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x13, 0x0B, 0, 0, 0x13, 0x0B, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-            auto const [the_row, the_col] = zen.shape();
-            std::uint_least64_t const padding_size  = ( 4 - ( ( the_col * 3 ) & 0x3 ) ) & 0x3;
-            std::uint_least64_t const data_size = the_col * the_row * 3 + the_row * padding_size;
-            std::uint_least64_t const all_size  = data_size + sizeof( file ) + sizeof( info );
-            auto const& ul_to_byte          = []( std::uint_least64_t val ) { return static_cast< char >( val & 0xffUL ); };
-            file[2]  = ul_to_byte( all_size );
-            file[3]  = ul_to_byte( all_size >> 8 );
-            file[4]  = ul_to_byte( all_size >> 16 );
-            file[5]  = ul_to_byte( all_size >> 24 );
-            info[4]  = ul_to_byte( the_col );
-            info[5]  = ul_to_byte( the_col >> 8 );
-            info[6]  = ul_to_byte( the_col >> 16 );
-            info[7]  = ul_to_byte( the_col >> 24 );
-            info[8]  = ul_to_byte( the_row );
-            info[9]  = ul_to_byte( the_row >> 8 );
-            info[10] = ul_to_byte( the_row >> 16 );
-            info[11] = ul_to_byte( the_row >> 24 );
-            info[20] = ul_to_byte( data_size );
-            info[21] = ul_to_byte( data_size >> 8 );
-            info[22] = ul_to_byte( data_size >> 16 );
-            info[23] = ul_to_byte( data_size >> 24 );
-            stream.write( reinterpret_cast< std::int8_t* >( file ), sizeof( file ) );
-            stream.write( reinterpret_cast< std::int8_t* >( info ), sizeof( info ) );
-            std::uint8_t pad[3] = { 0, 0, 0 };
-            std::uint8_t pixel[3];
-            //
-            // ! matrix view does not have direct iterator
-            //double max_val = static_cast< double >( *std::max_element( zen.begin(), zen.end() ) );
-            //double min_val = static_cast< double >( *std::min_element( zen.begin(), zen.end() ) );
-            //
-            double max_val = std::numeric_limits<double>::min();
-            double min_val = std::numeric_limits<double>::max();
-            for ( auto r = 0UL; r != the_row; ++r )
-                for ( auto c = 0UL; c != the_col; ++c )
-                {
-                    max_val = std::max(zen[r][c], max_val);
-                    min_val = std::min(zen[r][c], min_val);
-                }
-
-            double const eps =  std::numeric_limits<double>::epsilon();
-            if ( max_val - min_val < eps )
-            {
-                max_val += eps;
-                min_val -= eps;
-            }
-
-            for ( std::uint_least64_t r = 0; r < the_row; r++ )
-            {
-                for ( std::uint_least64_t c = 0; c < the_col; c++ )
-                {
-                    auto const r_ = the_row - r - 1;
-                    auto const c_ = c;
-                    auto const& rgb = selected_map( selected_transform( max_val, min_val )( zen[r_][c_] ) );
-                    pixel[2]        = rgb[0];
-                    pixel[1]        = rgb[1];
-                    pixel[0]        = rgb[2];
-                    stream.write( reinterpret_cast< std::int8_t* >( pixel ), 3 );
-                }
-
-                stream.write( reinterpret_cast< std::int8_t* >( padding ), padding_size );
-            }
-
-            stream.close();
-            return true;
-        }
-        bool save_as_bmp( const std::int8_t* const file_name ) const
-        {
-            return save_as_bmp( std::string{ file_name } );
-        }
-    };
-#else
-
 
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_bmp
@@ -2548,9 +2140,6 @@ namespace feng
             return save_as_bmp( std::string{ file_name } );
         }
     }; //crtp_save_as_bmp
-
-#endif
-#endif
 
     template < typename Matrix, typename Type, typename Allocator >
     using crtp_save_as_bmp_view = crtp_save_as_bmp<Matrix, Type, Allocator>;
