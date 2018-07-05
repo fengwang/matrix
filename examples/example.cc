@@ -78,6 +78,7 @@ int main()
 
     std::cout << "running save_load.\n" << std::endl;
     _0000_save_load();
+    _0001_save_load();
 
     std::cout << "running minus_equal.\n" << std::endl;
     _0000_minus_equal();

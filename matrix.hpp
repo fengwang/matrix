@@ -472,7 +472,6 @@ namespace feng
                 //for ( auto idx : range( padding_size ) )
                 //    encoding.push_back( std::uint8_t{} );
                 repeat( [&encoding](){ encoding.push_back( std::uint8_t{} ); }, padding_size );
-
             }
             return {encoding};
         }
@@ -5713,6 +5712,42 @@ namespace feng
         return ans;
     }
 
+    inline std::optional<std::array<matrix<std::uint8_t>,3>> load_bmp( std::string const& file_path )
+    {
+        std::ifstream ifs{file_path, std::ios::binary};
+        if ( !ifs )
+            return {}; // <- failed to load file
+
+        std::vector<std::uint8_t> const file_content{(std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>())};
+        if( file_content.size() <= 54 )
+            return {}; // <- failed for bad file
+
+        std::uint_least64_t const col = std::uint_least64_t{file_content[18]}         | (std::uint_least64_t{file_content[19]} << 8) |
+                                        (std::uint_least64_t{file_content[20]} << 16) | (std::uint_least64_t{file_content[21]} << 24);
+        std::uint_least64_t const row = std::uint_least64_t{file_content[22]}         | (std::uint_least64_t{file_content[23]} << 8) |
+                                        (std::uint_least64_t{file_content[24]} << 16) | (std::uint_least64_t{file_content[25]} << 24);
+        std::uint_least64_t const padding = ( 4 - ( ( col * 3 ) & 0x3 ) ) & 0x3;
+        if ( 54+(3*col+padding)*row != file_content.size() )
+            return {}; //<- error with the data size
+
+        std::array<matrix<std::uint8_t>,3> ans;
+        for ( auto& mat : ans ) mat.resize( row, col );
+        auto& [mat_r, mat_g, mat_b] = ans;
+
+        auto pos_itor = file_content.begin()+54;
+        for ( auto r : misc::range( row ) )
+        {
+            for ( auto c : misc::range( col ) )
+            {
+                mat_b[row-r-1][c] = *pos_itor++;
+                mat_g[row-r-1][c] = *pos_itor++;
+                mat_r[row-r-1][c] = *pos_itor++;
+            }
+            std::advance( pos_itor, padding );
+        }
+
+        return {ans};
+    }
 } //namespace feng
 
 RESTORE_WARNINGS

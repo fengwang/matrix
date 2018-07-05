@@ -36,6 +36,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [operator `/=`](#operator-divide-equal)
      - [inverse](#matrix-inverse)
      - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
+     - [save/load bmp](#save-load-bmp)
      - [save/load](#save-load)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
@@ -560,6 +561,9 @@ The `gray` image looks like:
 ![colormap-gray](./images/0000_save_with_colormap_gray.bmp)
 
 #### save load
+
+To load an image from a txt file, we can use `.load_txt` method:
+
 ```cpp
 feng::matrix<double> m;
 m.load_txt( "./images/Lenna.txt" );
@@ -567,6 +571,9 @@ m.save_as_txt( "./images/0000_save_load.txt" );
 m.save_as_binary( "./images/0000_save_load.bin" );
 m.save_as_bmp( "./images/0000_save_load.bmp" );
 ```
+
+
+The image loaded is 
 
 ![image saved](./images/0000_save_load.bmp)
 
@@ -584,6 +591,70 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 ```
 
 ![image saved](./images/0002_save_load.pgm)
+
+
+#### save load bmp
+
+To load an image from a bmp file, we can use `feng::load_bmp` function, which will return an oject of type `std::optional<std::array<feng::matrix<std::uint8_t>,3>>`:
+
+```cpp
+std::optional<std::array<matrix<std::uint8_t>,3>> load_bmp( std::string const& file_path ) {...}
+```
+
+We first generate an image of Lenna:
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.save_as_bmp( "./images/Lenna.bmp", "gray" );
+```
+
+which looks like:
+
+![Lenna](./images/Lenna.bmp)
+
+
+Then we can try to load it directly:
+
+```
+auto const& mat_3 = feng::load_bmp( "./images/Lenna.bmp" );
+```
+
+if successfull, ``mat_3` with hold a channel-first image. To access `mat_3` we need to verify it is accessible first by:
+
+```cpp
+if ( mat_3 )
+{
+```
+
+
+Then we can visualize its red channel:
+
+```cpp
+(*mat_3)[0].save_as_bmp( "./images/0001_save_load_julia_red.bmp", "gray" );
+```
+
+![red channel](./images/0001_save_load_julia_red.bmp)
+
+green channel:
+
+
+```cpp
+(*mat_3)[1].save_as_bmp( "./images/0001_save_load_julia_green.bmp", "gray" );
+```
+
+![green channel](./images/0001_save_load_julia_green.bmp)
+
+
+and blue channel:
+
+```cpp
+(*mat_3)[2].save_as_bmp( "./images/0001_save_load_julia_blue.bmp", "gray" );
+```
+
+![blue channel](./images/0001_save_load_julia_blue.bmp)
+
+
 
 #### operator minus equal
 
