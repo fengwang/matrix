@@ -48,6 +48,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [elementwise sinh](#elementwise-sinh)
    + [Common functions](#common-functions)
      - [eye](#eye-function)
+     - [magic](#magic-function)
      - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
      - [lu_decomposition](#lu-decomposition)
@@ -573,7 +574,7 @@ m.save_as_bmp( "./images/0000_save_load.bmp" );
 ```
 
 
-The image loaded is 
+The image loaded is
 
 ![image saved](./images/0000_save_load.bmp)
 
@@ -776,6 +777,77 @@ m.save_as_bmp( "./images/0000_eye.bmp" );
 ```
 
 ![eye image](./images/0000_eye.bmp)
+
+#### magic function
+
+
+Calling `magic` method is quite straightforward:
+
+
+```cpp
+std::cout << "Magic 3\n" << feng::magic( 3 ) << std::endl;
+std::cout << "Magic 4\n" << feng::magic( 4 ) << std::endl;
+std::cout << "Magic 5\n" << feng::magic( 5 ) << std::endl;
+std::cout << "Magic 6\n" << feng::magic( 6 ) << std::endl;
+```
+
+
+This will produce a series of magic matrices:
+
+```
+
+Magic 3
+ 8      1       6
+3       5       7
+4       9       2
+
+Magic 4
+ 16     3       2       13
+5       10      11      8
+9       6       7       12
+4       15      14      1
+
+Magic 5
+ 17     24      1       8       15
+23      5       7       14      16
+4       6       13      20      22
+10      12      19      21      3
+11      18      25      2       9
+
+Magic 6
+ 32     29      4       1       24      21
+30      31      2       3       22      23
+12      9       17      20      28      25
+10      11      18      19      26      27
+13      16      33      36      8       5
+14      15      34      35      6       7
+
+```
+
+Also we can expand it a bit to do a better visualization:
+
+```cpp
+unsigned long n = 38;
+unsigned long pixs = 16;
+
+auto const& mat = feng::magic( n );
+
+feng::matrix<double> v_mat( n*pixs, n*pixs );
+
+for ( auto r = 0UL; r != n; ++r )
+    for ( auto c = 0UL; c != n; ++c )
+        for ( auto rr = 0UL; rr != pixs; ++rr )
+            for ( auto cc = 0UL; cc != pixs; ++cc )
+                v_mat[r*pixs+rr][c*pixs+cc] = mat[r][c];
+
+v_mat.save_as_bmp("./images/0001_magic.bmp");
+
+```
+
+This produces an image looks like:
+
+
+![magic image](./images/0001_magic.bmp)
 
 
 #### matrix convolution

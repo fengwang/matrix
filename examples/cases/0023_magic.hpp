@@ -23,6 +23,6 @@ void _0001_magic()
                 for ( auto cc = 0UL; cc != pixs; ++cc )
                     v_mat[r*pixs+rr][c*pixs+cc] = mat[r][c];
 
-    v_mat.save_as_bmp("./images/0001_magic.txt");
+    v_mat.save_as_bmp("./images/0001_magic.bmp");
 }
 
