@@ -3973,24 +3973,81 @@ namespace feng
             return v1 == v2;
         } );
     }
-    const matrix< std::uint_least64_t > magic( const std::uint_least64_t n )
+    inline matrix< std::uint_least64_t > const magic( const std::uint_least64_t n ) noexcept
     {
-        matrix< std::uint_least64_t > ans( n, n );
+        matrix< std::uint_least64_t > ans{ n, n };
 
+        if ( 2 == n ) return ans; // no magic for n = 2
+
+        if ( 3 == n )
+            return matrix< std::uint_least64_t >{ 3, 3, { 8, 1, 6, 3, 5, 7, 4, 9, 2 } };
+
+        if ( 4 == n )
+            return matrix< std::uint_least64_t >{ 4, 4, { 16, 3, 2, 13, 5, 10, 11, 8, 9, 6, 7, 12, 4, 15, 14, 1} };
+
+        // odd case
         if ( n & 1 )
         {
             for ( std::uint_least64_t i = 0; i < n; ++i )
                 for ( std::uint_least64_t j = 0; j < n; ++j )
-                    ans[( ( n - 1 ) / 2 + i - j + n ) % n][( 3 * n - 1 + j - 2 * i ) % n] = i * n + j + 1;
+                    //ans[( ( n - 1 ) / 2 + i - j + n ) % n][( 3 * n - 1 + j - 2 * i ) % n] = i * n + j + 1;
+                    ans[n - (( 3 * n - 1 + j - 2 * i ) % n) - 1][n - (( ( n - 1 ) / 2 + i - j + n ) % n) - 1] = i * n + j + 1;
 
             return ans;
         }
 
+        // singly even LUX
         if ( n & 2 )
         {
+            auto const half = n >> 1;
+            auto const& m_half = magic( half );
+            // L
+            for ( auto r : misc::range( (half+1) >> 1 ) )
+                for ( auto c : misc::range( half ) )
+                {
+                    auto const val = m_half[r][c];
+                    ans[r<<1][c<<1]     = val << 2;         ans[r<<1][(c<<1)+1]     = (val << 2) - 3;
+                    ans[(r<<1)+1][c<<1] = (val << 2) - 2;   ans[(r<<1)+1][(c<<1)+1] = (val << 2) - 1;
+                }
+
+            // U
+            for ( auto c : misc::range(half) )
+            {
+                auto const r = (half+1) >> 1;
+                auto const val = m_half[r][c];
+                ans[r<<1][c<<1]     = (val << 2) - 3;    ans[r<<1][(c<<1)+1]     = (val << 2);
+                ans[(r<<1)+1][c<<1] = (val << 2) - 2;    ans[(r<<1)+1][(c<<1)+1] = (val << 2) - 1;
+            }
+
+            // swap central block
+            if (1)
+            {
+                {
+                    auto const [r,c] = std::make_tuple( (half-1)>>1, (half-1)>>1 );
+                    auto const val = m_half[r][c];
+                    ans[r<<1][c<<1]     = (val << 2) - 3;    ans[r<<1][(c<<1)+1]     = (val << 2);
+                    ans[(r<<1)+1][c<<1] = (val << 2) - 2;    ans[(r<<1)+1][(c<<1)+1] = (val << 2) - 1;
+                }
+                {
+                    auto const [r,c] = std::make_tuple( (half+1)>>1, (half+1)>>1 );
+                    auto const val = m_half[r][c];
+                    ans[r<<1][c<<1]     = (val << 2);    ans[r<<1][(c<<1)+1]     = (val << 2) - 3;
+                    ans[(r<<1)+1][c<<1] = (val << 2) - 2;    ans[(r<<1)+1][(c<<1)+1] = (val << 2) - 1;
+                }
+            }
+            // X
+            for ( auto r : misc::range( (half+3) >> 1, half ) )
+                for ( auto c : misc::range( half ) )
+                {
+                    auto const& val = m_half[r][c];
+                    ans[r<<1][c<<1]     = (val << 2) - 3;   ans[r<<1][(c<<1)+1]     = (val << 2);
+                    ans[(r<<1)+1][c<<1] = (val << 2) - 1;   ans[(r<<1)+1][(c<<1)+1] = (val << 2) - 2;
+                }
+
             return ans;
         }
 
+        // doubly even <X>
         std::iota( ans.begin(), ans.end(), 1 );
         std::reverse( ans.diag_begin(), ans.diag_end() );
         std::reverse( ans.anti_diag_begin(), ans.anti_diag_end() );

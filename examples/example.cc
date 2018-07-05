@@ -24,6 +24,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0020_gauss_jordan_elimination.hpp"
 #include "./cases/0021_singular_value_decomposition.hpp"
 #include "./cases/0022_save_with_colromap.hpp"
+#include "./cases/0023_magic.hpp"
 
 int main()
 {
@@ -119,6 +120,10 @@ int main()
 
     std::cout << "running save_with_colormap.\n" << std::endl;
     _0000_save_with_colormap();
+
+    std::cout << "running magic.\n" << std::endl;
+    _0000_magic();
+    _0001_magic();
 
     return 0;
 }
