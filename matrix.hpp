@@ -297,6 +297,34 @@ namespace feng
                 return header;
             }
 
+            inline std::uint8_t operator "" _u8(unsigned long long value)
+            {
+                return static_cast<std::uint8_t>(value);
+            }
+
+            static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
+            make_transformation_function(  std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_1, double value_1,
+                                           std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_2, double value_2 )
+            {
+                auto const& [r1, g1, b1] = color_1;
+                auto const& [r2, g2, b2] = color_2;
+
+                return [=]( double x )
+                {
+                    double dr = static_cast<double>(r1) - static_cast<double>(r2);
+                    double dg = static_cast<double>(g1) - static_cast<double>(g2);
+                    double db = static_cast<double>(b1) - static_cast<double>(b2);
+                    double dv = value_1 - value_2;
+                    double off_ratio = (x - value_2) / dv;
+                    double r = dr * off_ratio + r2;
+                    double g = dg * off_ratio + g2;
+                    double b = dg * off_ratio + b2;
+                    return std::make_tuple(  static_cast<std::uint8_t>(static_cast<int>(r)),
+                                             static_cast<std::uint8_t>(static_cast<int>(g)),
+                                             static_cast<std::uint8_t>(static_cast<int>(b)) );
+                };
+            }
+
             typedef std::function< std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>( double ) > color_value_type;
             static const std::map< std::string, color_value_type > color_maps
             {
@@ -316,6 +344,74 @@ namespace feng
                             if ( 3.0 * x < 2.0 )
                                 return std::make_tuple( type{ 0 }, type{ ch( x - 1.0 / 3.0 ) }, type{ 255 } );
                             return std::make_tuple( type{ ch( x - 2.0 / 3.0 ) }, type{ 255 }, type{ 255 } );
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "zigzag" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            //if (x<1.0/32.0)
+                            //    return std::make_tuple( 0_u8, 0_u8, 0_u8 );
+                            if (x<1.0/16.0)
+                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 0_u8), 0.0/16.0, std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/16.0 )(x);
+                            if (x<2.0/16.0)
+                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/16.0, std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0 )(x);
+                            if (x<3.0/16.0)
+                                return  make_transformation_function( std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0, std::make_tuple(22_u8, 167_u8, 100_u8), 3.0/16.0 )(x);
+                            if (x<4.0/16.0)
+                                return  make_transformation_function( std::make_tuple(22_u8, 167_u8, 100_u8), 3.0/16.0, std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0 )(x);
+                            if (x<5.0/8.0)
+                                return  make_transformation_function( std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0, std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0 )(x);
+                            if (x<6.0/8.0)
+                                return  make_transformation_function( std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0, std::make_tuple(255_u8, 150_u8, 0_u8), 6.0/8.0 )(x);
+                            if (x<7.0/8.0)
+                                return  make_transformation_function( std::make_tuple(255_u8, 150_u8, 0_u8), 6.0/8.0, std::make_tuple(255_u8, 66_u8, 0_u8), 7.0/8.0 )(x);
+                            return  make_transformation_function( std::make_tuple(255_u8, 66_u8, 0_u8), 7.0/8.0, std::make_tuple(188_u8, 33_u8, 0_u8), 8.0/8.0 )(x);
+                        }
+                    }
+                ),
+                std::make_pair
+                (
+                    std::string{ "4chan" },
+                    color_value_type
+                    {
+                        []( double x )
+                        {
+                            typedef std::uint8_t type;
+                            type const zero{0};
+                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x ) ); };
+                            auto const& stage_1 = [&](double x) // f, f, f -->> 0, 0, 0 ---- 1/4
+                            {
+                                double ratio = 1.0 - 4.0*x;
+                                type const code =  ch( ratio * 256 );
+                                return std::make_tuple( code, code, code );
+                            };
+                            auto const& stage_2 = [&]( double x ) // 0, 0, 0 -->> 0, 0, f ---- 1/4, 1/2
+                            {
+                                double ratio = (x - 0.25) * 4;
+                                return std::make_tuple( zero, zero, ch( ratio * 256 ) );
+                            };
+                            auto const& stage_3 = [&]( double x ) // 0, 0, f -->> 0, f, 0 ---- 1/2, 3/4
+                            {
+                                double ratio = (x - 0.5) * 4;
+                                return std::make_tuple( zero, ch( ratio*256 ), ch( 256-ratio*256 ) );
+                            };
+                            auto const& stage_4 = [&]( double x ) // 0, f, 0 -->> f, 0, 0 ---- 1/2, 3/4
+                            {
+                                double ratio = (x - 0.75) * 4;
+                                return std::make_tuple( ch( ratio*256 ), ch( 256-ratio*256 ), zero );
+                            };
+                            if ( 4.0 * x < 1.0 )
+                                return stage_1( x );
+                            if ( 2.0 * x < 1.0 )
+                                return stage_2( x );
+                            if ( 4.0 * x < 3.0 )
+                                return stage_3( x );
+                            return stage_4( x );
                         }
                     }
                 ),
@@ -1521,7 +1617,12 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name );
-            assert( ifs && "matrix::load_ascii -- failed to open file" );
+            assert( ifs && "matrix::load_txt -- failed to open file" );
+            if (!ifs.good())
+            {
+                std::cerr << "matrix::load_txt -- Failed to open file " << file_name << "\n";
+                return false;
+            }
             std::stringstream iss;
             std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) );
             std::string cache = iss.str();
