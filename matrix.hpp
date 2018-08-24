@@ -373,19 +373,36 @@ namespace feng
                 std::make_pair
                 (
                     std::string{ "hsv" },
-                    make_color_map(
-                    { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
-                    {
-                    std::make_tuple(255_u8, 0_u8, 0_u8),
-                    std::make_tuple(0_u8, 255_u8, 0_u8),
-                    std::make_tuple(0_u8, 255_u8, 255_u8),
-                    std::make_tuple(255_u8, 0_u8, 0_u8)
-                    }
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                        {
+                            std::make_tuple(255_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 255_u8, 0_u8),
+                            std::make_tuple(0_u8, 255_u8, 255_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8)
+                        }
                     )
                 ),
                 std::make_pair
                 (
                     std::string{ "zigzag" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/32.0, 2.0/16.0, 3.0/16.0, 4.0/16.0, 5.0/8.0, 6.0/8.0, 7.0/8.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 33_u8),
+                            std::make_tuple(33_u8, 99_u8, 167_u8),
+                            std::make_tuple(22_u8, 167_u8, 100_u8),
+                            std::make_tuple(100_u8, 200_u8, 88_u8),
+                            std::make_tuple(222_u8, 222_u8, 0_u8),
+                            std::make_tuple(250_u8, 150_u8, 0_u8),
+                            std::make_tuple(255_u8, 58_u8, 0_u8),
+                            std::make_tuple(188_u8, 33_u8, 0_u8),
+                        }
+                    )
+                    /*
                     color_value_type
                     {
                         []( double x )
@@ -407,6 +424,7 @@ namespace feng
                             return  make_transformation_function( std::make_tuple(255_u8, 58_u8, 0_u8), 7.0/8.0, std::make_tuple(188_u8, 33_u8, 0_u8), 8.0/8.0 )(x);
                         }
                     }
+                    */
                 ),
                 std::make_pair
                 (
