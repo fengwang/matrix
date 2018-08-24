@@ -386,45 +386,41 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "tictoc" },
+                    make_color_map
+                    (
+                        { 0.0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.7, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 100_u8),
+                            std::make_tuple(0_u8, 66_u8, 200_u8),
+                            std::make_tuple(0_u8, 200_u8, 100_u8),
+                            std::make_tuple(128_u8, 166_u8, 0_u8),
+                            std::make_tuple(200_u8, 88_u8, 0_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "zigzag" },
                     make_color_map
                     (
-                        { 0.0, 1.0/32.0, 2.0/16.0, 3.0/16.0, 4.0/16.0, 5.0/8.0, 6.0/8.0, 7.0/8.0, 1.0},
+                        { 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0},
                         {
                             std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 33_u8),
-                            std::make_tuple(33_u8, 99_u8, 167_u8),
-                            std::make_tuple(22_u8, 167_u8, 100_u8),
-                            std::make_tuple(100_u8, 200_u8, 88_u8),
-                            std::make_tuple(222_u8, 222_u8, 0_u8),
+                            std::make_tuple(33_u8, 66_u8, 167_u8),
+                            std::make_tuple(66_u8, 100_u8, 100_u8),
+                            std::make_tuple(100_u8, 166_u8, 88_u8),
+                            std::make_tuple(222_u8, 255_u8, 0_u8),
                             std::make_tuple(250_u8, 150_u8, 0_u8),
-                            std::make_tuple(255_u8, 58_u8, 0_u8),
-                            std::make_tuple(188_u8, 33_u8, 0_u8),
+                            std::make_tuple(255_u8, 100_u8, 0_u8),
+                            std::make_tuple(188_u8, 33_u8, 0_u8)
                         }
                     )
-                    /*
-                    color_value_type
-                    {
-                        []( double x )
-                        {
-                            if (x<1.0/32.0)
-                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 0_u8), 0.0/16.0, std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/32.0 )(x);
-                            if (x<2.0/16.0)
-                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/32.0, std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0 )(x);
-                            if (x<3.0/16.0)
-                                return  make_transformation_function( std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0, std::make_tuple(23_u8, 167_u8, 100_u8), 3.0/16.0 )(x);
-                            if (x<4.0/16.0)
-                                return  make_transformation_function( std::make_tuple(23_u8, 167_u8, 100_u8), 3.0/16.0, std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0 )(x);
-                            if (x<5.0/8.0)
-                                return  make_transformation_function( std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0, std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0 )(x);
-                            if (x<6.0/8.0)
-                                return  make_transformation_function( std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0, std::make_tuple(250_u8, 150_u8, 0_u8), 6.0/8.0 )(x);
-                            if (x<7.0/8.0)
-                                return  make_transformation_function( std::make_tuple(250_u8, 150_u8, 0_u8), 6.0/8.0, std::make_tuple(255_u8, 58_u8, 0_u8), 7.0/8.0 )(x);
-                            return  make_transformation_function( std::make_tuple(255_u8, 58_u8, 0_u8), 7.0/8.0, std::make_tuple(188_u8, 33_u8, 0_u8), 8.0/8.0 )(x);
-                        }
-                    }
-                    */
                 ),
                 std::make_pair
                 (
