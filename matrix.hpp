@@ -325,6 +325,29 @@ namespace feng
                 };
             }
 
+            //static std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>
+            static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
+            make_color_map( std::vector<double> const& values, std::vector<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>> const& colors )
+            {
+                assert( values.size() == colors.size() && "make_color_map::length of values and colors not match!" );
+                assert( std::abs(*(values.begin())) < 1.0e-10 && "make_color_map::value should start from 0!" );
+                assert( std::abs(*(values.rbegin())-1.0) < 1.0e-10 && "make_color_map::value should end at 1!" );
+
+                return [=]( double x )
+                {
+                    for ( auto idx : misc::range( values.size() - 1 ) )
+                        if ( x <= values[idx+1] )
+                            return  make_transformation_function( colors[idx], values[idx], colors[idx+1], values[idx+1] )(x);
+                    assert( !"make_color_map::should never reach here!" );
+                    return std::make_tuple(0_u8, 0_u8, 0_u8);
+                };
+            }
+            static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
+            make_color_map( std::initializer_list<double> const& values, std::initializer_list<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>> const& colors )
+            {
+                return make_color_map( std::vector<double>{values}, std::vector<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>>{colors} );
+            }
+
             typedef std::function< std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>( double ) > color_value_type;
             static const std::map< std::string, color_value_type > color_maps
             {
@@ -349,28 +372,39 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "hsv" },
+                    make_color_map(
+                    { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                    {
+                    std::make_tuple(255_u8, 0_u8, 0_u8),
+                    std::make_tuple(0_u8, 255_u8, 0_u8),
+                    std::make_tuple(0_u8, 255_u8, 255_u8),
+                    std::make_tuple(255_u8, 0_u8, 0_u8)
+                    }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "zigzag" },
                     color_value_type
                     {
                         []( double x )
                         {
-                            //if (x<1.0/32.0)
-                            //    return std::make_tuple( 0_u8, 0_u8, 0_u8 );
-                            if (x<1.0/16.0)
-                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 0_u8), 0.0/16.0, std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/16.0 )(x);
+                            if (x<1.0/32.0)
+                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 0_u8), 0.0/16.0, std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/32.0 )(x);
                             if (x<2.0/16.0)
-                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/16.0, std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0 )(x);
+                                return  make_transformation_function( std::make_tuple(0_u8, 0_u8, 33_u8), 1.0/32.0, std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0 )(x);
                             if (x<3.0/16.0)
-                                return  make_transformation_function( std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0, std::make_tuple(22_u8, 167_u8, 100_u8), 3.0/16.0 )(x);
+                                return  make_transformation_function( std::make_tuple(33_u8, 99_u8, 167_u8), 2.0/16.0, std::make_tuple(23_u8, 167_u8, 100_u8), 3.0/16.0 )(x);
                             if (x<4.0/16.0)
-                                return  make_transformation_function( std::make_tuple(22_u8, 167_u8, 100_u8), 3.0/16.0, std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0 )(x);
+                                return  make_transformation_function( std::make_tuple(23_u8, 167_u8, 100_u8), 3.0/16.0, std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0 )(x);
                             if (x<5.0/8.0)
                                 return  make_transformation_function( std::make_tuple(100_u8, 200_u8, 88_u8), 4.0/16.0, std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0 )(x);
                             if (x<6.0/8.0)
-                                return  make_transformation_function( std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0, std::make_tuple(255_u8, 150_u8, 0_u8), 6.0/8.0 )(x);
+                                return  make_transformation_function( std::make_tuple(222_u8, 222_u8, 0_u8), 5.0/8.0, std::make_tuple(250_u8, 150_u8, 0_u8), 6.0/8.0 )(x);
                             if (x<7.0/8.0)
-                                return  make_transformation_function( std::make_tuple(255_u8, 150_u8, 0_u8), 6.0/8.0, std::make_tuple(255_u8, 66_u8, 0_u8), 7.0/8.0 )(x);
-                            return  make_transformation_function( std::make_tuple(255_u8, 66_u8, 0_u8), 7.0/8.0, std::make_tuple(188_u8, 33_u8, 0_u8), 8.0/8.0 )(x);
+                                return  make_transformation_function( std::make_tuple(250_u8, 150_u8, 0_u8), 6.0/8.0, std::make_tuple(255_u8, 58_u8, 0_u8), 7.0/8.0 )(x);
+                            return  make_transformation_function( std::make_tuple(255_u8, 58_u8, 0_u8), 7.0/8.0, std::make_tuple(188_u8, 33_u8, 0_u8), 8.0/8.0 )(x);
                         }
                     }
                 ),
@@ -500,6 +534,9 @@ namespace feng
                             typedef std::uint8_t type;
                             auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
                             type const b = ch( 1.0 - x );
+
+                            //if ( 64.0 * x < 1 )
+                            //    return std::make_tuple( type{255}, type{255}, type{255} );
 
                             if ( 4.0 * x < 1 )
                                 return std::make_tuple( ch( 1.0 - 4.0 * x ), ch( 1.0 - 4.0 * x ), b );
