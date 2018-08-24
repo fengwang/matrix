@@ -372,6 +372,90 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "seg" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/25.0, 1.0/25.0+0.00001, 6.0/25.0, 6.0/25.0+0.001, 12.5/25.0, 12.5/25.0+0.0001, 20.0/25.0, 20.0/25.0+0.00001, 25.0/25.0 },
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+
+                            std::make_tuple(0_u8, 0_u8, 255_u8),
+                            std::make_tuple(0_u8, 0_u8, 255_u8),
+
+                            std::make_tuple(0_u8, 255_u8, 0_u8),
+                            std::make_tuple(0_u8, 255_u8, 0_u8),
+
+                            std::make_tuple(255_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8),
+
+                            std::make_tuple(255_u8, 255_u8, 0_u8),
+                            std::make_tuple(255_u8, 0_u8, 255_u8),
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "pink" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(30_u8, 255_u8, 255_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "spring" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(255_u8, 0_u8, 255_u8),
+                            std::make_tuple(255_u8, 255_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "summer" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 127_u8, 102_u8),
+                            std::make_tuple(255_u8, 255_u8, 102_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "autumn" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(255_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 255_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "winter" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 255_u8),
+                            std::make_tuple(0_u8, 255_u8, 127_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "hsv" },
                     make_color_map
                     (
@@ -381,6 +465,43 @@ namespace feng
                             std::make_tuple(0_u8, 255_u8, 0_u8),
                             std::make_tuple(0_u8, 255_u8, 255_u8),
                             std::make_tuple(255_u8, 0_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "jikjak" },
+                    make_color_map
+                    (
+                        { 0.0, 1.5/25.0, 6.0/25.0, 12.5/25.0, 20.0/25.0, 25.0/25.0 },
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(63_u8, 127_u8, 255_u8),
+                            std::make_tuple(63_u8, 255_u8, 127_u8),
+                            std::make_tuple(191_u8, 63_u8, 191_u8),
+                            std::make_tuple(255_u8, 0_u8, 191_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "hiphop" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/25.0, 6.0/25.0, 12.5/25.0, 20.0/25.0, 25.0/25.0 },
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(63_u8, 127_u8, 255_u8),
+
+                            std::make_tuple(0_u8, 255_u8, 127_u8),
+                            //std::make_tuple(127_u8, 255_u8, 127_u8),
+
+                            std::make_tuple(191_u8, 191_u8, 0_u8),
+                            //std::make_tuple(191_u8, 191_u8, 63_u8),
+
+                            std::make_tuple(255_u8, 127_u8, 0_u8)
                         }
                     )
                 ),
