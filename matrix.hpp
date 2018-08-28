@@ -319,6 +319,9 @@ namespace feng
                     double r = dr * off_ratio + r2;
                     double g = dg * off_ratio + g2;
                     double b = dg * off_ratio + b2;
+                    r = (r > 255.0) ? 255.0 : r; r = (r < 0.0) ? 0.0 : r;
+                    g = (g > 255.0) ? 255.0 : g; g = (g < 0.0) ? 0.0 : g;
+                    b = (b > 255.0) ? 255.0 : b; b = (b < 0.0) ? 0.0 : b;
                     return std::make_tuple(  static_cast<std::uint8_t>(static_cast<int>(r)),
                                              static_cast<std::uint8_t>(static_cast<int>(g)),
                                              static_cast<std::uint8_t>(static_cast<int>(b)) );
@@ -391,6 +394,27 @@ namespace feng
 
                             std::make_tuple(255_u8, 255_u8, 0_u8),
                             std::make_tuple(255_u8, 0_u8, 255_u8),
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "season" },
+                    make_color_map
+                    (
+                        { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0},
+                        {
+                            std::make_tuple(255_u8, 255_u8, 255_u8),
+                            std::make_tuple(153_u8, 204_u8, 255_u8),
+                            std::make_tuple( 51_u8, 153_u8, 255_u8),
+                            std::make_tuple(  0_u8, 128_u8, 255_u8),
+                            std::make_tuple(  0_u8, 255_u8, 255_u8),
+                            std::make_tuple(  0_u8, 255_u8, 128_u8),
+                            std::make_tuple(  0_u8, 255_u8,   0_u8),
+                            std::make_tuple(128_u8, 255_u8,   0_u8),
+                            std::make_tuple(255_u8, 255_u8,   0_u8),
+                            std::make_tuple(255_u8, 128_u8,   0_u8),
+                            std::make_tuple(255_u8,   0_u8,   0_u8)
                         }
                     )
                 ),
