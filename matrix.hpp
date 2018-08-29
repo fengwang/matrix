@@ -382,16 +382,12 @@ namespace feng
                         {
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8),
-
                             std::make_tuple(0_u8, 0_u8, 255_u8),
                             std::make_tuple(0_u8, 0_u8, 255_u8),
-
                             std::make_tuple(0_u8, 255_u8, 0_u8),
                             std::make_tuple(0_u8, 255_u8, 0_u8),
-
                             std::make_tuple(255_u8, 0_u8, 0_u8),
                             std::make_tuple(255_u8, 0_u8, 0_u8),
-
                             std::make_tuple(255_u8, 255_u8, 0_u8),
                             std::make_tuple(255_u8, 0_u8, 255_u8),
                         }
