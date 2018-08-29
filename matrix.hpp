@@ -302,6 +302,12 @@ namespace feng
                 return static_cast<std::uint8_t>(value);
             }
 
+            template< typename ... Args >
+            auto&& _t( Args&&... args )
+            {
+                return std::make_tuple( std::forward<Args>(args)... );
+            }
+
             static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
             make_transformation_function(  std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_1, double value_1,
                                            std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_2, double value_2 )
@@ -318,7 +324,7 @@ namespace feng
                     double off_ratio = (x - value_2) / dv;
                     double r = dr * off_ratio + r2;
                     double g = dg * off_ratio + g2;
-                    double b = dg * off_ratio + b2;
+                    double b = db * off_ratio + b2;
                     r = (r > 255.0) ? 255.0 : r; r = (r < 0.0) ? 0.0 : r;
                     g = (g > 255.0) ? 255.0 : g; g = (g < 0.0) ? 0.0 : g;
                     b = (b > 255.0) ? 255.0 : b; b = (b < 0.0) ? 0.0 : b;
@@ -380,7 +386,8 @@ namespace feng
                     (
                         { 0.0, 1.0/25.0, 1.0/25.0+0.00001, 6.0/25.0, 6.0/25.0+0.001, 12.5/25.0, 12.5/25.0+0.0001, 20.0/25.0, 20.0/25.0+0.00001, 25.0/25.0 },
                         {
-                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            //std::make_tuple(0_u8, 0_u8, 0_u8),
+                            _t(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 255_u8),
                             std::make_tuple(0_u8, 0_u8, 255_u8),
