@@ -302,12 +302,6 @@ namespace feng
                 return static_cast<std::uint8_t>(value);
             }
 
-            template< typename ... Args >
-            auto&& _t( Args&&... args )
-            {
-                return std::make_tuple( std::forward<Args>(args)... );
-            }
-
             static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
             make_transformation_function(  std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_1, double value_1,
                                            std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_2, double value_2 )
@@ -387,7 +381,6 @@ namespace feng
                         { 0.0, 1.0/25.0, 1.0/25.0+0.00001, 6.0/25.0, 6.0/25.0+0.001, 12.5/25.0, 12.5/25.0+0.0001, 20.0/25.0, 20.0/25.0+0.00001, 25.0/25.0 },
                         {
                             std::make_tuple(0_u8, 0_u8, 0_u8),
-                            //_t(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 255_u8),
                             std::make_tuple(0_u8, 0_u8, 255_u8),
@@ -521,13 +514,8 @@ namespace feng
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(63_u8, 127_u8, 255_u8),
-
                             std::make_tuple(0_u8, 255_u8, 127_u8),
-                            //std::make_tuple(127_u8, 255_u8, 127_u8),
-
                             std::make_tuple(191_u8, 191_u8, 0_u8),
-                            //std::make_tuple(191_u8, 191_u8, 63_u8),
-
                             std::make_tuple(255_u8, 127_u8, 0_u8)
                         }
                     )
@@ -552,11 +540,52 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "oops" },
+                    make_color_map
+                    (
+                        { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 160_u8),
+                            std::make_tuple(0_u8, 160_u8, 240_u8),
+                            std::make_tuple(80_u8, 240_u8, 160_u8),
+                            std::make_tuple(160_u8, 160_u8, 0_u8),
+                            std::make_tuple(255_u8, 80_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "ulala" },
+                    make_color_map
+                    (
+                        { 0.0, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5,  0.6, 0.7, 0.8, 0.9, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 25_u8),
+                            std::make_tuple(0_u8, 0_u8, 50_u8),
+                            std::make_tuple(0_u8, 0_u8, 100_u8),
+                            std::make_tuple(0_u8, 33_u8, 150_u8),
+                            std::make_tuple(0_u8, 66_u8, 200_u8),
+                            std::make_tuple(0_u8, 99_u8, 255_u8),
+                            std::make_tuple(0_u8, 133_u8, 200_u8),
+                            std::make_tuple(0_u8, 200_u8, 167_u8),
+                            std::make_tuple(0_u8, 255_u8, 133_u8),
+                            std::make_tuple(33_u8, 170_u8, 66_u8),
+                            std::make_tuple(255_u8, 85_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "zigzag" },
                     make_color_map
                     (
-                        { 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0},
+                        //{ 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.5, 0.65, 0.8, 1.0},
+                        //{ 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.5, 0.65, 0.8, 1.0},
+                        { 0.0, 0.04, 0.08, 0.12, 0.2, 0.3, 0.4, 0.5, 0.65, 0.8, 1.0},
                         {
+                        /*
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 33_u8),
@@ -567,49 +596,32 @@ namespace feng
                             std::make_tuple(250_u8, 150_u8, 0_u8),
                             std::make_tuple(255_u8, 100_u8, 0_u8),
                             std::make_tuple(188_u8, 33_u8, 0_u8)
+                        */
+                        /*
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 33_u8),
+                            std::make_tuple(33_u8, 33_u8, 167_u8),
+                            std::make_tuple(66_u8, 66_u8, 100_u8),
+                            std::make_tuple(100_u8, 166_u8, 88_u8),
+                            std::make_tuple(167_u8, 255_u8, 0_u8),
+                            std::make_tuple(222_u8, 150_u8, 0_u8),
+                            std::make_tuple(200_u8, 100_u8, 0_u8),
+                            std::make_tuple(255_u8, 33_u8, 0_u8)
+                        */
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 11_u8),
+                            std::make_tuple(0_u8, 0_u8, 22_u8),
+                            std::make_tuple(0_u8, 0_u8, 33_u8),
+                            std::make_tuple(0_u8, 0_u8, 133_u8),
+                            std::make_tuple(0_u8, 0_u8, 167_u8),
+                            std::make_tuple(0_u8, 0_u8, 255_u8),
+                            std::make_tuple(0_u8, 127_u8, 167_u8),
+                            std::make_tuple(0_u8, 255_u8, 133_u8),
+                            std::make_tuple(33_u8, 170_u8, 66_u8),
+                            std::make_tuple(255_u8, 85_u8, 0_u8)
                         }
                     )
-                ),
-                std::make_pair
-                (
-                    std::string{ "4chan" },
-                    color_value_type
-                    {
-                        []( double x )
-                        {
-                            typedef std::uint8_t type;
-                            type const zero{0};
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x ) ); };
-                            auto const& stage_1 = [&](double x) // f, f, f -->> 0, 0, 0 ---- 1/4
-                            {
-                                double ratio = 1.0 - 4.0*x;
-                                type const code =  ch( ratio * 256 );
-                                return std::make_tuple( code, code, code );
-                            };
-                            auto const& stage_2 = [&]( double x ) // 0, 0, 0 -->> 0, 0, f ---- 1/4, 1/2
-                            {
-                                double ratio = (x - 0.25) * 4;
-                                return std::make_tuple( zero, zero, ch( ratio * 256 ) );
-                            };
-                            auto const& stage_3 = [&]( double x ) // 0, 0, f -->> 0, f, 0 ---- 1/2, 3/4
-                            {
-                                double ratio = (x - 0.5) * 4;
-                                return std::make_tuple( zero, ch( ratio*256 ), ch( 256-ratio*256 ) );
-                            };
-                            auto const& stage_4 = [&]( double x ) // 0, f, 0 -->> f, 0, 0 ---- 1/2, 3/4
-                            {
-                                double ratio = (x - 0.75) * 4;
-                                return std::make_tuple( ch( ratio*256 ), ch( 256-ratio*256 ), zero );
-                            };
-                            if ( 4.0 * x < 1.0 )
-                                return stage_1( x );
-                            if ( 2.0 * x < 1.0 )
-                                return stage_2( x );
-                            if ( 4.0 * x < 3.0 )
-                                return stage_3( x );
-                            return stage_4( x );
-                        }
-                    }
                 ),
                 std::make_pair
                 (
