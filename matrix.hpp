@@ -357,21 +357,16 @@ namespace feng
                 std::make_pair
                 (
                     std::string{ "default" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0 },
                         {
-                            typedef std::uint8_t type;
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
-
-                            if ( 3.0 * x < 1.0 )
-                                return std::make_tuple( type{ 0 }, type{ 0 }, type{ ch( x ) } );
-
-                            if ( 3.0 * x < 2.0 )
-                                return std::make_tuple( type{ 0 }, type{ ch( x - 1.0 / 3.0 ) }, type{ 255 } );
-                            return std::make_tuple( type{ ch( x - 2.0 / 3.0 ) }, type{ 255 }, type{ 255 } );
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 255_u8),
+                            std::make_tuple(0_u8, 255_u8, 255_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
                         }
-                    }
+                    )
                 ),
                 std::make_pair
                 (
@@ -419,10 +414,147 @@ namespace feng
                     std::string{ "pink" },
                     make_color_map
                     (
+                        { 0.0, 0.0159, 1.0/9.0, 2.0/9.0, 3.0/9.0, 4.0/9.0, 5.0/9.0, 6.0/9.0, 7.0/9.0,1.0},
+                        {
+                            std::make_tuple(30_u8, 0_u8, 0_u8),
+                            std::make_tuple(50_u8, 26_u8, 26_u8),
+                            std::make_tuple(109_u8, 64_u8, 64_u8),
+                            std::make_tuple(152_u8, 98_u8, 98_u8),
+                            std::make_tuple(185_u8, 120_u8, 120_u8),
+                            std::make_tuple(202_u8, 154_u8, 138_u8),
+                            std::make_tuple(213_u8, 186_u8, 155_u8),
+                            std::make_tuple(224_u8, 214_u8, 170_u8),
+                            std::make_tuple(235_u8, 235_u8, 190_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "bone" },
+                    make_color_map
+                    (
+                        { 0.0, 0.3651, 0.7460,1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(81_u8, 81_u8, 113_u8),
+                            std::make_tuple(166_u8, 198_u8, 198_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "hot" },
+                    make_color_map
+                    (
+                        { 0.0, 0.3651, 0.7460,1.0},
+                        {
+                            std::make_tuple(10_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 255_u8, 0_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "copper" },
+                    make_color_map
+                    (
+                        { 0.0, 2.0/9.0, 4.0/9.0, 0.8095, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(70_u8, 44_u8, 28_u8),
+                            std::make_tuple(141_u8, 88_u8, 56_u8),
+                            std::make_tuple(255_u8, 161_u8, 102_u8),
+                            std::make_tuple(255_u8, 199_u8, 126_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "lines" },
+                    make_color_map
+                    (
+                        { 0.0,0.015873015873015872,0.031746031746031744,0.047619047619047616,0.06349206349206349,0.07936507936507936,0.09523809523809523,0.1111111111111111,0.12698412698412698,0.14285714285714285,0.15873015873015872,0.1746031746031746,0.19047619047619047,0.20634920634920634,0.2222222222222222,0.23809523809523808,0.25396825396825395,0.2698412698412698,0.2857142857142857,0.30158730158730157,0.31746031746031744,0.3333333333333333,0.3492063492063492,0.36507936507936506,0.38095238095238093,0.3968253968253968,0.4126984126984127,0.42857142857142855,0.4444444444444444,0.4603174603174603,0.47619047619047616,0.49206349206349204,0.5079365079365079,0.5238095238095238,0.5396825396825397,0.5555555555555556,0.5714285714285714,0.5873015873015873,0.6031746031746031,0.6190476190476191,0.6349206349206349,0.6507936507936508,0.6666666666666666,0.6825396825396826,0.6984126984126984,0.7142857142857143,0.7301587301587301,0.746031746031746,0.7619047619047619,0.7777777777777778,0.7936507936507936,0.8095238095238095,0.8253968253968254,0.8412698412698413,0.8571428571428571,0.873015873015873,0.8888888888888888,0.9047619047619048,0.9206349206349206,0.9365079365079365,0.9523809523809523,0.9682539682539683,0.9841269841269841,1.0 },
+                        {
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    83_u8,    25_u8 ),
+                            std::make_tuple( 127_u8,   127_u8,    32_u8 ),
+                            std::make_tuple( 126_u8,    47_u8,   127_u8 ),
+                            std::make_tuple( 119_u8,   127_u8,    48_u8 ),
+                            std::make_tuple( 77_u8,   127_u8,   127_u8 ),
+                            std::make_tuple( 127_u8,    20_u8,    47_u8 ),
+                            std::make_tuple( 0_u8,   114_u8,   127_u8 )
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "cool" },
+                    make_color_map
+                    (
                         { 0.0, 1.0},
                         {
-                            std::make_tuple(30_u8, 255_u8, 255_u8),
-                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                            std::make_tuple(0_u8, 255_u8, 255_u8),
+                            std::make_tuple(255_u8, 0_u8, 255_u8)
                         }
                     )
                 ),
@@ -626,117 +758,72 @@ namespace feng
                 std::make_pair
                 (
                     std::string{ "parula" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 0.1270, 0.2222, 0.4603, 0.7619, 1.0},
                         {
-                            typedef std::uint8_t type;
-                            auto const& r = [](double v)
-                            {
-                                if (v*3.0<1.0)
-                                {
-                                    double const ratio = 1.0 - v*3.0;
-                                    return static_cast< type >( static_cast< int >(7 + 47.0*ratio) );
-                                }
-                                double const ratio = (3.0*v - 1.0) / 2.0;
-                                return static_cast< type >( static_cast< int >(7+242*ratio));
-                            };
-                            auto const& g = [](double v)
-                            {
-                                return static_cast< type >( static_cast< int >(42+210.0*v));
-                            };
-                            auto const& b = [](double v)
-                            {
-                                if (v*9.0<1.0)
-                                {
-                                    double const ratio = v*9.0;
-                                    return static_cast< type >( static_cast< int >(135+87*ratio));
-                                }
-                                double const ratio = (9.0 - 9.0*v) / 8.0;
-                                return static_cast< type >( static_cast< int >(14*208*ratio));
-                            };
-
-                            return std::make_tuple( type{r(x)}, type{g(x)}, type{b(x)} );
+                            std::make_tuple(67_u8, 33_u8,  167_u8),
+                            std::make_tuple(71_u8, 76_u8,  240_u8),
+                            std::make_tuple(62_u8, 111_u8,  255_u8),
+                            std::make_tuple(0_u8, 183_u8,  201_u8),
+                            std::make_tuple(209_u8, 191_u8,  39_u8),
+                            std::make_tuple(255_u8, 255_u8, 22_u8)
                         }
-                    }
+                    )
                 ),
                 std::make_pair
                 (
                     std::string{ "hotblue" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
                         {
-                            typedef std::uint8_t type;
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
-
-                            if ( 3.0 * x < 1.0 )
-                                return std::make_tuple( type{ ch( 1.0 / 3.0 - x ) }, type{ 255 }, type{ 255 } );
-
-                            if ( 3.0 * x < 2.0 )
-                                return std::make_tuple( type{ 0 }, type{ ch( 2.0 / 3.0 - x ) }, type{ 255 } );
-                            return std::make_tuple( type{ 0 }, type{ 0 }, type{ ch( 1.0 - x ) } );
+                            std::make_tuple(255_u8, 255_u8,  255_u8),
+                            std::make_tuple(0_u8, 255_u8,  255_u8),
+                            std::make_tuple(0_u8, 0_u8,  255_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8)
                         }
-                    }
+                    )
                 ),
                 std::make_pair
                 (
                     std::string{ "jet" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
                         {
-                            typedef std::uint8_t type;
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 766.0 ) ); };
-
-                            if ( 3.0 * x < 1.0 )
-                                return std::make_tuple( type{ 0 }, type{ ch( x ) }, type{ 255 } );
-
-                            if ( 3.0 * x < 2.0 )
-                                return std::make_tuple( type{ ch( x - 1.0 / 3.0 ) }, type{ 255 }, type{ ch( 2.0 / 3.0 - x ) } );
-                            return std::make_tuple( type{ 255 }, type{ ch( 1.0 - x ) }, type{ 0 } );
+                            std::make_tuple(0_u8, 0_u8,  255_u8),
+                            std::make_tuple(0_u8, 255_u8,  255_u8),
+                            std::make_tuple(255_u8, 255_u8,  0_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8)
                         }
-                    }
+                    )
                 ),
                 std::make_pair
                 (
                     std::string{ "obscure" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 1.0/4.0, 1.0/2.0, 1.0},
                         {
-                            typedef std::uint8_t type;
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
-                            type const b = ch( 1.0 - x );
-
-                            //if ( 64.0 * x < 1 )
-                            //    return std::make_tuple( type{255}, type{255}, type{255} );
-
-                            if ( 4.0 * x < 1 )
-                                return std::make_tuple( ch( 1.0 - 4.0 * x ), ch( 1.0 - 4.0 * x ), b );
-
-                            type const r = ch( ( x - 0.25 ) * 4.0 / 3.0 );
-
-                            if ( 2.0 * x < 1 )
-                                return std::make_tuple( r, ch( ( x - 0.25 ) * 4.0 ), b );
-
-                            return std::make_tuple( r, ch( ( 1.0 - x ) * 2.0 ), b );
+                            std::make_tuple(255_u8, 255_u8,  255_u8),
+                            std::make_tuple(0_u8, 0_u8,  194_u8),
+                            std::make_tuple(85_u8, 255_u8,  128_u8),
+                            std::make_tuple(255_u8, 0_u8, 0_u8)
                         }
-                    }
+                    )
                 ),
                 std::make_pair
                 (
                     std::string{ "gray" },
-                    color_value_type
-                    {
-                        []( double x )
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
                         {
-                            typedef std::uint8_t type;
-                            auto&& ch = []( double x ) { return static_cast< type >( static_cast< int >( x * 256.0 ) ); };
-                            std::uint8_t val = ch( x );
-                            return std::make_tuple( val, val, val );
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 255_u8,  255_u8)
                         }
-                    }
+                    )
                 )
             };
 

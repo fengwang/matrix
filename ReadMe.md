@@ -553,6 +553,7 @@ The `obscure` image looks like:
 
 ![colormap-obscure](./images/0000_save_with_colormap_obscure.bmp)
 
+
 ```cpp
 m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
 ```
@@ -560,6 +561,111 @@ m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
 The `gray` image looks like:
 
 ![colormap-gray](./images/0000_save_with_colormap_gray.bmp)
+
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_hsv.bmp", "hsv" );
+```
+
+The `hsv` image looks like:
+
+![colormap-hsv](./images/0000_save_with_colormap_hsv.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_hot.bmp", "hot" );
+```
+
+The `hot` image looks like:
+
+![colormap-hot](./images/0000_save_with_colormap_hot.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_cool.bmp", "cool" );
+```
+
+The `cool` image looks like:
+
+![colormap-cool](./images/0000_save_with_colormap_cool.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_spring.bmp", "spring" );
+```
+
+The `spring` image looks like:
+
+![colormap-spring](./images/0000_save_with_colormap_spring.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_summer.bmp", "summer" );
+```
+
+The `summer` image looks like:
+
+![colormap-summer](./images/0000_save_with_colormap_summer.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_autumn.bmp", "autumn" );
+```
+
+The `autumn` image looks like:
+
+![colormap-autumn](./images/0000_save_with_colormap_autumn.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_winter.bmp", "winter" );
+```
+
+The `winter` image looks like:
+
+![colormap-winter](./images/0000_save_with_colormap_winter.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_bone.bmp", "bone" );
+```
+
+The `bone` image looks like:
+
+![colormap-bone](./images/0000_save_with_colormap_bone.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_copper.bmp", "copper" );
+```
+
+The `copper` image looks like:
+
+![colormap-copper](./images/0000_save_with_colormap_copper.bmp)
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_pink.bmp", "pink" );
+```
+
+The `pink` image looks like:
+
+![colormap-pink](./images/0000_save_with_colormap_pink.bmp)
+
+
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_lines.bmp", "lines" );
+```
+
+The `lines` image looks like:
+
+![colormap-lines](./images/0000_save_with_colormap_lines.bmp)
+
+
+
 
 #### save load
 

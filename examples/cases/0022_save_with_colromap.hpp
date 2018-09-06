@@ -8,5 +8,17 @@ void _0000_save_with_colormap()
     m.save_as_bmp( "./images/0000_save_with_colormap_jet.bmp", "jet" );
     m.save_as_bmp( "./images/0000_save_with_colormap_obscure.bmp", "obscure" );
     m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
+
+    m.save_as_bmp( "./images/0000_save_with_colormap_hsv.bmp", "hsv" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_spring.bmp", "spring" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_summer.bmp", "summer" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_autumn.bmp", "autumn" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_winter.bmp", "winter" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_pink.bmp", "pink" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_hot.bmp", "hot" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_cool.bmp", "cool" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_bone.bmp", "bone" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_copper.bmp", "copper" );
+    m.save_as_bmp( "./images/0000_save_with_colormap_lines.bmp", "lines" );
 }
 
