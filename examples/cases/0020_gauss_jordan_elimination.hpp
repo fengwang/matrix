@@ -1,6 +1,6 @@
 void _0000_gauss_jordan_elimination()
 {
-    auto const& m = feng::rand<double>( 64, 128);
+    auto const& m = feng::rand<double>( 64, 128, 1 ); // setting random seed to 1
     m.save_as_bmp( "./images/0000_gauss_jordan_elimination.bmp", "gray" );
 
     auto const& n = feng::gauss_jordan_elimination( m ); //<- also `feng::rref(m);`, alias name from Matlab

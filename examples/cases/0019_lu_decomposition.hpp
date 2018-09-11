@@ -10,7 +10,7 @@ void _0000_lu_decomposition()
     double mx = *std::max_element( m.begin(), m.end() );
     m = (m-mn) / (mx - mn + 1.0e-10);
     auto const& [row, col] = m.shape();
-    m += feng::rand<double>( row, col );
+    m += feng::rand<double>( row, col, 1 ); // set random seed to 1
     m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
 
     // lu decomposition
@@ -29,7 +29,7 @@ void _0000_lu_decomposition()
         std::cout << "Error: Failed to execute lu decomposition for matrix m!\n";
     }
 
-    auto const X = feng::rand<double>( row, 1 );
+    auto const X = feng::rand<double>( row, 1, 1 ); // set random seed to 1
     auto const b = m * X;
     auto const& ox = feng::lu_solver( m, b );
 

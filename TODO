@@ -1,3 +1,4 @@
-+ rewrite colormap code
 + parallel all possible codes
 + type operator check for all methods
++ CUDA support: cuda_matrix
++ write up a cheatsheet

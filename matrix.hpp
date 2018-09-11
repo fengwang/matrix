@@ -228,10 +228,21 @@ namespace feng
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
             unsigned int const total_cores = std::thread::hardware_concurrency();
+            // case of non-parallel
             if ( total_cores <= 1 )
             {
                 for ( auto a : range( dim_first, dim_last ) )
                     func( a );
+                return;
+            }
+            // case of small job numbers
+            std::vector<std::thread> threads;
+            if ( dim_last - dim_first <= total_cores )
+            {
+                for ( auto idx = dim_first; idx != dim_last; ++idx )
+                    threads.push_back( [&](){ func( idx ); } );
+                for ( auto& th : threads )
+                    th.join();
                 return;
             }
 
@@ -241,9 +252,7 @@ namespace feng
                     func(a++);
             };
 
-            std::vector<std::thread> threads;
             threads.reserve( total_cores-1 );
-
             std::uint_least64_t tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
 
             for ( auto idx : range( total_cores-1 ) )
@@ -4811,10 +4820,14 @@ namespace feng
         return pinverse( m );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
+    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 ) noexcept
     {
         matrix< T, A > ans{ r, c };
-        std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
+        if ( 0 == seed )
+            std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
+        else
+            std::srand( seed );
+
         auto const& generator = []() noexcept
         {
             return static_cast<T>( std::rand() ) / static_cast<T>( RAND_MAX );

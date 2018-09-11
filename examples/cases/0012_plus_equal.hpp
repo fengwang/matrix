@@ -8,7 +8,7 @@ void _0000_plus_equal()
     double const mx = *std::max_element( image.begin(), image.end() );
     image = (image - mn)/(mx - mn);
 
-    auto const& noise = feng::rand<double>( image.row(), image.col() );
+    auto const& noise = feng::rand<double>( image.row(), image.col(), 1 ); //setting random seed to 1
     image += 0.1*noise;
     image.save_as_bmp("images/0001_plus_equal.bmp", "gray");
 }
