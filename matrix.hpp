@@ -35,7 +35,7 @@ static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please
 SUPPRESS_WARNINGS
 #include <algorithm>
 #include <array>
-#include <cassert>
+//#include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstring>
@@ -70,11 +70,33 @@ namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20180516;
 
-    #ifdef PARALLEL
-    constexpr std::uint_least64_t use_parallel = 1;
+    #ifdef NO_PARALLEL
+    constexpr std::uint_least64_t parallel_mode = 0;
     #else
-    constexpr std::uint_least64_t use_parallel = 0;
+    constexpr std::uint_least64_t parallel_mode = 1;
     #endif
+
+    #ifdef DEBUG
+    constexpr std::uint_least64_t debug_mode = 1;
+    #else
+    constexpr std::uint_least64_t debug_mode = 0;
+    #endif
+
+    template< typename Stream, typename... Args >
+    void print_assertion(Stream& out, Args&&... args)
+    {
+        if constexpr( debug_mode )
+        {
+            (out << ... << args) << std::endl;
+            abort();
+        }
+    }
+
+    #ifdef matrix_assert
+    #undef matrix_assert
+    #endif
+    #define matrix_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : print_assertion(std::cerr, #EXPRESSION, " File: ", __FILE__, " Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
+
 
     template < typename Type, class Allocator>
     struct matrix;
@@ -228,6 +250,9 @@ namespace feng
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
             unsigned int const total_cores = std::thread::hardware_concurrency();
+            if constexpr( debug_mode )
+                std::cerr << "Paralling function from " << dim_first << " to " << dim_last <<  " with " << total_cores << " CPU cores.\n";
+
             // case of non-parallel
             if ( total_cores <= 1 )
             {
@@ -235,22 +260,38 @@ namespace feng
                     func( a );
                 return;
             }
+
             // case of small job numbers
             std::vector<std::thread> threads;
             if ( dim_last - dim_first <= total_cores )
             {
+                if constexpr( debug_mode )
+                    std::cerr << "Parallel :: too small workload from " << dim_first << " to " << dim_last << std::endl;
                 for ( auto idx = dim_first; idx != dim_last; ++idx )
-                    threads.push_back( [&](){ func( idx ); } );
+                {
+                    if constexpr( debug_mode )
+                        std::cerr << "  Parallel :: generating " << idx << "th thread" << std::endl;
+                    threads.emplace_back( std::thread{[&](){ func( idx ); }} );
+                }
+                if constexpr( debug_mode )
+                    std::cerr << "  Parallel :: there are " << threads.size() << " threads generated." << std::endl;
                 for ( auto& th : threads )
                     th.join();
+                if constexpr( debug_mode )
+                    std::cerr << "Parallel :: too small workload -- all thread joined " << std::endl;
                 return;
             }
 
+            // case of more jobs than CPU cores
             auto const& job_slice = [&func]( Integer_Type a, Integer_Type b )
             {
+                if ( a >= b ) return;
                 while ( a != b )
                     func(a++);
             };
+
+            if constexpr( debug_mode )
+                std::cerr << "Parallel :: working with large workload!\n";
 
             threads.reserve( total_cores-1 );
             std::uint_least64_t tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
@@ -258,8 +299,10 @@ namespace feng
             for ( auto idx : range( total_cores-1 ) )
             {
                 Integer_Type first = tasks_per_thread * idx + dim_first;
+                first = std::min( first, dim_last );
                 Integer_Type last =  first + tasks_per_thread;
-                threads.push_back( std::thread{ job_slice, first, last } );
+                last = std::min( last, dim_last );
+                threads.emplace_back( std::thread{ job_slice, first, last } );
             }
 
             job_slice( tasks_per_thread*(total_cores-1), dim_last );
@@ -341,16 +384,16 @@ namespace feng
             static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
             make_color_map( std::vector<double> const& values, std::vector<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>> const& colors )
             {
-                assert( values.size() == colors.size() && "make_color_map::length of values and colors not match!" );
-                assert( std::abs(*(values.begin())) < 1.0e-10 && "make_color_map::value should start from 0!" );
-                assert( std::abs(*(values.rbegin())-1.0) < 1.0e-10 && "make_color_map::value should end at 1!" );
+                matrix_assert( values.size() == colors.size() && "make_color_map::length of values and colors not match!" );
+                matrix_assert( std::abs(*(values.begin())) < 1.0e-10 && "make_color_map::value should start from 0!" );
+                matrix_assert( std::abs(*(values.rbegin())-1.0) < 1.0e-10 && "make_color_map::value should end at 1!" );
 
                 return [=]( double x )
                 {
                     for ( auto idx : misc::range( values.size() - 1 ) )
                         if ( x <= values[idx+1] )
                             return  make_transformation_function( colors[idx], values[idx], colors[idx+1], values[idx+1] )(x);
-                    assert( !"make_color_map::should never reach here!" );
+                    matrix_assert( !"make_color_map::should never reach here!" );
                     return std::make_tuple(0_u8, 0_u8, 0_u8);
                 };
             }
@@ -999,7 +1042,7 @@ namespace feng
         }
         friend difference_type operator-( const self_type& lhs, const self_type& rhs ) noexcept
         {
-            assert( lhs.step_ == rhs.step_ && "stride iterators of different steps" );
+            matrix_assert( lhs.step_ == rhs.step_ && "stride iterators of different steps" );
             return ( lhs.iterator_ - rhs.iterator_ ) / lhs.step_;
         }
     };
@@ -1321,27 +1364,30 @@ namespace feng
         row_type operator[]( const size_type index ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( index < zen.row() && "Row index outof boundary!" );
+            if constexpr( debug_mode )
+                if ( index >= zen.row() )
+                    std::cerr << "Error retrieving " << index << "th row for a matrix with " << zen.row() << " rows\n";
+            matrix_assert( index < zen.row() && "Row index outof boundary!", " with index ", index, " and zen.row() ", zen.row()  );
             return zen.row_begin( index );
         }
         const_row_type operator[]( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( index < zen.row() && "Row index outof boundary!" );
+            matrix_assert( index < zen.row() && "Row index outof boundary!" );
             return zen.row_cbegin( index );
         }
         value_type operator()( size_type r, size_type c ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( r < zen.row() && "Row index out of boundary!" );
-            assert( c < zen.col() && "Column index out of boundary!" );
+            matrix_assert( r < zen.row() && "Row index out of boundary!" );
+            matrix_assert( c < zen.col() && "Column index out of boundary!" );
             return zen[r][c];
         }
         value_type& operator()( size_type r, size_type c ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( r < zen.row() && "Row index out of boundary!" );
-            assert( c < zen.col() && "Column index out of boundary!" );
+            matrix_assert( r < zen.row() && "Row index out of boundary!" );
+            matrix_assert( c < zen.col() && "Column index out of boundary!" );
             return zen[r][c];
         }
     };
@@ -1358,14 +1404,14 @@ namespace feng
         const_row_type operator[]( const size_type index ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( index < zen.row() && "Row index outof boundary!" );
+            matrix_assert( index < zen.row() && "Row index outof boundary!" );
             return zen.row_cbegin( index );
         }
         value_type operator()( size_type r, size_type c ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( r < zen.row() && "Row index out of boundary!" );
-            assert( c < zen.col() && "Column index out of boundary!" );
+            matrix_assert( r < zen.row() && "Row index out of boundary!" );
+            matrix_assert( c < zen.col() && "Column index out of boundary!" );
             return zen[r][c];
         }
     };
@@ -1394,15 +1440,15 @@ namespace feng
         template < typename Other_Matrix >
         zen_type& clone( const Other_Matrix& other, std::initializer_list<size_type> r, std::initializer_list<size_type> c ) noexcept
         {
-            assert( r.size() == 2 && "row size should be 2!" );
-            assert( c.size() == 2 && "col size should be 2!" );
+            matrix_assert( r.size() == 2 && "row size should be 2!" );
+            matrix_assert( c.size() == 2 && "col size should be 2!" );
             return clone( other, r[0], r[1], c[0], c[1] );
         }
         template < typename Other_Matrix >
         zen_type& clone( const Other_Matrix& other, size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) noexcept
         {
-            assert( r1 > r0 && "row range error!" );
-            assert( c1 > c0 && "col range error!" );
+            matrix_assert( r1 > r0 && "row range error!" );
+            matrix_assert( c1 > c0 && "col range error!" );
 
             zen_type& zen = static_cast< zen_type& >( *this );
             zen_type tmp{ zen.get_allocator(), r1-r0, c1-c0 };
@@ -1416,8 +1462,8 @@ namespace feng
 
         zen_type const clone( std::initializer_list<size_type> r, std::initializer_list<size_type> c ) const noexcept
         {
-            assert( r.size() == 2 && "row size should be 2!" );
-            assert( c.size() == 2 && "col size should be 2!" );
+            matrix_assert( r.size() == 2 && "row size should be 2!" );
+            matrix_assert( c.size() == 2 && "col size should be 2!" );
             return clone( r[0], r[1], c[0], c[1] );
         }
         zen_type const clone( size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) const noexcept
@@ -1541,7 +1587,9 @@ namespace feng
         value_type det() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() == zen.col() );
+            matrix_assert( zen.row() == zen.col() );
+
+            std::cerr << "Calculating det for matrix of size " << zen.row() << std::endl;
 
             if ( 0 == zen.size() )
             {
@@ -1858,7 +1906,7 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
 
-            assert( zen.row() == zen.col() && "matrix is not square!" );
+            matrix_assert( zen.row() == zen.col() && "matrix is not square!" );
 
             size_type const n = zen.row();
             zen_type a( zen.get_allocator(),  n, n + n );
@@ -1885,7 +1933,7 @@ namespace feng
 
                 const value_type factor = a[i][i];
 
-                assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() && "Failed inversing matrix, too small factor for Gaussian elimination!" );
+                matrix_assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() && "Failed inversing matrix, too small factor for Gaussian elimination!" );
 
                 std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x ) noexcept
                 {
@@ -1924,7 +1972,7 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name );
-            assert( ifs && "matrix::load_txt -- failed to open file" );
+            matrix_assert( ifs && "matrix::load_txt -- failed to open file" );
             if (!ifs.good())
             {
                 std::cerr << "matrix::load_txt -- Failed to open file " << file_name << "\n";
@@ -1974,13 +2022,13 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name, std::ios::binary );
-            assert( ifs && "matrix::load_binary -- failed to open file" );
+            matrix_assert( ifs && "matrix::load_binary -- failed to open file" );
 
             if ( !ifs )
                 return false;
 
             std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
-            assert( buffer.size() >= sizeof( size_type ) + sizeof( size_type ) && "matrix::load_library -- file too small, maybe be damaged" );
+            matrix_assert( buffer.size() >= sizeof( size_type ) + sizeof( size_type ) && "matrix::load_library -- file too small, maybe be damaged" );
 
             if ( buffer.size() <= sizeof( size_type ) + sizeof( size_type ) )
                 return false;
@@ -1990,7 +2038,7 @@ namespace feng
             size_type c;
             std::copy( buffer.begin() + sizeof( r ), buffer.begin() + sizeof( r ) + sizeof( c ), reinterpret_cast< std::int8_t* >( std::addressof( c ) ) );
             zen.resize( r, c );
-            assert( buffer.size() == sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() && "matrix::load_binary -- data does not match, maybe damaged" );
+            matrix_assert( buffer.size() == sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() && "matrix::load_binary -- data does not match, maybe damaged" );
 
             if ( buffer.size() != sizeof( r ) + sizeof( c ) + sizeof( Type ) * zen.size() )
                 return false;
@@ -2041,16 +2089,46 @@ namespace feng
         zen_type& direct_multiply( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
+            matrix_assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
             zen_type tmp( zen.row(), other.col() );
 
-            for ( size_type i = 0; i < tmp.row(); ++i )
-                for ( size_type j = 0; j < tmp.col(); ++j )
-                {
-                    tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
-                }
+            if constexpr( debug_mode )
+            {
+                std::cerr << "direct_multiply -- " << zen.row() << "X" << zen.col() << " *= " << other.row() << "X" << other.col() << std::endl;
+            }
 
-            zen.clone( tmp, 0, zen.row(), 0, other.col() );
+            // small cases
+            /*
+            constexpr std::uint_least64_t threshold = 65535;
+            if ( zen.row() * zen.col() * other.col() < threshold )
+            {
+                for ( size_type i = 0; i < tmp.row(); ++i )
+                    for ( size_type j = 0; j < tmp.col(); ++j )
+                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
+                zen.swap( tmp );
+                return zen;
+            }
+            */
+            // large cases
+            if constexpr( parallel_mode )
+            {
+                auto const& func = [&]( size_type i )
+                {
+                    if constexpr( debug_mode )
+                        std::cerr << "direct_multiply:: calculating the " << i << "th row of " << tmp.row() << std::endl;
+                    for ( size_type j = 0; j != tmp.col(); ++j )
+                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
+                };
+                misc::parallel( func, tmp.row() );
+            }
+            else
+            {
+                for ( size_type i = 0; i < tmp.row(); ++i )
+                    for ( size_type j = 0; j < tmp.col(); ++j )
+                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
+            }
+
+            zen.swap( tmp );
             return zen;
         }
         zen_type& rr1( const zen_type& other ) noexcept
@@ -2146,7 +2224,11 @@ namespace feng
         zen_type& operator*=( const zen_type& other ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( zen.col() == other.row() );
+            matrix_assert( zen.col() == other.row() && "operator *= :: the matrix dims not match!" );
+
+            if constexpr( parallel_mode )
+                return direct_multiply( other );
+
             static const size_type threshold = 17;
             const size_type max_dims         = std::max( std::max( zen.row(), zen.col() ), other.col() );
             const size_type min_dims         = std::min( std::min( zen.row(), zen.col() ), other.col() );
@@ -2254,7 +2336,7 @@ namespace feng
         void reshape( const size_type new_row, const size_type new_col ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            assert( new_row * new_col == zen.row() * zen.col() && "error: size before and after reshape does not agree, use resize() instead!" );
+            matrix_assert( new_row * new_col == zen.row() * zen.col() && "error: size before and after reshape does not agree, use resize() instead!" );
             zen.row_ = new_row;
             zen.col_ = new_col;
         }
@@ -2501,8 +2583,8 @@ namespace feng
         bool save_as_bmp( const std::string& file_name, std::string const& color_map = std::string{ "parula" } ) const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
-            assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
+            matrix_assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
+            matrix_assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
 
             using misc::bmp_details::color_maps;
             std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
@@ -2679,8 +2761,8 @@ namespace feng
             }
             auto const& selected_map = []( double x )
             {
-                assert( x >= 0.0 && "Negative x passed!" );
-                assert( x <= 1.0 && "X exceeds boundary!" );
+                matrix_assert( x >= 0.0 && "Negative x passed!" );
+                matrix_assert( x <= 1.0 && "X exceeds boundary!" );
                 typedef std::uint16_t type;
                 auto const& ch = []( double x )
                 {
@@ -2732,7 +2814,7 @@ namespace feng
         typedef typename type_proxy_type::value_type value_type;
         zen_type& shrink_to_size( const size_type new_row, const size_type new_col ) noexcept
         {
-            assert( new_row && new_col );
+            matrix_assert( new_row && new_col );
             zen_type& zen = static_cast< zen_type& >( *this );
 
             if ( new_row == zen.row() && new_col == zen.col() )
@@ -3010,8 +3092,8 @@ namespace feng
         template< typename T, typename A >
         matrix( matrix<T,A> const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
-            assert( rr.size() == 2 && "row dims not match!" );
-            assert( rc.size() == 2 && "col dims not match!" );
+            matrix_assert( rr.size() == 2 && "row dims not match!" );
+            matrix_assert( rc.size() == 2 && "col dims not match!" );
             auto [rr0, rr1] = std::make_pair( *(rr.begin()), *(rr.begin()+1) );
             auto [rc0, rc1] = std::make_pair( *(rc.begin()), *(rc.begin()+1) );
             (*this).clone( other, rr0, rr1, rc0, rc1 );
@@ -3019,8 +3101,8 @@ namespace feng
 
         matrix( matrix const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
-            assert( rr.size() == 2 && "row dims not match!" );
-            assert( rc.size() == 2 && "col dims not match!" );
+            matrix_assert( rr.size() == 2 && "row dims not match!" );
+            matrix_assert( rc.size() == 2 && "col dims not match!" );
             auto [rr0, rr1] = std::make_pair( *(rr.begin()), *(rr.begin()+1) );
             auto [rc0, rc1] = std::make_pair( *(rc.begin()), *(rc.begin()+1) );
             (*this).clone( other, rr0, rr1, rc0, rc1 );
@@ -3085,8 +3167,8 @@ namespace feng
         typedef crtp_typedef< Type, Allocator >         type_proxy_type;
         typedef typename type_proxy_type::size_type     size_type;
 
-        assert( row_dim.size() == 2 && "Error: row parameters for a matrix view should be 2!" );
-        assert( col_dim.size() == 2 && "Error: col parameters for a matrix view should be 2!" );
+        matrix_assert( row_dim.size() == 2 && "Error: row parameters for a matrix view should be 2!" );
+        matrix_assert( col_dim.size() == 2 && "Error: col parameters for a matrix view should be 2!" );
         return matrix_view<Type, Allocator>
         {
             matrix_,
@@ -3131,15 +3213,15 @@ namespace feng
     template < typename T1, typename A1, typename T2, typename A2 >
     bool operator<( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
-        assert( lhs.row() == rhs.row() );
-        assert( lhs.col() == rhs.col() );
+        matrix_assert( lhs.row() == rhs.row() );
+        matrix_assert( lhs.col() == rhs.col() );
         return std::lexicographical_compare( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );
     }
     template < typename T1, typename A1, typename T2, typename A2 >
     bool operator==( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
-        assert( lhs.row() == rhs.row() );
-        assert( lhs.col() == rhs.col() );
+        matrix_assert( lhs.row() == rhs.row() );
+        matrix_assert( lhs.col() == rhs.col() );
         return std::equal( lhs.begin(), lhs.end(), rhs.begin() );
     }
     template < typename T1, typename A1, typename T2, typename A2 >
@@ -3167,7 +3249,7 @@ namespace feng
         if ( rhs.row() == 0 )
             return lhs;
 
-        assert( lhs.row() == rhs.row() );
+        matrix_assert( lhs.row() == rhs.row() );
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type ::size_type size_type;
         const size_type row = lhs.row();
@@ -3192,7 +3274,7 @@ namespace feng
         if ( rhs.col() == 0 )
             return lhs;
 
-        assert( lhs.col() == rhs.col() );
+        matrix_assert( lhs.col() == rhs.col() );
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type ::size_type size_type;
         const size_type row = lhs.row() + rhs.row();
@@ -3233,7 +3315,7 @@ namespace feng
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const std::valarray< T_ >& rhs )
     {
-        assert( lhs.col() == rhs.size() );
+        matrix_assert( lhs.col() == rhs.size() );
         matrix< T, A > ans( lhs.row(), 1 );
 
         for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
@@ -3245,7 +3327,7 @@ namespace feng
     const matrix< T, A >
     operator*( const std::valarray< T_ >& lhs, const matrix< T, A >& rhs )
     {
-        assert( rhs.row() == lhs.size() );
+        matrix_assert( rhs.row() == lhs.size() );
         matrix< T, A > ans( 1, lhs.row() );
 
         for ( std::uint_least64_t i = 0; i < rhs.col(); ++i )
@@ -3257,7 +3339,7 @@ namespace feng
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const std::vector< T_ >& rhs )
     {
-        assert( lhs.col() == rhs.size() );
+        matrix_assert( lhs.col() == rhs.size() );
         matrix< T, A > ans( lhs.row(), 1 );
 
         for ( std::uint_least64_t i = 0; i < lhs.row(); ++i )
@@ -3269,7 +3351,7 @@ namespace feng
     const matrix< T, A >
     operator*( const std::vector< T_ >& lhs, const matrix< T, A >& rhs )
     {
-        assert( rhs.col() == lhs.size() );
+        matrix_assert( rhs.col() == lhs.size() );
         matrix< T, A > ans( 1, rhs.col() );
 
         for ( std::uint_least64_t i = 0; i < rhs.col(); ++i )
@@ -3452,8 +3534,8 @@ namespace feng
     matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > >
     polar( const matrix< T, A >& mm, const matrix< T, A > nn ) noexcept
     {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
+        matrix_assert( mm.row() == nn.row() );
+        matrix_assert( mm.col() == nn.col() );
         matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
         for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m ) { m = std::polar( _mm, _nn ); } );
         return m;
@@ -3717,8 +3799,8 @@ namespace feng
     template< typename T, typename A >
     const matrix<T, A> scalbn( matrix<T, A> const& mm, matrix< int, typename std::allocator_traits<T>:: template rebind_alloc<int> > const nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row dim not agree" );
-        assert( mm.col() == nn.col() && "col dim not agree" );
+        matrix_assert( mm.row() == nn.row() && "row dim not agree" );
+        matrix_assert( mm.col() == nn.col() && "col dim not agree" );
         matrix<T, A> m{ mm.row(), mm.col() };
         for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, int exp ){ x = std::scalbn( x, exp ); } );
         return m;
@@ -3726,8 +3808,8 @@ namespace feng
     template< typename T, typename A >
     const matrix<T, A> scalbln( matrix<T, A> const& mm, matrix< long, typename std::allocator_traits<T>:: template rebind_alloc<long> > const nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row dim not agree" );
-        assert( mm.col() == nn.col() && "col dim not agree" );
+        matrix_assert( mm.row() == nn.row() && "row dim not agree" );
+        matrix_assert( mm.col() == nn.col() && "col dim not agree" );
         matrix<T, A> m{ mm.row(), mm.col() };
         for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, long exp ){ x = std::scalbln( x, exp ); } );
         return m;
@@ -3785,8 +3867,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > atan2( const matrix< T, A >& mm, const matrix< T, A >& nn )
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix<T, A> m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::atan2( v1, v2 ); } );
         return m;
@@ -3802,8 +3884,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > copysign( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::copysign( v1, v2 ); } );
         return m;
@@ -3819,8 +3901,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > fdim( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fdim( v1, v2 ); } );
         return m;
@@ -3836,8 +3918,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > fmax( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmax( v1, v2 ); } );
         return m;
@@ -3853,8 +3935,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > fmin( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmin( v1, v2 ); } );
         return m;
@@ -3870,8 +3952,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > fmod( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmod( v1, v2 ); } );
         return m;
@@ -3887,8 +3969,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > hypot( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::hypot( v1, v2 ); } );
         return m;
@@ -3904,8 +3986,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > ldexp( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::ldexp( v1, v2 ); } );
         return m;
@@ -3921,8 +4003,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > nextafter( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::nextafter( v1, v2 ); } );
         return m;
@@ -3938,8 +4020,8 @@ namespace feng
     template < typename T1, typename A1, typename T2, typename A2 >
     const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() );
-        assert( mm.col() == nn.col() );
+        matrix_assert( mm.row() == nn.row() );
+        matrix_assert( mm.col() == nn.col() );
         matrix<T1, A1> m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ) { return std::nexttoward( v1, v2 ); } );
         return m;
@@ -3955,8 +4037,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > pow( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::pow( v1, v2 ); } );
         return m;
@@ -3972,8 +4054,8 @@ namespace feng
     template < typename T, typename A >
     const matrix< T, A > remainder( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
     {
-        assert( mm.row() == nn.row() && "row not match" );
-        assert( mm.col() == nn.col() && "col not match" );
+        matrix_assert( mm.row() == nn.row() && "row not match" );
+        matrix_assert( mm.col() == nn.col() && "col not match" );
         matrix< T, A > m{ mm };
         std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::remainder( v1, v2 ); } );
         return m;
@@ -4085,8 +4167,8 @@ namespace feng
     typename Matrix1::value_type
     dot( const Matrix1& m1, const Matrix2& m2 )
     {
-        assert( m1.row() == m2.row() );
-        assert( m1.col() == m2.col() );
+        matrix_assert( m1.row() == m2.row() );
+        matrix_assert( m1.col() == m2.col() );
         return std::inner_product( m1.begin(), m1.end(), m2.begin(), typename Matrix1::value_type( 0 ) );
     }
     namespace eye_private
@@ -4160,7 +4242,7 @@ namespace feng
             return ans;
         }
 
-        assert( !"the second argument of flipdim should be '1' or '2'" );
+        matrix_assert( !"the second argument of flipdim should be '1' or '2'" );
         return ans;
     }
     template < typename T, typename A >
@@ -4467,14 +4549,14 @@ namespace feng
     T const
     max( const matrix< T, A >& m )
     {
-        assert( m.size() );
+        matrix_assert( m.size() );
         return *std::max_element( m.begin(), m.end() );
     }
     template < typename T, typename A >
     T const
     min( const matrix< T, A >& m )
     {
-        assert( m.size() );
+        matrix_assert( m.size() );
         return std::min_element( m.begin(), m.end() );
     }
     template < typename T,
@@ -4856,8 +4938,8 @@ namespace feng
     const matrix< T, A >
     repmat( const matrix< T, A >& m, const std::uint_least64_t r, const std::uint_least64_t c )
     {
-        assert( r );
-        assert( c );
+        matrix_assert( r );
+        matrix_assert( c );
 
         if ( 1 == r && 1 == c )
             return m;
@@ -5122,7 +5204,7 @@ namespace feng
     const matrix< T, A >
     operator^( const matrix< T, A >& lhs, std::uint_least64_t n )
     {
-        assert( lhs.row() == lhs.col() );
+        matrix_assert( lhs.row() == lhs.col() );
         auto const r = lhs.row();
 
         if ( 0 == n )
@@ -5145,9 +5227,9 @@ namespace feng
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type size_type;
-        assert( A.row() == A.col() );
-        assert( A.row() == b.row() );
-        assert( b.col() == 1 );
+        matrix_assert( A.row() == A.col() );
+        matrix_assert( A.row() == b.row() );
+        matrix_assert( b.col() == 1 );
         size_type const n = A.row();
         x.resize( n, 1 );
         std::fill( x.begin(), x.end(), value_type( 0 ) );
@@ -5172,9 +5254,9 @@ namespace feng
             const T1 eps                = 1.0e-10 )
     {
         typedef T1 value_type;
-        assert( A.row() == A.col() );
-        assert( A.row() == b.row() );
-        assert( b.col() == 1 );
+        matrix_assert( A.row() == A.col() );
+        matrix_assert( A.row() == b.row() );
+        matrix_assert( b.col() == 1 );
         auto const n = A.row();
 
         if ( ( n != x.row() ) || ( 1 != x.col() ) || ( 0 == std::count_if( x.begin(), x.end(), []( T2 const v )
@@ -5244,7 +5326,7 @@ namespace feng
     void cholesky_decomposition( const Matrix1& m, Matrix2& a )
     {
         typedef typename Matrix1::value_type value_type;
-        assert( m.row() == m.col() );
+        matrix_assert( m.row() == m.col() );
         a                   = m;
         const std::uint_least64_t n = m.row();
 
@@ -5268,9 +5350,9 @@ namespace feng
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type size_type;
-        assert( A.row() == A.col() );
-        assert( A.row() == b.row() );
-        assert( b.col() == 1 );
+        matrix_assert( A.row() == A.col() );
+        matrix_assert( A.row() == b.row() );
+        matrix_assert( b.col() == 1 );
         size_type const n = A.row();
         x.resize( n, 1 );
 
@@ -5339,7 +5421,7 @@ namespace feng
         typedef Matrix1 matrix_type;
         typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type size_type;
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         size_type const n     = A.row();
         value_type const zero = value_type( 0 );
         value_type const one  = value_type( 1 );
@@ -5455,7 +5537,7 @@ namespace feng
     {
         typedef typename Matrix1::value_type value_type;
         typedef typename Matrix1::size_type size_type;
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         auto a          = A;
         auto const n    = a.row();
         auto const one  = value_type( 1 );
@@ -5503,7 +5585,7 @@ namespace feng
         {
             return std::abs( lhs - rhs ) < eps;
         };
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         size_type i     = 0;
         auto a          = A;
         auto const n    = a.row();
@@ -5569,7 +5651,7 @@ namespace feng
     template < typename Matrix1, typename Matrix2, typename Otor, typename T = double >
     void eigen_real_symmetric( const Matrix1& A, Matrix2& V, Otor o, const T eps = T( 1.0e-10 ) )
     {
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         Matrix1 D( A );
         Matrix1 Q( A );
         householder( A, Q, D );
@@ -5598,7 +5680,7 @@ namespace feng
     template < typename T1, typename A1, typename T2, typename A2, typename Otor, typename T = double >
     void eigen_hermitian_impl( const matrix< std::complex< T1 >, A1 >& A, matrix< std::complex< T2 >, A2 >& V, Otor o, const T eps = T( 1.0e-20 ) )
     {
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         std::uint_least64_t const n = A.row();
         auto const A_       = real( A );
         auto const B_       = imag( A );
@@ -5614,7 +5696,7 @@ namespace feng
         for ( std::uint_least64_t i = 0; i != n; ++i )
         {
             std::uint_least64_t const offset = std::distance( LL.diag_begin(), std::find( LL.diag_begin(), LL.diag_end(), vec[i + i] ) );
-            assert( offset < n + n );
+            matrix_assert( offset < n + n );
             for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
             {
                 c.real( r );
@@ -5629,7 +5711,7 @@ namespace feng
     template < typename T, typename A_, typename O >
     T eigen_power_iteration( const matrix< T, A_ >& A, O output, const T eps = T( 1.0e-5 ) )
     {
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         matrix< T, A_ > b( A.col(), 1 );
         std::copy( A.diag_cbegin(), A.diag_cend(), b.begin() );
 
@@ -5651,7 +5733,7 @@ namespace feng
             }
         }
 
-        assert( !"eigen_power_iteration:: should never reach here!" );
+        matrix_assert( !"eigen_power_iteration:: should never reach here!" );
         return T( 0 );
     }
     template < typename T, typename A_ >
@@ -5663,7 +5745,7 @@ namespace feng
     template < typename T, typename A_, typename O >
     T eigen_power_iteration( const matrix< std::complex< T >, A_ >& A, O output, const T eps = T( 1.0e-5 ) )
     {
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         matrix< std::complex< T >, A_ > b( A.col(), 1 );
         matrix< std::complex< T >, A_ > b_( A.col(), 1 );
         std::copy( A.diag_cbegin(), A.diag_cend(), b.begin() );
@@ -5707,7 +5789,7 @@ namespace feng
             }
         }
 
-        assert( !"eigen_power_iteration:: should never reach here!" );
+        matrix_assert( !"eigen_power_iteration:: should never reach here!" );
         return T( 0 );
     }
     template < typename T, typename A_ >
@@ -5753,7 +5835,7 @@ namespace feng
             return std::sqrt( eigen_power_iteration( A ) );
         }
 
-        assert( !"norm:: other norm algorithm has not been implemented!" );
+        matrix_assert( !"norm:: other norm algorithm has not been implemented!" );
         return value_type( 0 );
     }
     template < typename Matrix >
@@ -5809,7 +5891,7 @@ namespace feng
         typedef typename matrix_type::value_type value_type_;
         typedef typename expm_private::fix_complex_value_type< value_type_ >::value_type value_type;
         typedef typename matrix_type::size_type size_type;
-        assert( A.row() == A.col() );
+        matrix_assert( A.row() == A.col() );
         static const value_type theta[] = { 0.000000000000000e+000,
                                             3.650024139523051e-008,
                                             5.317232856892575e-004,
@@ -5932,9 +6014,9 @@ namespace feng
         typedef matrix< T1, A1 > matrix_type;
         typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type size_type;
-        assert( A.row() == A.col() );
-        assert( A.row() == b.row() );
-        assert( b.col() == 1 );
+        matrix_assert( A.row() == A.col() );
+        matrix_assert( A.row() == b.row() );
+        matrix_assert( b.col() == 1 );
         size_type const n = A.row();
         x.resize( n, 1 );
         std::fill( x.begin(), x.end(), value_type( 0 ) );
@@ -5955,7 +6037,7 @@ namespace feng
     std::optional<matrix<T,A>> gauss_jordan_elimination( matrix< T, A > const& m ) noexcept
     {
         auto const& [row, col] = m.shape();
-        assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
+        matrix_assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
 
         auto a = m;
 
@@ -6061,7 +6143,7 @@ namespace feng
     int lu_decomposition( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& L, matrix< Type, Allocator >& U )
     {
         typedef Type value_type;
-        assert( A.row() == A.col() && "Square Matrix Requred!" );
+        matrix_assert( A.row() == A.col() && "Square Matrix Requred!" );
 
         const std::uint_least64_t n = A.row();
         L.resize( n, n );
@@ -6103,9 +6185,9 @@ namespace feng
     int lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& x, const matrix< Type, Allocator >& b )
     {
         typedef matrix< Type, Allocator > matrix_type;
-        assert( A.row() == A.col() );
-        assert( A.row() == b.row() );
-        assert( b.col() == 1 );
+        matrix_assert( A.row() == A.col() );
+        matrix_assert( A.row() == b.row() );
+        matrix_assert( b.col() == 1 );
         matrix_type L, U;
 
         if ( lu_decomposition( A, L, U ) )
@@ -6156,7 +6238,7 @@ namespace feng
             return ans;
         };
 
-        if constexpr ( use_parallel == 0 )
+        if constexpr ( parallel_mode == 0 )
         {
             for ( auto row : misc::range(ans.row() ) )
                 for ( auto col : misc::range(ans.row() ) )
@@ -6219,6 +6301,7 @@ namespace feng
     }
 } //namespace feng
 
+#undef matrix_assert
 RESTORE_WARNINGS
 
 #endif
