@@ -958,6 +958,7 @@ This produces an image looks like:
 
 #### matrix convolution
 
+
 ```cpp
 feng::matrix<double> m;
 m.load_txt( "./images/Lenna.txt" );
@@ -965,6 +966,9 @@ m.save_as_bmp( "./images/0000_conv.bmp", "gray" );
 ```
 
 ![convolution 1](./images/0000_conv.bmp)
+
+
+Full 2D matrix convolution with zero-paddings is given by `conv` or `conv2` :
 
 
 ```cpp
@@ -976,6 +980,40 @@ edge.save_as_bmp( "./images/0001_conv.bmp", "gray" );
 ```
 
 ![convolution 2](./images/0001_conv.bmp)
+
+
+The convolution has three modes: `valid`, `same`, and `full`
+
+The valid mode gives out convolution result without zero-paddings:
+
+```cpp
+auto const& edge_valid = feng::conv( m, filter, "valid" );
+edge_valid.save_as_bmp( "./images/0001_conv_valid.bmp", "gray" );
+```
+
+![convolution valid](./images/0001_conv_valid.bmp)
+
+The `same` mode returns the central part of the convolution result with zero-paddings, of the same size as the larger matrix passed to  function `conv`
+
+```cpp
+auto const& edge_same = feng::conv( m, filter, "same" );
+edge_same.save_as_bmp( "./images/0001_conv_same.bmp", "gray" );
+```
+
+![convolution same](./images/0001_conv_same.bmp)
+
+
+
+`full` mode is the default mode:
+
+```cpp
+auto const& edge_full = feng::conv( m, filter, "full" );
+edge_full.save_as_bmp( "./images/0001_conv_full.bmp", "gray" );
+```
+
+![convolution full](./images/0001_conv_full.bmp)
+
+
 
 
 #### make view function

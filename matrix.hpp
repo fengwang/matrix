@@ -35,7 +35,6 @@ static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please
 SUPPRESS_WARNINGS
 #include <algorithm>
 #include <array>
-//#include <cassert>
 #include <cmath>
 #include <complex>
 #include <cstring>
@@ -6180,7 +6179,7 @@ namespace feng
         if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
             return matrix<Type, Allocator>{0, 0};
 
-        if ( A.size() > B.size() )
+        if ( A.size() < B.size() )
             return conv( B, A );
 
         matrix<Type, Allocator> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
@@ -6199,29 +6198,63 @@ namespace feng
             return ans;
         };
 
+        auto const& func = [&]( std::uint_least64_t row )
+        {
+            for ( auto col : misc::range(ans.row() ))
+            {
+                auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
+                ans[row][col] = product( A, view, A.row(), A.col() );
+            }
+        };
+
+
         if constexpr ( parallel_mode == 0 )
         {
             for ( auto row : misc::range(ans.row() ) )
-                for ( auto col : misc::range(ans.row() ) )
-                {
-                    auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
-                    ans[row][col] = product( A, view, A.row(), A.col() );
-                }
+                func( row );
         }
         else
         {
-            auto func = [&]( std::uint_least64_t row )
-            {
-                for ( auto col : misc::range(ans.row() ) )
-                {
-                    auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
-                    ans[row][col] = product( A, view, A.row(), A.col() );
-                }
-            };
             misc::parallel( func, ans.row() );
         }
 
         return ans;
+    }
+
+    template< typename Type, typename Allocator >
+    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B, std::string const& mode ) noexcept
+    {
+        if ( A.size() < B.size() )
+            return conv( B, A, mode );
+
+        auto const& default_conv = conv( A, B );
+
+        auto const [ra, ca] = A.shape();
+        auto const [rb, cb] = B.shape();
+
+        if ( mode == std::string{"same"} )
+        {
+            better_assert( rb > 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
+            better_assert( rb > 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
+            return matrix<Type, Allocator>{ default_conv, { (rb-1)>>1, ra + ((rb-1)>>1) }, { (cb-1)>>1, ca + ((cb-1)>>1) } };
+        }
+
+        if ( mode == std::string{"valid"} )
+        {
+            better_assert( ra >= rb-1, " For a convolution in 'valid' mode, the row of first matrix is supposed to be at least larger than the second matrix's row by 1",
+                           " but the first matrix is with row ", ra, " and the second matrix is with row ", rb );
+            better_assert( ca >= cb-1, " For a convolution in 'valid' mode, the column of first matrix is supposed to be at least larger than the second matrix's column by 1",
+                           " but the first matrix is with column ", ca, " and the second matrix is with column ", cb );
+            return matrix<Type, Allocator>{ default_conv, { rb-1, ra }, { cb-1, ca } };
+        }
+
+        return default_conv;
+    }
+
+    template< typename ... Args >
+    auto conv2( Args const& ... args )
+    {
+        return conv( args... );
     }
 
     inline std::optional<std::array<matrix<std::uint8_t>,3>> load_bmp( std::string const& file_path )
