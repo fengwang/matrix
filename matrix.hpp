@@ -6179,7 +6179,7 @@ namespace feng
         if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
             return matrix<Type, Allocator>{0, 0};
 
-        if ( A.size() < B.size() )
+        if ( A.size() > B.size() )
             return conv( B, A );
 
         matrix<Type, Allocator> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
@@ -6224,9 +6224,6 @@ namespace feng
     template< typename Type, typename Allocator >
     matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B, std::string const& mode ) noexcept
     {
-        if ( A.size() < B.size() )
-            return conv( B, A, mode );
-
         auto const& default_conv = conv( A, B );
 
         auto const [ra, ca] = A.shape();
@@ -6236,7 +6233,7 @@ namespace feng
         {
             better_assert( rb > 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
             better_assert( rb > 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
-            return matrix<Type, Allocator>{ default_conv, { (rb-1)>>1, ra + ((rb-1)>>1) }, { (cb-1)>>1, ca + ((cb-1)>>1) } };
+            return { default_conv, { (rb-1)>>1, ra + ((rb-1)>>1) }, { (cb-1)>>1, ca + ((cb-1)>>1) } };
         }
 
         if ( mode == std::string{"valid"} )
@@ -6245,7 +6242,7 @@ namespace feng
                            " but the first matrix is with row ", ra, " and the second matrix is with row ", rb );
             better_assert( ca >= cb-1, " For a convolution in 'valid' mode, the column of first matrix is supposed to be at least larger than the second matrix's column by 1",
                            " but the first matrix is with column ", ca, " and the second matrix is with column ", cb );
-            return matrix<Type, Allocator>{ default_conv, { rb-1, ra }, { cb-1, ca } };
+            return { default_conv, { rb-1, ra }, { cb-1, ca } };
         }
 
         return default_conv;

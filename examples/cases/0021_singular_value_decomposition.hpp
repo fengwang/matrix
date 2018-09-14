@@ -11,7 +11,7 @@ void _0000_singular_value_decomposition()
     m.save_as_bmp( "./images/0000_singular_value_decomposition.bmp", "gray" );
     // adding noise
     auto const[r, c] = m.shape();
-    m += feng::rand<double>( r, c, 1 );
+    m += feng::rand<double>( r, c, 2 );
     // record noisy matrix
     m.save_as_bmp( "./images/0001_singular_value_decomposition.bmp", "gray" );
     // execute svd
@@ -62,7 +62,7 @@ void _0001_singular_value_decomposition()
     m.save_as_bmp( "./images/1_0000_singular_value_decomposition.bmp", "gray" );
     // adding noise
     auto const[r, c] = m.shape();
-    m += feng::rand<double>( r, c, 1 );
+    m += feng::rand<double>( r, c, 2 );
     // record noisy matrix
     m.save_as_bmp( "./images/1_0001_singular_value_decomposition.bmp", "gray" );
     // execute svd
