@@ -2081,9 +2081,6 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            //for ( auto& v : zen )
-            //    v *= rhs;
-
             zen.elementwise_apply( [&rhs]( value_type& v ) { v *= rhs; } );
 
             return zen;
@@ -2094,30 +2091,12 @@ namespace feng
             better_assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
             zen_type tmp( zen.row(), other.col() );
 
-
             auto const& func = [&]( size_type i )
             {
                 for ( size_type j = 0; j != tmp.col(); ++j )
                     tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
             };
             misc::parallel( func, tmp.row() );
-            /*
-            if constexpr( parallel_mode )
-            {
-                auto const& func = [&]( size_type i )
-                {
-                    for ( size_type j = 0; j != tmp.col(); ++j )
-                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
-                };
-                misc::parallel( func, tmp.row() );
-            }
-            else
-            {
-                for ( size_type i = 0; i < tmp.row(); ++i )
-                    for ( size_type j = 0; j < tmp.col(); ++j )
-                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
-            }
-            */
             zen.swap( tmp );
             return zen;
         }
