@@ -2051,8 +2051,10 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            for ( auto& v : zen )
-                v -= rhs;
+            //for ( auto& v : zen )
+            //    v -= rhs;
+
+            zen.elementwise_apply( [&rhs]( value_type& v) { v -= rhs; } );
 
             return zen;
         }
