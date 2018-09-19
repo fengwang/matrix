@@ -8,4 +8,5 @@ SUPPRESS_WARNINGS
 #include "./cases/view_bracket.hpp"
 #include "./cases/misc_range.hpp"
 #include "./cases/inverse.hpp"
+#include "./cases/operator_equal.hpp"
 RESTORE_WARNINGS
