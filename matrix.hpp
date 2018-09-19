@@ -2247,22 +2247,29 @@ namespace feng
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_plus_equal_operator
     {
-        typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
-        typedef typename type_proxy_type::value_type value_type;
+        typedef Matrix                                  zen_type;
+        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef typename type_proxy_type::value_type    value_type;
+        typedef typename type_proxy_type::size_type     size_type;
         zen_type& operator+=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            for ( auto& v : zen )
-                v += rhs;
+            zen.elementwise_apply( [&rhs]( auto& v ){ v += rhs; } );
 
             return zen;
         }
         zen_type& operator+=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::plus< value_type >() );
+
+            auto x = zen.data();
+            auto y = rhs.data();
+            auto const& elementwise_add = [x, y]( size_type offset )
+            {
+                x[offset] += y[offset];
+            };
+            misc::parallel( elementwise_add, zen.size() );
             return zen;
         }
     };
@@ -2277,10 +2284,13 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             zen_type ans{ zen };
-            std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x )
+            //std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x ) { return -x; } );
+            auto x = ans.data();
+            auto const& minus_function = [x]( size_type offset )
             {
-                return -x;
-            } );
+                x[offset] = -x[offset];
+            };
+            misc::parallel( minus_function, ans.size() );
             return ans;
         }
     };
