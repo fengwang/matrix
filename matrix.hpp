@@ -86,6 +86,7 @@ namespace feng
     {
         if constexpr( debug_mode )
         {
+            out.precision( 20 );
             (out << ... << args) << std::endl;
             abort();
         }
@@ -1328,13 +1329,24 @@ namespace feng
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_apply
     {
-        typedef Matrix zen_type;
+        typedef Matrix  zen_type;
+        typedef Type    value_type;
         template < typename Function >
         void apply( const Function& func ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            for (auto& x : zen )
-                func(x);
+            if constexpr (parallel_mode )
+            {
+                value_type* x = zen.data();
+                auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
+                misc::parallel( parallel_function, zen.size() );
+            }
+            else
+            {
+                for (auto& x : zen )
+                    func(x);
+            }
+
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
