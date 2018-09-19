@@ -1344,32 +1344,6 @@ namespace feng
         void apply( const Function& func ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            /*
-            if constexpr (parallel_mode )
-            {
-                value_type* x = zen.data();
-                auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
-                misc::parallel( parallel_function, zen.size() );
-            }
-            else
-            {
-                for (auto& x : zen )
-                    func(x);
-            }
-            */
-            /*
-            value_type* x = zen.data();
-            auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
-            if constexpr (parallel_mode )
-            {
-                misc::parallel( parallel_function, zen.size() );
-            }
-            else
-            {
-                for ( auto idx : misc::range( zen.size() ) )
-                    parallel_function( idx );
-            }
-            */
             value_type* x = zen.data();
             auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
             misc::parallel( parallel_function, zen.size() );
@@ -1479,21 +1453,7 @@ namespace feng
                 std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
             };
 
-
             misc::parallel( parallel_function, tmp.row() );
-
-            /*
-            if constexpr( parallel_mode )
-            {
-                misc::parallel( parallel_function, tmp.row() );
-            }
-            else
-            {
-                //for ( size_type r = 0; r != tmp.row(); ++r )
-                for ( auto r : misc::range( tmp.row() ) )
-                    parallel_function( r );
-            }
-            */
 
             zen.swap( tmp );
             return zen;
@@ -2129,6 +2089,14 @@ namespace feng
             better_assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
             zen_type tmp( zen.row(), other.col() );
 
+
+            auto const& func = [&]( size_type i )
+            {
+                for ( size_type j = 0; j != tmp.col(); ++j )
+                    tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
+            };
+            misc::parallel( func, tmp.row() );
+            /*
             if constexpr( parallel_mode )
             {
                 auto const& func = [&]( size_type i )
@@ -2144,7 +2112,7 @@ namespace feng
                     for ( size_type j = 0; j < tmp.col(); ++j )
                         tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
             }
-
+            */
             zen.swap( tmp );
             return zen;
         }
@@ -6264,7 +6232,8 @@ namespace feng
             }
         };
 
-
+        misc::parallel( func, ans.row() );
+        /*
         if constexpr ( parallel_mode == 0 )
         {
             for ( auto row : misc::range(ans.row() ) )
@@ -6274,7 +6243,7 @@ namespace feng
         {
             misc::parallel( func, ans.row() );
         }
-
+        */
         return ans;
     }
 
