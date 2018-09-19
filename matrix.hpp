@@ -69,7 +69,7 @@ namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20180516;
 
-    #ifdef NO_PARALLEL
+    #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
     #else
     constexpr std::uint_least64_t parallel_mode = 1;
