@@ -69,11 +69,6 @@ namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20180919;
 
-    template < typename Type, class Allocator>
-    struct matrix;
-
-    // TODO: check type support of all operators
-
     #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
     #else
@@ -104,6 +99,9 @@ namespace feng
     #undef better_assert
     #endif
     #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : matrix_private::print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
+
+    template < typename Type, class Allocator>
+    struct matrix;
 
     namespace misc
     {
@@ -1952,52 +1950,6 @@ namespace feng
             ans.copy( E, {0, n}, {0, n} ); ans.copy( F, {0, n}, {n, N} );
             ans.copy( G, {n, N}, {0, n} ); ans.copy( H, {n, N}, {n, N} );
             return ans;
-
-            /*
-            size_type const n = zen.row();
-            zen_type a( zen.get_allocator(),  n, n + n );
-            std::fill( a.begin(), a.end(), value_type{0} );
-
-            auto row_copy_function = [&zen, &a]( size_type index )
-            {
-                std::copy( zen.row_begin( index ), zen.row_end( index ), a.row_begin( index ) );
-            };
-            misc::parallel( row_copy_function, n );
-
-            std::fill( a.upper_diag_begin( n ), a.upper_diag_end( n ), value_type( 1 ) );
-
-            for ( size_type i = 0; i < n; ++i )
-            {
-                const size_type p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), []( value_type x, value_type y ) { return std::abs( x ) < std::abs( y ); } ) );
-
-                if ( p != i )
-                {
-                    std::swap_ranges( a.row_begin( i ) + i, a.row_end( i ), a.row_begin( p ) + i );
-                }
-
-                const value_type factor = a[i][i];
-
-                better_assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() && "Failed inversing matrix, too small factor for Gaussian elimination!" );
-
-                std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x ) noexcept { x /= factor; } );
-
-                for ( size_type j = 0; j < n; ++j )
-                {
-                    if ( i == j )
-                    {
-                        continue;
-                    }
-
-                    const value_type ratio = a[j][i];
-                    std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio]( value_type x, value_type y ) noexcept
-                    {
-                        return x - y * ratio;
-                    } );
-                }
-            }
-
-            return zen_type{ a, range_type{ 0, n }, range_type{ n, n + n } };
-            */
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
