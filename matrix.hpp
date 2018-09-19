@@ -69,7 +69,7 @@ namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20180516;
 
-    #ifdef NO_PARALLEL
+    #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
     #else
     constexpr std::uint_least64_t parallel_mode = 1;
@@ -1340,6 +1340,7 @@ namespace feng
     {
         typedef Matrix  zen_type;
         typedef Type    value_type;
+
         template < typename Function >
         void apply( const Function& func ) noexcept
         {
@@ -1347,7 +1348,12 @@ namespace feng
             value_type* x = zen.data();
             auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
             misc::parallel( parallel_function, zen.size() );
+        }
 
+        template < typename Function >
+        void elementwise_apply( const Function& func ) noexcept
+        {
+            apply( func );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -1879,8 +1885,10 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            for ( auto& v : zen )
-                v /= rhs;
+            //for ( auto& v : zen )
+            //    v /= rhs;
+
+            zen.apply( [&rhs]( value_type& v ) { v /= rhs; } );
 
             return zen;
         }

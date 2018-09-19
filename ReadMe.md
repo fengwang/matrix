@@ -79,8 +79,10 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 #### typical compile and link command
 
 ```bash
-g++ -o your_exe_file your_source_code.cpp -std=c++17 -O2
+g++ -o your_exe_file your_source_code.cpp -std=c++17 -O2 -pthread
 ```
+
+Please note `std::thread` is enabled by default, and option `-pthread` is necesary under Linux/Unix/Mac platform. If you prefer single thread mode, pass `-DNPARALLEL` option to compiler.
 
 ### basic
 
