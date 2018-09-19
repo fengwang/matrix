@@ -1335,6 +1335,7 @@ namespace feng
         void apply( const Function& func ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
+            /*
             if constexpr (parallel_mode )
             {
                 value_type* x = zen.data();
@@ -1345,6 +1346,18 @@ namespace feng
             {
                 for (auto& x : zen )
                     func(x);
+            }
+            */
+            value_type* x = zen.data();
+            auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
+            if constexpr (parallel_mode )
+            {
+                misc::parallel( parallel_function, zen.size() );
+            }
+            else
+            {
+                for ( auto idx : misc::range( zen.size() ) )
+                    parallel_function( idx );
             }
 
         }
@@ -1447,8 +1460,21 @@ namespace feng
             zen_type& zen = static_cast< zen_type& >( *this );
             zen_type tmp{ zen.get_allocator(), r1-r0, c1-c0 };
 
-            for ( size_type r = 0; r != tmp.row(); ++r )
+            auto && parallel_function = [&]( std::uint_least64_t r )
+            {
                 std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
+            };
+
+            if constexpr( parallel_mode )
+            {
+                misc::parallel( parallel_function, tmp.row() );
+            }
+            else
+            {
+                //for ( size_type r = 0; r != tmp.row(); ++r )
+                for ( auto r : misc::range( tmp.row() ) )
+                    parallel_function( r );
+            }
 
             zen.swap( tmp );
             return zen;
