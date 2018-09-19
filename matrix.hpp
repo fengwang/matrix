@@ -2047,6 +2047,7 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
+        typedef typename type_proxy_type::size_type size_type;
         zen_type& operator-=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
@@ -2061,7 +2062,15 @@ namespace feng
         zen_type& operator-=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::minus< value_type >() );
+            //std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::minus< value_type >() );
+            auto v = zen.data();
+            auto x = rhs.data();
+            auto const& elementwise_minus = [v, x]( size_type offset )
+            {
+                v[offset] -= x[offset];
+            };
+            misc::parallel( elementwise_minus, zen.size() );
+
             return zen;
         }
     };
