@@ -13,7 +13,7 @@ all: test example
 
 test: tests/test.cc ./matrix.hpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJECTS_DIR)/test.o tests/test.cc
-	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test $(OBJECTS_DIR)/test.o
+	$(LINK) $(LFLAGS) -o $(BIN_DIR)/test_test $(OBJECTS_DIR)/test.o
 
 example: examples/example.cc ./matrix.hpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJECTS_DIR)/example.o examples/example.cc
@@ -24,7 +24,7 @@ clean: clean_obj clean_test clean_example
 clean_obj:
 	rm ./*.o
 clean_test:
-	rm ./test
+	rm ./test_test
 clean_example:
 	rm ./test_example
 

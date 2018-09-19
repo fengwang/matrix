@@ -7,4 +7,5 @@ SUPPRESS_WARNINGS
 #include "./cases/size.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/misc_range.hpp"
+#include "./cases/inverse.hpp"
 RESTORE_WARNINGS
