@@ -67,7 +67,7 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20180516;
+    constexpr std::uint_least64_t matrix_version = 20180919;
 
     #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
@@ -81,25 +81,27 @@ namespace feng
     constexpr std::uint_least64_t debug_mode = 1;
     #endif
 
-    template< typename... Args >
-    void print_assertion(std::ostream& out, Args&&... args)
+    namespace matrix_private
     {
-        if constexpr( debug_mode )
+        template< typename... Args >
+        void print_assertion(std::ostream& out, Args&&... args)
         {
-            (out << ... << args) << std::endl;
-            abort();
+            if constexpr( debug_mode )
+            {
+                out.precision( 20 );
+                (out << ... << args) << std::endl;
+                abort();
+            }
         }
     }
 
     #ifdef better_assert
     #undef better_assert
     #endif
-    #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
+    #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : matrix_private::print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
 
     template < typename Type, class Allocator>
     struct matrix;
-
-    // TODO: check type support of all operators
 
     namespace misc
     {
@@ -249,51 +251,60 @@ namespace feng
         template< typename Function, typename Integer_Type >
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
         {
-            unsigned int const total_cores = std::thread::hardware_concurrency();
-
-            // case of non-parallel
-            if ( total_cores <= 1 )
+            if constexpr( parallel_mode == 0 )
             {
                 for ( auto a : range( dim_first, dim_last ) )
                     func( a );
                 return;
             }
-
-            // case of small job numbers
-            std::vector<std::thread> threads;
-            if ( dim_last - dim_first <= total_cores )
+            else // <- this is constexpr-if, `else` is a must
             {
-                for ( auto idx = dim_first; idx != dim_last; ++idx )
-                    threads.emplace_back( std::thread{[&func, idx](){ func( idx ); }} );
+                unsigned int const total_cores = std::thread::hardware_concurrency();
+
+                // case of non-parallel
+                if ( total_cores <= 1 )
+                {
+                    for ( auto a : range( dim_first, dim_last ) )
+                        func( a );
+                    return;
+                }
+
+                // case of small job numbers
+                std::vector<std::thread> threads;
+                if ( dim_last - dim_first <= total_cores )
+                {
+                    for ( auto index = dim_first; index != dim_last; ++index )
+                        threads.emplace_back( std::thread{[&func, index](){ func( index ); }} );
+                    for ( auto& th : threads )
+                        th.join();
+                    return;
+                }
+
+                // case of more jobs than CPU cores
+                auto const& job_slice = [&func]( Integer_Type a, Integer_Type b )
+                {
+                    if ( a >= b ) return;
+                    while ( a != b )
+                        func(a++);
+                };
+
+                threads.reserve( total_cores-1 );
+                std::uint_least64_t tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
+
+                for ( auto index : range( total_cores-1 ) )
+                {
+                    Integer_Type first = tasks_per_thread * index + dim_first;
+                    first = std::min( first, dim_last );
+                    Integer_Type last =  first + tasks_per_thread;
+                    last = std::min( last, dim_last );
+                    threads.emplace_back( std::thread{ job_slice, first, last } );
+                }
+
+                job_slice( tasks_per_thread*(total_cores-1), dim_last );
+
                 for ( auto& th : threads )
                     th.join();
-                return;
             }
-
-            // case of more jobs than CPU cores
-            auto const& job_slice = [&func]( Integer_Type a, Integer_Type b )
-            {
-                if ( a >= b ) return;
-                while ( a != b )
-                    func(a++);
-            };
-
-            threads.reserve( total_cores-1 );
-            std::uint_least64_t tasks_per_thread = ( dim_last - dim_first + total_cores - 1 ) / total_cores;
-
-            for ( auto idx : range( total_cores-1 ) )
-            {
-                Integer_Type first = tasks_per_thread * idx + dim_first;
-                first = std::min( first, dim_last );
-                Integer_Type last =  first + tasks_per_thread;
-                last = std::min( last, dim_last );
-                threads.emplace_back( std::thread{ job_slice, first, last } );
-            }
-
-            job_slice( tasks_per_thread*(total_cores-1), dim_last );
-
-            for ( auto& th : threads )
-                th.join();
         }
 
         template< typename Function, typename Integer_Type >
@@ -375,9 +386,9 @@ namespace feng
 
                 return [=]( double x )
                 {
-                    for ( auto idx : misc::range( values.size() - 1 ) )
-                        if ( x <= values[idx+1] )
-                            return  make_transformation_function( colors[idx], values[idx], colors[idx+1], values[idx+1] )(x);
+                    for ( auto index : misc::range( values.size() - 1 ) )
+                        if ( x <= values[index+1] )
+                            return  make_transformation_function( colors[index], values[index], colors[index+1], values[index+1] )(x);
                     better_assert( !"make_color_map::should never reach here!" );
                     return std::make_tuple(0_u8, 0_u8, 0_u8);
                 };
@@ -750,34 +761,8 @@ namespace feng
                     std::string{ "zigzag" },
                     make_color_map
                     (
-                        //{ 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.5, 0.65, 0.8, 1.0},
-                        //{ 0.0, 0.025, 0.08, 0.12, 0.2, 0.3, 0.5, 0.65, 0.8, 1.0},
                         { 0.0, 0.04, 0.08, 0.12, 0.2, 0.3, 0.4, 0.5, 0.65, 0.8, 1.0},
                         {
-                        /*
-                            std::make_tuple(0_u8, 0_u8, 0_u8),
-                            std::make_tuple(0_u8, 0_u8, 0_u8),
-                            std::make_tuple(0_u8, 0_u8, 33_u8),
-                            std::make_tuple(33_u8, 66_u8, 167_u8),
-                            std::make_tuple(66_u8, 100_u8, 100_u8),
-                            std::make_tuple(100_u8, 166_u8, 88_u8),
-                            std::make_tuple(222_u8, 255_u8, 0_u8),
-                            std::make_tuple(250_u8, 150_u8, 0_u8),
-                            std::make_tuple(255_u8, 100_u8, 0_u8),
-                            std::make_tuple(188_u8, 33_u8, 0_u8)
-                        */
-                        /*
-                            std::make_tuple(0_u8, 0_u8, 0_u8),
-                            std::make_tuple(0_u8, 0_u8, 0_u8),
-                            std::make_tuple(0_u8, 0_u8, 33_u8),
-                            std::make_tuple(33_u8, 33_u8, 167_u8),
-                            std::make_tuple(66_u8, 66_u8, 100_u8),
-                            std::make_tuple(100_u8, 166_u8, 88_u8),
-                            std::make_tuple(167_u8, 255_u8, 0_u8),
-                            std::make_tuple(222_u8, 150_u8, 0_u8),
-                            std::make_tuple(200_u8, 100_u8, 0_u8),
-                            std::make_tuple(255_u8, 33_u8, 0_u8)
-                        */
                             std::make_tuple(0_u8, 0_u8, 0_u8),
                             std::make_tuple(0_u8, 0_u8, 11_u8),
                             std::make_tuple(0_u8, 0_u8, 22_u8),
@@ -900,7 +885,7 @@ namespace feng
                     encoding.push_back( channel_g[r][c] );
                     encoding.push_back( channel_r[r][c] );
                 }
-                //for ( auto idx : range( padding_size ) )
+                //for ( auto index : range( padding_size ) )
                 //    encoding.push_back( std::uint8_t{} );
                 repeat( [&encoding](){ encoding.push_back( std::uint8_t{} ); }, padding_size );
             }
@@ -1328,13 +1313,22 @@ namespace feng
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_apply
     {
-        typedef Matrix zen_type;
+        typedef Matrix  zen_type;
+        typedef Type    value_type;
+
         template < typename Function >
         void apply( const Function& func ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            for (auto& x : zen )
-                func(x);
+            value_type* x = zen.data();
+            auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
+            misc::parallel( parallel_function, zen.size() );
+        }
+
+        template < typename Function >
+        void elementwise_apply( const Function& func ) noexcept
+        {
+            apply( func );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -1435,8 +1429,12 @@ namespace feng
             zen_type& zen = static_cast< zen_type& >( *this );
             zen_type tmp{ zen.get_allocator(), r1-r0, c1-c0 };
 
-            for ( size_type r = 0; r != tmp.row(); ++r )
+            auto && parallel_function = [&]( std::uint_least64_t r )
+            {
                 std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
+            };
+
+            misc::parallel( parallel_function, tmp.row() );
 
             zen.swap( tmp );
             return zen;
@@ -1446,7 +1444,10 @@ namespace feng
         {
             better_assert( r.size() == 2 && "row size should be 2!" );
             better_assert( c.size() == 2 && "col size should be 2!" );
-            return clone( r[0], r[1], c[0], c[1] );
+            auto const [r0, r1] = std::tuple{ *r.begin(), *(r.begin()+1) };
+            auto const [c0, c1] = std::tuple{ *c.begin(), *(c.begin()+1) };
+
+            return clone( r0, r1, c0, c1 );
         }
         zen_type const clone( size_type const r0, size_type const r1, size_type const c0, size_type const c1 ) const noexcept
         {
@@ -1530,6 +1531,7 @@ namespace feng
     {
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef typename type_proxy_type::size_type size_type;
         template < typename Other_Matrix >
         void copy( const Other_Matrix& rhs ) noexcept
         {
@@ -1537,6 +1539,35 @@ namespace feng
             zen.allocator_ = rhs.allocator_;
             zen.resize( rhs.row(), rhs.col() );
             std::copy( rhs.begin(), rhs.end(), zen.begin() );//<- should be overloaded when with cuda_allocator
+            // TODO: copy-and-swap
+        }
+
+        // copy 'other' matrix, placing in position [ (r0, r1), (c0, c1) ]
+        template < typename Other_Matrix >
+        void copy( const Other_Matrix& other, std::initializer_list<size_type> r, std::initializer_list<size_type> c ) noexcept
+        {
+            zen_type& zen = static_cast< zen_type& >( *this );
+
+            better_assert( r.size() == 2, " expecting 2 arguments inside r, but received ", r.size(), " parameters." );
+            better_assert( c.size() == 2, " expecting 2 arguments inside r, but received ", c.size(), " parameters." );
+
+            auto [r0, r1] = std::tuple{ *r.begin(), *(r.begin()+1) };
+            auto [c0, c1] = std::tuple{ *c.begin(), *(c.begin()+1) };
+
+            better_assert( r1 <= zen.row(), " expecting matrix row no less than row arg, but the matrix row is ", zen.row(), " and the row arg is ", r1 );
+            better_assert( c1 <= zen.col(), " expecting matrix col no less than col arg, but the matrix col is ", zen.col(), " and the row arg is ", c1 );
+
+            better_assert( r0 <= r1, " first row arg is larger than the second! The first arg is ", r0, " and the second arg is ", r1 );
+            better_assert( c0 <= c1, " first col arg is larger than the second! The first arg is ", r0, " and the second arg is ", r1 );
+
+            better_assert( r1 - r0 == other.row(), " row dim does not match, expected ", other.row(), " rows, but passed parameters are ", r0, " and ", r1 );
+            better_assert( c1 - c0 == other.col(), " col dim does not match, expected ", other.col(), " cols, but passed parameters are ", c0, " and ", c1 );
+
+            auto const& copy_function = [&, r0, c0]( size_type const row_index )
+            {
+                std::copy( other.row_begin(row_index), other.row_end(row_index), zen.row_begin(r0+row_index)+c0 );
+            };
+            misc::parallel( copy_function, other.row() );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -1861,10 +1892,7 @@ namespace feng
         zen_type& operator/=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-
-            for ( auto& v : zen )
-                v /= rhs;
-
+            zen.elementwise_apply( [&rhs]( value_type& v ) { v /= rhs; } );
             return zen;
         }
         zen_type& operator/=( const zen_type& rhs ) noexcept
@@ -1882,60 +1910,46 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
+        // TODO: block-wise inverse here
         const zen_type inverse() const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
+            better_assert( zen.row() == zen.col(), " Expecting square matrix, but now with row = ", zen.row(), " and col = ", zen.col() );
 
-            better_assert( zen.row() == zen.col() && "matrix is not square!" );
+            // case of empty matrix
+            if ( zen.size() == 0 )
+                return zen_type{};
 
-            size_type const n = zen.row();
-            zen_type a( zen.get_allocator(),  n, n + n );
-            std::fill( a.begin(), a.end(), value_type{0} );
+            if ( zen.size() == 1 )
+                return zen_type{ 1, 1, {value_type{1} / zen[0][0]} };
 
-            for ( size_type i = 0; i != n; ++i )
+            if ( zen.size() == 4 )
             {
-                std::copy( zen.row_begin( i ), zen.row_end( i ), a.row_begin( i ) );
+                auto const [a, b, c, d] = std::make_tuple( zen[0][0], zen[0][1], zen[1][0], zen[1][1] );
+                value_type const factor = a*d - b*c;
+                return zen_type{ 2, 2, { d / factor, -b / factor, -c / factor, a / factor } };
             }
 
-            std::fill( a.upper_diag_begin( n ), a.upper_diag_end( n ), value_type( 1 ) );
+            size_type const N = zen.row();
+            size_type const n = N >> 1;
+            zen_type const& A = zen.clone({0, n}, {0, n}); zen_type const& B = zen.clone({0, n}, {n, N});
+            zen_type const& C = zen.clone({n, N}, {0, n}); zen_type const& D = zen.clone({n, N}, {n, N});
 
-            for ( size_type i = 0; i < n; ++i )
-            {
-                const size_type p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), []( value_type x, value_type y )
-                {
-                    return std::abs( x ) < std::abs( y );
-                } ) );
+            auto const& D_ = D.inverse();
+            auto const& D_C = D_ * C;
+            auto const& BD_C = B * D_C;
+            auto const& A__BD_C = A - BD_C;
+            auto const& A__BD_C_ = A__BD_C.inverse();
+            auto const& BD_ = B * D_;
+            auto const& A__BD_C_BD_ = A__BD_C_ * BD_;
 
-                if ( p != i )
-                {
-                    std::swap_ranges( a.row_begin( i ) + i, a.row_end( i ), a.row_begin( p ) + i );
-                }
+            auto const& E = A__BD_C_;           auto const& F = -A__BD_C_BD_;
+            auto const& G = -D_C * A__BD_C_;    auto const& H = D_ + D_C * A__BD_C_BD_;
 
-                const value_type factor = a[i][i];
-
-                better_assert( std::abs(factor) >= std::numeric_limits<value_type>::epsilon() && "Failed inversing matrix, too small factor for Gaussian elimination!" );
-
-                std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor]( value_type & x ) noexcept
-                {
-                    x /= factor;
-                } );
-
-                for ( size_type j = 0; j < n; ++j )
-                {
-                    if ( i == j )
-                    {
-                        continue;
-                    }
-
-                    const value_type ratio = a[j][i];
-                    std::transform( a.row_rbegin( j ), a.row_rend( j ) - i, a.row_rbegin( i ), a.row_rbegin( j ), [ratio]( value_type x, value_type y ) noexcept
-                    {
-                        return x - y * ratio;
-                    } );
-                }
-            }
-
-            return zen_type{ a, range_type{ 0, n }, range_type{ n, n + n } };
+            zen_type ans{ N, N };
+            ans.copy( E, {0, n}, {0, n} ); ans.copy( F, {0, n}, {n, N} );
+            ans.copy( G, {n, N}, {0, n} ); ans.copy( H, {n, N}, {n, N} );
+            return ans;
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -2033,19 +2047,25 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
+        typedef typename type_proxy_type::size_type size_type;
+
         zen_type& operator-=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-
-            for ( auto& v : zen )
-                v -= rhs;
-
+            zen.elementwise_apply( [&rhs]( value_type& v) { v -= rhs; } );
             return zen;
         }
+
         zen_type& operator-=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::minus< value_type >() );
+            auto v = zen.data();
+            auto x = rhs.data();
+            auto const& elementwise_minus = [v, x]( size_type offset )
+            {
+                v[offset] -= x[offset];
+            };
+            misc::parallel( elementwise_minus, zen.size() );
             return zen;
         }
     };
@@ -2061,8 +2081,7 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            for ( auto& v : zen )
-                v *= rhs;
+            zen.elementwise_apply( [&rhs]( value_type& v ) { v *= rhs; } );
 
             return zen;
         }
@@ -2072,22 +2091,12 @@ namespace feng
             better_assert( zen.col() == other.row() && "direct_multiply: dimesion not match!" );
             zen_type tmp( zen.row(), other.col() );
 
-            if constexpr( parallel_mode )
+            auto const& func = [&]( size_type i )
             {
-                auto const& func = [&]( size_type i )
-                {
-                    for ( size_type j = 0; j != tmp.col(); ++j )
-                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
-                };
-                misc::parallel( func, tmp.row() );
-            }
-            else
-            {
-                for ( size_type i = 0; i < tmp.row(); ++i )
-                    for ( size_type j = 0; j < tmp.col(); ++j )
-                        tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
-            }
-
+                for ( size_type j = 0; j != tmp.col(); ++j )
+                    tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
+            };
+            misc::parallel( func, tmp.row() );
             zen.swap( tmp );
             return zen;
         }
@@ -2238,22 +2247,29 @@ namespace feng
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_plus_equal_operator
     {
-        typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
-        typedef typename type_proxy_type::value_type value_type;
+        typedef Matrix                                  zen_type;
+        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef typename type_proxy_type::value_type    value_type;
+        typedef typename type_proxy_type::size_type     size_type;
         zen_type& operator+=( const value_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            for ( auto& v : zen )
-                v += rhs;
+            zen.elementwise_apply( [&rhs]( auto& v ){ v += rhs; } );
 
             return zen;
         }
         zen_type& operator+=( const zen_type& rhs ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
-            std::transform( zen.begin(), zen.end(), rhs.begin(), zen.begin(), std::plus< value_type >() );
+
+            auto x = zen.data();
+            auto y = rhs.data();
+            auto const& elementwise_add = [x, y]( size_type offset )
+            {
+                x[offset] += y[offset];
+            };
+            misc::parallel( elementwise_add, zen.size() );
             return zen;
         }
     };
@@ -2268,10 +2284,13 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
             zen_type ans{ zen };
-            std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x )
+            //std::transform( ans.begin(), ans.end(), ans.begin(), []( value_type x ) { return -x; } );
+            auto x = ans.data();
+            auto const& minus_function = [x]( size_type offset )
             {
-                return -x;
-            } );
+                x[offset] = -x[offset];
+            };
+            misc::parallel( minus_function, ans.size() );
             return ans;
         }
     };
@@ -6207,7 +6226,8 @@ namespace feng
             }
         };
 
-
+        misc::parallel( func, ans.row() );
+        /*
         if constexpr ( parallel_mode == 0 )
         {
             for ( auto row : misc::range(ans.row() ) )
@@ -6217,7 +6237,7 @@ namespace feng
         {
             misc::parallel( func, ans.row() );
         }
-
+        */
         return ans;
     }
 
@@ -6292,7 +6312,7 @@ namespace feng
     }
 } //namespace feng
 
-#undef better_assert
+//#undef better_assert
 RESTORE_WARNINGS
 
 #endif
