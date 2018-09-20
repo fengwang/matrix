@@ -495,12 +495,25 @@ identity.save_as_bmp( "./images/0000_inverse.bmp" );
 #### save matrix to images with colormap
 
 Here we demonstrate how to save matrix to images with specified colormap.
-There are 5 builtin colormaps:
+There are 18 builtin colormaps:
 
-+ parula
++ autumn
++ bone
++ cool
++ copper
++ default
++ gray
 + hotblue
++ hot
++ hsv
 + jet
++ lines
 + obscure
++ parula
++ pink
++ spring
++ summer
++ winter
 + gray
 
 First we load the matrix from a '.txt' file
