@@ -868,6 +868,8 @@ namespace feng
             // pre-allocate all memory for bmp mapping
             std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size()+the_row*padding_size, std::uint8_t{} );
             std::copy( header.begin(), header.end(), encoding.begin() );
+
+            /*
             encoding.resize( header.size() );
 
             //generate body
@@ -883,6 +885,19 @@ namespace feng
                 //    encoding.push_back( std::uint8_t{} );
                 repeat( [&encoding](){ encoding.push_back( std::uint8_t{} ); }, padding_size );
             }
+            */
+            auto&& fill_row = [&]( auto row_index )
+            {
+                auto start_pos = encoding.data() + header.size() + (padding_size + channel_r.col()*3) * row_index;
+                for ( auto c : range( the_col ) )
+                {
+                    *start_pos++ =  channel_b[row_index][c];
+                    *start_pos++ =  channel_g[row_index][c];
+                    *start_pos++ =  channel_r[row_index][c];
+                }
+            };
+            misc::parallel( fill_row, the_row );
+
             return {encoding};
         }
 
@@ -2569,16 +2584,6 @@ namespace feng
 
             auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
 
-            /*
-            for ( auto r : misc::range( the_row ) )
-                for ( auto c : misc::range( the_col ) )
-                {
-                    auto const[ r_, g_, b_ ] = selected_map( (zen[the_row-r-1][c]-mn)/(mx-mn+1.0e-10) );
-                    channel_r[r][c] = r_;
-                    channel_g[r][c] = g_;
-                    channel_b[r][c] = b_;
-                }
-            */
             auto&& make_colormap = [&]( auto row_index )
             {
                 for ( auto c : misc::range( the_col ) )
@@ -2601,7 +2606,10 @@ namespace feng
                     new_file_name += extension;
                 std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
                 if ( !stream )
+                {
+                    std::cerr << "Failed to open file when saving to " << new_file_name << "\n";
                     return false;
+                }
 
                 stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
                 return true;
