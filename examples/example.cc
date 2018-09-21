@@ -122,6 +122,7 @@ int main()
 
     std::cout << "running save_with_colormap.\n" << std::endl;
     _0000_save_with_colormap();
+    _0001_save_with_colormap();
 
     std::cout << "running magic.\n" << std::endl;
     _0000_magic();
