@@ -1967,13 +1967,12 @@ namespace feng
                 return false;
             }
             std::stringstream iss;
-            std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) );
+            std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) ); //TODO:parallel here?
             std::string cache = iss.str();
-            std::for_each( cache.begin(), cache.end(), []( auto & ch )
-            {
-                if ( ch == ',' || ch == ';' )
-                    ch = ' ';
-            } );
+            //std::for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
+            auto && replace_delimiter_func = [&cache]( size_type idx ){ auto& ch = cache[idx]; ch = (ch==','||ch==';') ? ' ' : ch; };
+            misc::parallel( replace_delimiter_func, cache.size() );
+
             iss.str( cache );
             std::vector< value_type > buff;
             std::copy( std::istream_iterator< value_type >( iss ), std::istream_iterator< value_type >(), std::back_inserter( buff ) );
