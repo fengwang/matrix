@@ -87,6 +87,7 @@ Please note `std::thread` is enabled by default, and option `-pthread` is necesa
 ### basic
 
 #### create, row, col, size, shape, clear
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0002_create.bmp" );
@@ -103,11 +104,13 @@ m.clear();
 assert( 0 == m.row() );
 assert( 0 == m.col() );
 ```
+
 ![create](./images/0002_create.bmp)
 
 ------
 
 ### element access using `operator []` or `operator ()`
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 for ( auto r = 12; r != 34; ++r )
@@ -120,11 +123,14 @@ for ( auto r = 34; r != 45; ++r )
 
 m.save_as_bmp( "./images/0019_create.bmp" );
 ```
+
 ![create](./images/0019_create.bmp)
+
 ----------
 
 
 #### range-based for access
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 int starter = 0;
@@ -136,10 +142,13 @@ for ( auto& x : m )
 }
 m.save_as_bmp( "./images/0000_access.bmp" );
 ```
+
 ![access](./images/0000_access.bmp)
+
 -------------------------
 
 #### copying, resizing and reshaping
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 for ( auto r = 12; r != 34; ++r )
@@ -147,6 +156,7 @@ for ( auto r = 12; r != 34; ++r )
         m[r][c] = 1.0;
 m.save_as_bmp( "./images/0020_create.bmp" );
 ```
+
 created matrix m:
 
 ![create](./images/0020_create.bmp)
@@ -177,9 +187,11 @@ m.save_as_bmp( "./images/0023_create.bmp" );
 reshaped matrix m:
 
 ![create](./images/0023_create.bmp)
+
 ----------
 
 #### matrix slicing
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::fill( m.upper_diag_begin(1), m.upper_diag_end(1), 1.0 );
@@ -212,11 +224,13 @@ p.save_as_bmp( "./images/0002_slicing.bmp" );
 
 
 #### elementwise apply
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0000_apply.bmp" );
 ```
+
 before apply:
 
 ![apply](./images/0000_apply.bmp)
@@ -233,20 +247,25 @@ after apply:
 ---------------------
 
 #### iteration from head to tail
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0000_create.bmp" );
 ```
+
 ![create](./images/0000_create.bmp)
+
 ------
 #### iteration from tail to head
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.rbegin(), m.rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0006_create.bmp" );
 ```
 ![create](./images/0006_create.bmp)
+
 ------
 #### iteration through a selected row
 
@@ -256,6 +275,7 @@ std::generate( m.row_begin(17), m.row_end(17),  [](){ double init = 0.0; return 
 m.save_as_bmp( "./images/0001_create.bmp" );
 ```
 ![create](./images/0001_create.bmp)
+
 ------
 #### reverse iteration through a selected row
 
@@ -265,6 +285,7 @@ std::generate( m.row_rbegin(17), m.row_rend(17),  [](){ double init = 0.0; retur
 m.save_as_bmp( "./images/0003_create.bmp" );
 ```
 ![create](./images/0003_create.bmp)
+
 ------
 #### iteration through a selected column
 
@@ -275,6 +296,7 @@ m.save_as_bmp( "./images/0004_create.bmp" );
 
 ```
 ![create](./images/0004_create.bmp)
+
 ------
 #### reverse iteration through a selected column
 
@@ -284,6 +306,7 @@ std::generate( m.col_rbegin(17), m.col_rend(17),  [](){ double init = 0.0; retur
 m.save_as_bmp( "./images/0003_create.bmp" );
 ```
 ![create](./images/0005_create.bmp)
+
 ------
 #### iteration through diagonal
 
@@ -293,6 +316,7 @@ std::generate( m.diag_begin(), m.diag_end(),  [](){ double init = 0.0; return [i
 m.save_as_bmp( "./images/0011_create.bmp" );
 ```
 ![create](./images/0011_create.bmp)
+
 ------
 #### reverse iteration through diagonal
 
@@ -302,100 +326,132 @@ std::generate( m.diag_rbegin(), m.diag_rend(),  [](){ double init = 0.0; return 
 m.save_as_bmp( "./images/0012_create.bmp" );
 ```
 ![create](./images/0012_create.bmp)
+
 ------
 #### iteration through upper diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_begin(17), m.upper_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0007_create.bmp" );
 ```
+
 ![create](./images/0007_create.bmp)
+
 ------
 #### reverse iteration through upper diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_diag_rbegin(17), m.upper_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0008_create.bmp" );
 ```
+
 ![create](./images/0008_create.bmp)
+
 ------
 
 #### iteration through lower diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_begin(17), m.lower_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0009_create.bmp" );
 ```
+
 ![create](./images/0009_create.bmp)
+
 ------
 #### reverse iteration through lower diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_diag_rbegin(17), m.lower_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0010_create.bmp" );
 ```
+
 ![create](./images/0010_create.bmp)
+
 ------
 
 
 #### iteration through anti diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.anti_diag_begin(), m.anti_diag_end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0017_create.bmp" );
 ```
+
 ![create](./images/0017_create.bmp)
+
 ------
 
 #### reverse iteration through anti diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 iag_rbegin(), m.anti_diag_rend(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0018_create.bmp" );
 ```
+
 ![create](./images/0018_create.bmp)
+
 ------
 
 #### iterator through upper anti diagonal
+
 
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_anti_diag_begin(17), m.upper_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0013_create.bmp" );
 ```
+
 ![create](./images/0013_create.bmp)
+
 ------
 
 #### reverse iteration through upper anti diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.upper_anti_diag_rbegin(17), m.upper_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0014_create.bmp" );
 ```
+
 ![create](./images/0014_create.bmp)
+
 ------
 
 #### iteration through lower anti diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_anti_diag_begin(17), m.lower_anti_diag_end(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0015_create.bmp" );
 ```
+
 ![create](./images/0015_create.bmp)
+
 ------
 
 #### reverse iteration through lower anti diagonal
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 std::generate( m.lower_anti_diag_rbegin(17), m.lower_anti_diag_rend(17),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
 m.save_as_bmp( "./images/0016_create.bmp" );
 ```
+
 ![create](./images/0016_create.bmp)
+
 ------
 
 ### functions
 
 #### clone -- matrix slicing
+
 
 ```cpp
 feng::matrix<double> m{ 64, 256 };
@@ -406,6 +462,7 @@ m.save_as_bmp( "./images/0000_clone.bmp" );
 matrix m:
 
 ![clone](./images/0000_clone.bmp)
+
 
 ```cpp
 auto n = m.clone( 0, 32, 0, 64 );
@@ -428,6 +485,7 @@ m slicing of [32:64, 0:64]:
 -------------------
 
 #### data -- raw memory access
+
 ```cpp
 feng::matrix<double> m{ 64, 256 };
 m.save_as_bmp( "./images/0000_data.bmp" );
@@ -469,6 +527,7 @@ generated output is
 -------------
 
 #### operator divide-equal
+
 ```cpp
 auto m = feng::rand<double>( 197, 197 );
 auto n = m;
@@ -476,17 +535,20 @@ n /= 2.0;
 m /= n;
 m.save_as_bmp( "images/0000_divide_equal.bmp" );
 ```
+
 ![divide equal](images/0000_divide_equal.bmp)
 
 ---------------------------------------------
 
 #### matrix inverse
+
 ```cpp
 auto const& m = feng::rand<double>( 128, 128 );
 auto const& n = m.inverse();
 auto const& identity = m * n;
 identity.save_as_bmp( "./images/0000_inverse.bmp" );
 ```
+
 ![matrix inverse](./images/0000_inverse.bmp)
 
 
@@ -498,6 +560,7 @@ Here we demonstrate how to save matrix to images with specified colormap.
 There are 18 builtin colormaps:
 
 + autumn
++ bluehot
 + bone
 + cool
 + copper
@@ -542,6 +605,16 @@ m.save_as_bmp( "./images/0000_save_with_colormap_parula.bmp", "parula" );
 The `parula` image looks like:
 
 ![colormap-parula](./images/0000_save_with_colormap_parula.bmp)
+
+
+
+```cpp
+m.save_as_bmp( "./images/0000_save_with_colormap_bluehot.bmp", "bluehot" );
+```
+
+The `bluehot` image looks like:
+
+![colormap-bluehot](./images/0000_save_with_colormap_bluehot.bmp)
 
 
 ```cpp
@@ -680,6 +753,18 @@ The `lines` image looks like:
 ![colormap-lines](./images/0000_save_with_colormap_lines.bmp)
 
 
+For sparse data such as particles, it is highly recommended to use colormap `bluehot`:
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/star.txt" );
+m.save_as_bmp( "./images/0001_star_bluehot.bmp", "bluehot" );
+```
+
+The starry image generate is demonstrated below:
+
+
+![colormap-starry-bluehot](./images/0001_star_bluehot.bmp)
 
 
 #### save load
