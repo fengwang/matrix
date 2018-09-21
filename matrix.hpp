@@ -869,23 +869,6 @@ namespace feng
             std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size()+the_row*padding_size, std::uint8_t{} );
             std::copy( header.begin(), header.end(), encoding.begin() );
 
-            /*
-            encoding.resize( header.size() );
-
-            //generate body
-            for ( auto r : range( the_row ) )
-            {
-                for ( auto c : range( the_col ) )
-                {
-                    encoding.push_back( channel_b[r][c] );
-                    encoding.push_back( channel_g[r][c] );
-                    encoding.push_back( channel_r[r][c] );
-                }
-                //for ( auto index : range( padding_size ) )
-                //    encoding.push_back( std::uint8_t{} );
-                repeat( [&encoding](){ encoding.push_back( std::uint8_t{} ); }, padding_size );
-            }
-            */
             auto&& fill_row = [&]( auto row_index )
             {
                 auto start_pos = encoding.data() + header.size() + (padding_size + channel_r.col()*3) * row_index;
