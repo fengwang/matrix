@@ -1967,7 +1967,7 @@ namespace feng
                 return false;
             }
             std::stringstream iss;
-            std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) ); //TODO:parallel here?
+            std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) ); //TODO: parallel here?
             std::string cache = iss.str();
             //std::for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
             auto && replace_delimiter_func = [&cache]( size_type idx ){ auto& ch = cache[idx]; ch = (ch==','||ch==';') ? ' ' : ch; };
@@ -1975,7 +1975,7 @@ namespace feng
 
             iss.str( cache );
             std::vector< value_type > buff;
-            std::copy( std::istream_iterator< value_type >( iss ), std::istream_iterator< value_type >(), std::back_inserter( buff ) );
+            std::copy( std::istream_iterator< value_type >( iss ), std::istream_iterator< value_type >(), std::back_inserter( buff ) ); // TODO: parallel here?
             size_type const total_elements = buff.size();
             const std::string& stream_buff = iss.str();
             size_type const r_             = std::count( stream_buff.begin(), stream_buff.end(), '\n' );
@@ -2569,6 +2569,7 @@ namespace feng
 
             auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
 
+            /*
             for ( auto r : misc::range( the_row ) )
                 for ( auto c : misc::range( the_col ) )
                 {
@@ -2577,6 +2578,18 @@ namespace feng
                     channel_g[r][c] = g_;
                     channel_b[r][c] = b_;
                 }
+            */
+            auto&& make_colormap = [&]( auto row_index )
+            {
+                for ( auto c : misc::range( the_col ) )
+                {
+                    auto const[ r_, g_, b_ ] = selected_map( (zen[the_row-row_index-1][c]-mn)/(mx-mn+1.0e-10) );
+                    channel_r[row_index][c] = r_;
+                    channel_g[row_index][c] = g_;
+                    channel_b[row_index][c] = b_;
+                }
+            };
+            misc::parallel( make_colormap, the_row );
 
             auto const& encoding = misc::encode_bmp_stream( channel_r, channel_g, channel_b );
 
