@@ -2788,6 +2788,10 @@ namespace feng
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
+
+        //reshape matrix to a new row and new col
+        //  if new row or col are larger than the original, padding with zero
+        //  otherwise, drop these elements
         zen_type& shrink_to_size( const size_type new_row, const size_type new_col ) noexcept
         {
             better_assert( new_row && new_col );
