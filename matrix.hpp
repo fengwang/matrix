@@ -4560,9 +4560,7 @@ namespace feng
         return { alloc, n , n };
     }
 
-    //template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
-    template < typename T,
-               typename A_   = std::allocator<  T  >>
+    template < typename T, typename A_   = std::allocator<  T  >>
     std::uint_least64_t
     singular_value_decomposition( matrix<T,A_> const& A,
                                   matrix<T,A_>& u,
@@ -4573,10 +4571,8 @@ namespace feng
         typedef T value_type;
         const value_type zero{ 0 };
         const value_type one{ 1 };
-        //const std::uint_least64_t m = A.row();
-        //const std::uint_least64_t n = A.col();
         auto const [m, n] = A.shape();
-        u                   = A;
+        u                 = A;
         w.resize( n, n );
         v.resize( n, n );
         std::uint_least64_t i{ 0 }, l{ 0 };
