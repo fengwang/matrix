@@ -1,7 +1,7 @@
 #include <cassert>
 TEST_CASE( "Matrix inverse", "[inverse]" )
 {
-    unsigned long N = 100;
+    unsigned long N = 10;
     for ( unsigned long sz = 1; sz != N; ++sz )
     {
         feng::matrix<double> const& mat = feng::rand<double>( sz, sz, 0 );
