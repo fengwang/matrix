@@ -4538,24 +4538,26 @@ namespace feng
         better_assert( m.size() );
         return std::min_element( m.begin(), m.end() );
     }
-    template < typename T,
-               typename A    = std::allocator<  T  >>
-    matrix< T, A > const ones( const std::uint_least64_t r, const std::uint_least64_t c )
+    template < typename T >
+    auto const ones( const std::uint_least64_t r, const std::uint_least64_t c )
     {
-        matrix< T > ans{ r, c, T( 1 ) };
+        matrix< T > ans{ r, c, T{ 1 } };
         return ans;
     }
-    template < typename T,
-               typename A    = std::allocator<  T  >>
-    matrix< T, A > const ones( const std::uint_least64_t n )
+    template < typename T >
+    auto const ones( const std::uint_least64_t n )
     {
-        return ones< T, A >( n, n );
+        return ones< T >( n, n );
     }
-    template < typename T,
-               typename A    = std::allocator<  T  >>
-    matrix< T, A > const ones( const matrix< T, A >& m )
+    template < typename T, typename A >
+    matrix< T, A > const ones( A const& alloc, std::uint_least64_t r, std::uint_least64_t c )
     {
-        return ones< T, A >( m.row(), m.col() );
+        return { alloc, r , c };
+    }
+    template < typename T, typename A >
+    matrix< T, A > const ones( A const& alloc, std::uint_least64_t n )
+    {
+        return { alloc, n , n };
     }
 
     //template < typename Matrix1, typename Matrix2, typename Matrix3, typename Matrix4 >
