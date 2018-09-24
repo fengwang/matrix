@@ -3361,32 +3361,6 @@ namespace feng
         return zeros( n, n );
     }
 
-    /*
-
-    template < typename T,
-               typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
-                       matrix< T, A > const zeros( const std::uint_least64_t r, const std::uint_least64_t c )
-    {
-        matrix< T, A > ans{ r, c, T( 0 ) };
-        return ans;
-    }
-    template < typename T,
-               typename A    = std::allocator< typename std::remove_cv_t< typename std::remove_reference_t< T >>>>
-                       matrix< T, A > const zeros( const std::uint_least64_t n )
-    {
-        return zeros< T, A >( n, n );
-    }
-    template < typename T, typename A >
-    matrix< T, A > const zeros( const matrix< T, A >& m )
-    {
-        return zeros< T, A >( m.row(), m.col() );
-    }
-    template < typename T, typename A >
-    matrix< T, A > const zeros( const matrix< T, A >&, const std::uint_least64_t r, const std::uint_least64_t c )
-    {
-        return zeros< T, A >( r, c );
-    }
-    */
     template < typename T1, typename A1, typename T2, typename A2 >
     matrix< T1, A1 > const blkdiag( const matrix< T1, A1 >& m1, const matrix< T2, A2 >& m2 )
     {

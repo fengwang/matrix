@@ -3,32 +3,13 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 ### Contents
 
 - [Example usage](#example-usage)
+    + [creating matrices](#creating-matrices)
     + [basic operations](#basic)
       + [row, col, size, shape, clear](#create-row-col-size-shape-clear)
       + [element access](#element-access-using-operator--or-operator-)
       + [range based for](#range-based-for-access)
       + [copy, resize, reshape](#copying-resizing-and-reshaping)
       + [slicing](#matrix-slicing)
-    + [iterations](#iterations)
-      - [element-wise apply](#elementwise-apply)
-      - [head->tail iteration](#iteration-from-head-to-tail)
-      - [tail->head iteration](#iteration-from-tail-to-head)
-      - [row iteration](#iteration-through-a-selected-row)
-      - [reversed row iteration](#reverse-iteration-through-a-selected-row)
-      - [column iteration](#iteration-through-a-selected-column)
-      - [reversed column iteration](#reverse-iteration-through-a-selected-column)
-      - [diagonal iteration](#iteration-through-diagonal)
-      - [reversed diagonal iteration](#reverse-iteration-through-diagonal)
-      - [upper diagonal iteration](#iteration-through-upper-diagonal)
-      - [reversed upper diagonal iteration](#reverse-iteration-through-upper-diagonal)
-      - [lower diagonal iteration](#iteration-through-lower-diagonal)
-      - [reversed lower diagonal iteration](#reverse-iteration-through-lower-diagonal)
-      - [anti-diagonal iteration](#iteration-through-anti-diagonal)
-      - [reversed anti-diagonal iteration](#reverse-iteration-through-anti-diagonal)
-      - [upper anti-diagonal iteration](#iterator-through-upper-anti-diagonal)
-      - [reversed upper anti-diagonal iteration](#reverse-iteration-through-upper-anti-diagonal)
-      - [lower anti-diagonal iteration](#iteration-through-lower-anti-diagonal)
-      - [reversed lower anti-diagonal iteration](#reverse-iteration-through-lower-anti-diagonal)
    + [built-in functions](#functions)
      - [clone -- matrix slicing](#clone----matrix-slicing)
      - [data -- accessing raw memory](#data----raw-memory-access)
@@ -54,6 +35,26 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [lu_decomposition](#lu-decomposition)
      - [guass_jordan_elimination](#gauss-jordan-elimination)
      - [singular_value_decomposition](#singular-value-decomposition)
+    + [iterations](#iterations)
+      - [element-wise apply](#elementwise-apply)
+      - [head->tail iteration](#iteration-from-head-to-tail)
+      - [tail->head iteration](#iteration-from-tail-to-head)
+      - [row iteration](#iteration-through-a-selected-row)
+      - [reversed row iteration](#reverse-iteration-through-a-selected-row)
+      - [column iteration](#iteration-through-a-selected-column)
+      - [reversed column iteration](#reverse-iteration-through-a-selected-column)
+      - [diagonal iteration](#iteration-through-diagonal)
+      - [reversed diagonal iteration](#reverse-iteration-through-diagonal)
+      - [upper diagonal iteration](#iteration-through-upper-diagonal)
+      - [reversed upper diagonal iteration](#reverse-iteration-through-upper-diagonal)
+      - [lower diagonal iteration](#iteration-through-lower-diagonal)
+      - [reversed lower diagonal iteration](#reverse-iteration-through-lower-diagonal)
+      - [anti-diagonal iteration](#iteration-through-anti-diagonal)
+      - [reversed anti-diagonal iteration](#reverse-iteration-through-anti-diagonal)
+      - [upper anti-diagonal iteration](#iterator-through-upper-anti-diagonal)
+      - [reversed upper anti-diagonal iteration](#reverse-iteration-through-upper-anti-diagonal)
+      - [lower anti-diagonal iteration](#iteration-through-lower-anti-diagonal)
+      - [reversed lower anti-diagonal iteration](#reverse-iteration-through-lower-anti-diagonal)
 
 
 - [License](#license)
@@ -85,6 +86,44 @@ g++ -o your_exe_file your_source_code.cpp -std=c++17 -O2 -pthread
 Please note `std::thread` is enabled by default, and option `-pthread` is necesary under Linux/Unix/Mac platform. If you prefer single thread mode, pass `-DNPARALLEL` option to compiler.
 
 ### basic
+
+#### creating matrices
+
++ generating matrix
+
+    - creating a matrix of size `12 X 34`:
+
+    ```cpp
+    feng::matrix<double> m{ 12, 34 };
+    ```
+    - creating a random matrix of size `12 X 34`, in range `[0.0, 1.0]`:
+
+    ```cpp
+    auto rand = feng::rand<double>(12, 34);
+    ```
+
+    - creating a matrix of size `12 X 34`, with all elements to be `0`:
+
+    ```cpp
+    auto zero = feng::zeros<double>(12, 34);
+    ```
+    - creating a matrix of size `12 X 34`, with all elements to be `1`:
+
+    ```cpp
+    auto one = feng::ones<double>(12, 34);
+    ```
+
+    - loading matrix from a local txt file `./mat.txt`, the delimiter can be either of ` `, `,`, `\t` or `;`, the line end is `\n`:
+
+    ```cpp
+    feng::matrix<double> mat;
+    mat.load_txt( './mat.txt' );
+    ```
+
++ others
+     - [eye](#eye-function)
+     - [magic](#magic-function)
+
 
 #### create, row, col, size, shape, clear
 
