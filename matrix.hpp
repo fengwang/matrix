@@ -6187,6 +6187,71 @@ namespace feng
 
         return {ans};
     }
+
+    template< typename T, typename A >
+    auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim_r, std::uint_least64_t dim_c, std::string const& pooling_action = "mean" )
+    {
+        std::map< std::string, std::pair<T, std::function< T(T, T) > > > function_list =
+        {
+            std::make_pair
+            (
+                "mean",
+                std::make_pair
+                (
+                    T{0},
+                    [dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r+dim_c) ); }
+                )
+            ),
+            std::make_pair
+            (
+                "max",
+                std::make_pair
+                (
+                    std::numeric_limits<T>::min(),
+                    []( T v1, T v2 ){ return std::max(v1, v2); }
+                )
+            ),
+            std::make_pair
+            (
+                "min",
+                std::make_pair
+                (
+                    std::numeric_limits<T>::max(),
+                    []( T v1, T v2 ){ return std::min(v1, v2); }
+                )
+            )
+        };
+
+        auto iterator = function_list.find( pooling_action );
+        better_assert( iterator != function_list.end(), "Error: Unknow pooling action [[", pooling_action, "]], only [mean], [max], [min] supported!" );
+
+        auto init_value =(*iterator).second.first;
+        auto const& the_function =(*iterator).second.second;
+        auto const [row, col] = mat.shape();
+        auto const [new_row, new_col] = std::make_pair( row/dim_r, col/dim_c );
+        matrix< T, A > ans{ new_row, new_col, T{0} };
+
+        auto const& make_pooling = [&ans, &mat, &the_function, new_col, dim_r, dim_c, init_value]( std::uint_least64_t r )
+        {
+            for ( auto c : misc::range( new_col ) )
+            {
+                ans[r][c] = init_value;
+                for ( auto rr : misc::range( dim_r ) )
+                    ans[r][c] = std::accumulate( mat.row_begin(r*dim_r+rr)+c*dim_c, mat.row_begin(r*dim_r+rr)+c*dim_c+dim_c, ans[r][c], the_function );
+            }
+        };
+
+        misc::parallel( make_pooling, new_row );
+
+        return ans;
+    }
+
+    template< typename T, typename A >
+    auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim, std::string const& pooling_action = "mean"  )
+    {
+        return pooling( mat, dim, dim, pooling_action );
+    }
+
 } //namespace feng
 
 //#undef better_assert

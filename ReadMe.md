@@ -35,6 +35,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [lu_decomposition](#lu-decomposition)
      - [guass_jordan_elimination](#gauss-jordan-elimination)
      - [singular_value_decomposition](#singular-value-decomposition)
+     - [pooling](#pooling)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
@@ -1329,7 +1330,76 @@ When using `1` ranks, the reconstructed image lookes like:
 
 ![svd_4](./images/0003_singular_value_decomposition_1.bmp)
 
+#### pooling
 
+We are able to pooling an image with function `pooling( matrix, dim_row, dim_col, option )`, where `option` can be either of `mean`, `max`, or `min`, if no option provided, then `mean` is applied.
+
+For an normal image
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.save_as_bmp( "./images/0000_pooling.bmp", "gray" );
+```
+![Lenna](./images/0000_pooling.bmp)
+
+
+A `2X2` mean pooling looks like:
+
+```cpp
+auto const& pooling_2 = feng::pooling( m, 2 );
+pooling_2.save_as_bmp( "./images/0000_pooling_2.bmp", "gray" );
+```
+
+![Lenna pooling 2](./images/0000_pooling_2.bmp)
+
+
+And a `4X4` pooling is
+
+```cpp
+auto const& pooling_4 = feng::pooling( m, 4 );
+pooling_4.save_as_bmp( "./images/0000_pooling_4.bmp", "gray" );
+```
+
+![Lenna pooling 4](./images/0000_pooling_4.bmp)
+
+
+For hyterdyne pooling of `2X4`
+
+```cpp
+auto const& pooling_2_4 = feng::pooling( m, 2, 4 );
+pooling_2_4.save_as_bmp( "./images/0000_pooling_2_4.bmp", "gray" );
+```
+
+![Lenna pooling 2 4](./images/0000_pooling_2_4.bmp)
+
+And `4X2`
+
+```cpp
+auto const& pooling_4_2 = feng::pooling( m, 4, 2 );
+pooling_4_2.save_as_bmp( "./images/0000_pooling_4_2.bmp", "gray" );
+```
+
+![Lenna pooling 4_2](./images/0000_pooling_4_2.bmp)
+
+Also `min` pooling is possible
+
+```cpp
+auto const& pooling_min = feng::pooling( m, 2, "min" );
+pooling_min.save_as_bmp( "./images/0000_pooling_2_min.bmp", "gray" );
+```
+
+![Lenna pooling min](./images/0000_pooling_2_min.bmp)
+
+
+And `max` pooling
+
+```cpp
+auto const& pooling_max = feng::pooling( m, 2, "max" );
+pooling_max.save_as_bmp( "./images/0000_pooling_2_max.bmp", "gray" );
+```
+
+![Lenna pooling max](./images/0000_pooling_2_max.bmp)
 
 #### gauss jordan elimination
 
