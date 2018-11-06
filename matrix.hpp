@@ -389,7 +389,7 @@ namespace feng
                     for ( auto index : misc::range( values.size() - 1 ) )
                         if ( x <= values[index+1] )
                             return  make_transformation_function( colors[index], values[index], colors[index+1], values[index+1] )(x);
-                    better_assert( !"make_color_map::should never reach here!" );
+                    better_assert( !"make_color_map::should never reach here! The input value x is ", x, ", and the values.size() is ", values.size() );
                     return std::make_tuple(0_u8, 0_u8, 0_u8);
                 };
             }
@@ -1016,7 +1016,7 @@ namespace feng
         typedef value_type*                                             iterator;
         typedef const value_type*                                       const_iterator;
         typedef Allocator                                               allocator_type;
-        typedef std::uint64_t                                           size_type;
+        typedef std::uint_least64_t                                     size_type;
         typedef std::ptrdiff_t                                          difference_type;
         typedef std::pair<size_type, size_type>                         range_type;
         typedef typename Allocator::pointer                             pointer;
@@ -3356,6 +3356,22 @@ namespace feng
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
         return m;
     }
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    abs( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::abs( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    /*
     template< typename T, typename A > const matrix< T, A >
     abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
@@ -3370,7 +3386,7 @@ namespace feng
         for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
         return m;
     }
-
+    */
     /// complex matrix -> complex matrix
     template < typename T, typename A > const matrix< std::complex< T >, A >
     conj( const matrix< std::complex< T >, A >& mm ) noexcept
@@ -6250,6 +6266,45 @@ namespace feng
     auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim, std::string const& pooling_action = "mean"  )
     {
         return pooling( mat, dim, dim, pooling_action );
+    }
+
+    template< typename T, typename A >
+    void save_as_bmp( std::string const& file_name, matrix<T,A> const& red_channel, matrix<T,A> const& green_channel, matrix<T,A> const& blue_channel )
+    {
+        better_assert( red_channel.row()==green_channel.row(), "Row not match for red and green matrix! The row for red is ", red_channel.row(), " but for green is ", green_channel.row() );
+        better_assert( red_channel.row()==blue_channel.row(), "Row not match for red and blue matrix! The row for red is ", red_channel.row(), " but for blue is ", blue_channel.row() );
+        better_assert( red_channel.col()==green_channel.col(), "Col not match for red and green matrix! The col for red is ", red_channel.col(), " but for green is ", green_channel.col() );
+        better_assert( red_channel.col()==blue_channel.col(), "Col not match for red and blue matrix! The col for red is ", red_channel.col(), " but for blue is ", blue_channel.col() );
+
+        auto const [row, col] = red_channel.shape();
+
+        // scale normal matrices to uint8 matrices
+        matrix<std::uint8_t> channel_r{ row, col };
+        matrix<std::uint8_t> channel_g{ row, col };
+        matrix<std::uint8_t> channel_b{ row, col };
+        auto const& [red_mx, red_mn] = std::make_pair( *std::max_element(red_channel.begin(), red_channel.end() ), *std::min_element(red_channel.begin(), red_channel.end() ) );
+        auto const& [green_mx, green_mn] = std::make_pair( *std::max_element(green_channel.begin(), green_channel.end() ), *std::min_element(green_channel.begin(), green_channel.end() ) );
+        auto const& [blue_mx, blue_mn] = std::make_pair( *std::max_element(blue_channel.begin(), blue_channel.end() ), *std::min_element(blue_channel.begin(), blue_channel.end() ) );
+        for ( auto r : misc::range(row) )
+            for ( auto c : misc::range(col) )
+            {
+                channel_r[r][c] = static_cast<std::uint8_t>( 256.0 * (red_channel[r][c] - red_mn) / (red_mx-red_mn+0.1) );
+                channel_g[r][c] = static_cast<std::uint8_t>( 256.0 * (green_channel[r][c] - green_mn) / (green_mx-green_mn+0.1) );
+                channel_b[r][c] = static_cast<std::uint8_t>( 256.0 * (blue_channel[r][c] - blue_mn) / (blue_mx-blue_mn+0.1) );
+            }
+
+        // encode rgb to bitmap stream
+        auto const& encoding = misc::encode_bmp_stream( channel_r, channel_g, channel_b );
+        better_assert( encoding, "Failed to convert the 3 matrix to bmp stream in save_as_bmp function, where the file_name is ", file_name );
+
+        // write file stream
+        std::string new_file_name{ file_name };
+        std::string const extension{ ".bmp" };
+        if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
+            new_file_name += extension;
+        std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
+        better_assert( stream, "Failed to create file ", new_file_name, " when executing save_as_bmp with file_name = ", file_name, " and row = ", row, " col = ", col );
+        stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
     }
 
 } //namespace feng
