@@ -29,6 +29,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0023_magic.hpp"
 #include "./cases/0024_pooling.hpp"
 #include "./cases/0025_global_save_as_bmp.hpp"
+#include "./cases/0026_mandelbrot.hpp"
 
 int main()
 {
@@ -133,8 +134,11 @@ int main()
     std::cout << "running pooling.\n" << std::endl;
     _0000_pooling();
 
-    std::cout << "running global_save_as_bmp_0.\n" << std::endl;
+    std::cout << "running global_save_as_bmp.\n" << std::endl;
     _0000_global_save_as_bmp();
+
+    std::cout << "running mandelbrot.\n" << std::endl;
+    _0000_mandelbrot();
 
     return 0;
 }
