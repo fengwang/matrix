@@ -162,7 +162,7 @@ namespace feng
                 return ans;
             }
 
-            friend difference_type const operator - ( self_type const& lhs, self_type const& rhs ) noexcept
+            friend difference_type operator - ( self_type const& lhs, self_type const& rhs ) noexcept
             {
                 return lhs.value_ - rhs.value_;
             }
@@ -6305,6 +6305,21 @@ namespace feng
         std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
         better_assert( stream, "Failed to create file ", new_file_name, " when executing save_as_bmp with file_name = ", file_name, " and row = ", row, " col = ", col );
         stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
+    }
+
+    template< typename T, typename A >
+    T const mean( matrix<T,A> const& mat )
+    {
+        return std::accumulate( mat.begin(), mat.end(), T{} ) / mat.size();
+    }
+
+    template< typename T, typename A >
+    T const variance( matrix<T,A> const& mat )
+    {
+        auto const mn = mean( mat );
+        T var{0};
+        std::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
+        return var;
     }
 
 } //namespace feng

@@ -140,6 +140,12 @@ int main()
     std::cout << "running mandelbrot.\n" << std::endl;
     _0000_mandelbrot();
 
+    std::cout << "running mandelbrot::1.\n" << std::endl;
+    _0001_mandelbrot();
+
+    std::cout << "running mandelbrot::2.\n" << std::endl;
+    _0002_mandelbrot();
+
     return 0;
 }
 
