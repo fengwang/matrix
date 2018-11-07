@@ -912,6 +912,83 @@ namespace feng
             return {encoding};
         }
 
+        namespace for_each_impl_private
+        {
+            template < std::uint_least64_t Index, typename Type, typename... Types >
+            struct extract_type_forward
+            {
+                typedef typename extract_type_forward < Index - 1, Types... >::result_type result_type;
+            };
+            template < typename Type, typename... Types >
+            struct extract_type_forward< 1, Type, Types... >
+            {
+                typedef Type result_type;
+            };
+            template < typename Type, typename... Types >
+            struct extract_type_forward< 0, Type, Types... >
+            {
+                struct index_parameter_for_extract_type_forwrod_should_not_be_0;
+                typedef index_parameter_for_extract_type_forwrod_should_not_be_0 result_type;
+            };
+            template < std::uint_least64_t Index, typename... Types >
+            struct extract_type_backward
+            {
+                typedef typename extract_type_forward < sizeof...( Types ) - Index + 1, Types... >::result_type result_type;
+            };
+            template < std::uint_least64_t Index, typename... Types >
+            struct extract_type
+            {
+                typedef typename extract_type_forward< Index, Types... >::result_type result_type;
+            };
+            template < typename Function, typename InputIterator1, typename... InputIteratorn >
+            Function _for_each_n( Function f, std::uint_least64_t n, InputIterator1 begin1, InputIteratorn... beginn )
+            {
+                auto const& func = [&]( std::uint_least64_t idx )
+                {
+                    f( *(begin1+idx), *(beginn+idx)... );
+                };
+                parallel( func, n );
+                return f;
+            }
+            template < typename Function, typename InputIterator1, typename... InputIteratorn >
+            Function _for_each( Function f, InputIterator1 begin1, InputIterator1 end1, InputIteratorn... beginn )
+            {
+                return _for_each_n( f, std::distance( begin1, end1 ), begin1, beginn... );
+                /*
+                while ( begin1 != end1 )
+                    f( *begin1++, *beginn++... );
+                return f;
+                */
+            }
+
+            struct dummy
+            {
+            };
+            template < typename... Types_N >
+            struct for_each_impl_with_dummy
+            {
+                typedef typename extract_type_backward< 1, Types_N... >::result_type return_type;
+                template < typename Predict, typename... Types >
+                Predict impl( Predict p, dummy, Types... types ) const
+                {
+                    return _for_each( p, types... );
+                }
+                template < typename S, typename... Types >
+                return_type impl( S s, Types... types ) const
+                {
+                    return impl( types..., s );
+                }
+            };
+        }
+
+        template < typename... Types >
+        typename for_each_impl_private::extract_type_backward< 1, Types... >::result_type
+        for_each( Types... types )
+        {
+            static_assert( sizeof...( types ) > 2, "f::for_each requires at least 3 arguments" );
+            return for_each_impl_private::for_each_impl_with_dummy< Types... >().impl( types..., for_each_impl_private::dummy() );
+        }
+
     }//namespace misc
 
     // for column, diagonal and anti-diagonal iteration
@@ -2001,7 +2078,7 @@ namespace feng
             std::stringstream iss;
             std::copy( std::istreambuf_iterator< char >( ifs ), std::istreambuf_iterator< char >(), std::ostreambuf_iterator< char >( iss ) ); //TODO: parallel here?
             std::string cache = iss.str();
-            //std::for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
+            //for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
             auto && replace_delimiter_func = [&cache]( size_type idx ){ auto& ch = cache[idx]; ch = (ch==','||ch==';') ? ' ' : ch; };
             misc::parallel( replace_delimiter_func, cache.size() );
 
@@ -3294,68 +3371,6 @@ namespace feng
     {
         return blkdiag( m, matrices... );
     }
-    namespace for_each_impl_private
-    {
-        template < std::uint_least64_t Index, typename Type, typename... Types >
-        struct extract_type_forward
-        {
-            typedef typename extract_type_forward < Index - 1, Types... >::result_type result_type;
-        };
-        template < typename Type, typename... Types >
-        struct extract_type_forward< 1, Type, Types... >
-        {
-            typedef Type result_type;
-        };
-        template < typename Type, typename... Types >
-        struct extract_type_forward< 0, Type, Types... >
-        {
-            struct index_parameter_for_extract_type_forwrod_should_not_be_0;
-            typedef index_parameter_for_extract_type_forwrod_should_not_be_0 result_type;
-        };
-        template < std::uint_least64_t Index, typename... Types >
-        struct extract_type_backward
-        {
-            typedef typename extract_type_forward < sizeof...( Types ) - Index + 1, Types... >::result_type result_type;
-        };
-        template < std::uint_least64_t Index, typename... Types >
-        struct extract_type
-        {
-            typedef typename extract_type_forward< Index, Types... >::result_type result_type;
-        };
-        template < typename Function, typename InputIterator1, typename... InputIteratorn >
-        Function _for_each( Function f, InputIterator1 begin1, InputIterator1 end1, InputIteratorn... beginn )
-        {
-            while ( begin1 != end1 )
-                f( *begin1++, *beginn++... );
-
-            return f;
-        }
-        struct dummy
-        {
-        };
-        template < typename... Types_N >
-        struct for_each_impl_with_dummy
-        {
-            typedef typename extract_type_backward< 1, Types_N... >::result_type return_type;
-            template < typename Predict, typename... Types >
-            Predict impl( Predict p, dummy, Types... types ) const
-            {
-                return _for_each( p, types... );
-            }
-            template < typename S, typename... Types >
-            return_type impl( S s, Types... types ) const
-            {
-                return impl( types..., s );
-            }
-        };
-    }
-    template < typename... Types >
-    typename for_each_impl_private::extract_type_backward< 1, Types... >::result_type
-    for_each( Types... types )
-    {
-        static_assert( sizeof...( types ) > 2, "f::for_each requires at least 3 arguments" );
-        return for_each_impl_private::for_each_impl_with_dummy< Types... >().impl( types..., for_each_impl_private::dummy() );
-    }
     namespace math_private
     {
         struct non_complex_tag
@@ -3380,14 +3395,14 @@ namespace feng
     real( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
-        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
+        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
         return m;
     }
     template< typename T, typename A > const matrix< T, A >
     imag( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
-        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
+        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
         return m;
     }
 
@@ -3410,14 +3425,14 @@ namespace feng
     abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
-        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
+        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
         return m;
     }
     template< typename T, typename A > const matrix< T, A >
     norm( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
     {
         matrix< T, A > m{ mm.row(), mm.col() };
-        for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
+        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
         return m;
     }
     */
@@ -3426,14 +3441,14 @@ namespace feng
     conj( const matrix< std::complex< T >, A >& mm ) noexcept
     {
         matrix< std::complex< T >, A > m{ mm };
-        std::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::conj( val ); } );
+        misc::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::conj( val ); } );
         return m;
     };
     template < typename T, typename A > const matrix< std::complex< T >, A >
     proj( const matrix< std::complex< T >, A >& mm ) noexcept
     {
         matrix< std::complex< T >, A > m{ mm };
-        std::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::proj( val ); } );
+        misc::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::proj( val ); } );
         return m;
     };
 
@@ -3445,7 +3460,7 @@ namespace feng
         better_assert( mm.row() == nn.row() );
         better_assert( mm.col() == nn.col() );
         matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
-        for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m ) { m = std::polar( _mm, _nn ); } );
+        misc::for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m ) { m = std::polar( _mm, _nn ); } );
         return m;
     }
     template < typename T, typename A >
@@ -3453,7 +3468,7 @@ namespace feng
     polar( const matrix< T, A >& mm, const T nn = T{0} ) noexcept
     {
         matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
-        for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m ) { m = std::polar( _mm, nn ); } );
+        misc::for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m ) { m = std::polar( _mm, nn ); } );
         return m;
     }
 
@@ -3462,245 +3477,245 @@ namespace feng
     const matrix< T, A > abs( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m{ mm };
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::abs( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::abs( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > acos( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::acos( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::acos( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > acosh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::acosh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::acosh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > asin( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::asin( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::asin( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > asinh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::asinh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::asinh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > atan( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::atan( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::atan( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > atanh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::atanh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::atanh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > cbrt( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cbrt( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cbrt( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > ceil( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::ceil( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::ceil( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > cos( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cos( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cos( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > cosh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::cosh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cosh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > erf( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::erf( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::erf( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > erfc( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::erfc( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::erfc( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > exp( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > exp2( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp2( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp2( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > expm1( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::expm1( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::expm1( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > fabs( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::fabs( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::fabs( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > floor( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::floor( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::floor( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > fma( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::fma( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::fma( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > frexp( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::frexp( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::frexp( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > ilogb( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::ilogb( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::ilogb( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > lgamma( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lgamma( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lgamma( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > llrint( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::llrint( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::llrint( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > llround( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::llround( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::llround( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > log( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > log10( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log10( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log10( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > log1p( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log1p( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log1p( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > log2( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::log2( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log2( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > logb( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::logb( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::logb( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > lrint( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lrint( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lrint( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > lround( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::lround( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lround( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > modf( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::modf( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::modf( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > nearbyint( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::nearbyint( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::nearbyint( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > rint( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::rint( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::rint( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > round( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::round( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::round( val ); } );
         return m;
     };
     ///
@@ -3710,7 +3725,7 @@ namespace feng
         better_assert( mm.row() == nn.row() && "row dim not agree" );
         better_assert( mm.col() == nn.col() && "col dim not agree" );
         matrix<T, A> m{ mm.row(), mm.col() };
-        for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, int exp ){ x = std::scalbn( x, exp ); } );
+        misc::for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, int exp ){ x = std::scalbn( x, exp ); } );
         return m;
     }
     template< typename T, typename A >
@@ -3719,7 +3734,7 @@ namespace feng
         better_assert( mm.row() == nn.row() && "row dim not agree" );
         better_assert( mm.col() == nn.col() && "col dim not agree" );
         matrix<T, A> m{ mm.row(), mm.col() };
-        for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, long exp ){ x = std::scalbln( x, exp ); } );
+        misc::for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, long exp ){ x = std::scalbln( x, exp ); } );
         return m;
     }
 
@@ -3727,49 +3742,49 @@ namespace feng
     const matrix< T, A > sin( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sin( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sin( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > sinh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sinh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sinh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > sqrt( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::sqrt( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sqrt( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > tan( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tan( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tan( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > tanh( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tanh( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tanh( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > tgamma( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::tgamma( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tgamma( val ); } );
         return m;
     };
     template < typename T, typename A >
     const matrix< T, A > trunc( const matrix< T, A >& mm ) noexcept
     {
         matrix< T, A > m( mm );
-        std::for_each( m.begin(), m.end(), []( T & val ) { val = std::trunc( val ); } );
+        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::trunc( val ); } );
         return m;
     };
     template < typename T, typename A >
@@ -4270,7 +4285,7 @@ namespace feng
     matrix< bool > is_inf( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
-        for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
+        misc::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
         {
             a = std::isinf( v ) ? true : false;
         } );
@@ -4285,7 +4300,7 @@ namespace feng
     matrix< bool > is_nan( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
-        for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
+        misc::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
         {
             a = std::isnan( v ) ? true : false;
         } );
@@ -4303,7 +4318,7 @@ namespace feng
             return false;
 
         auto mm = m.transpose() * m;
-        std::for_each( mm.diag_begin(), mm.diag_end(), []( T & v )
+        misc::for_each( mm.diag_begin(), mm.diag_end(), []( T & v )
         {
             v -= T( 1 );
         } );
@@ -4526,7 +4541,7 @@ namespace feng
 
                 if ( scale != zero )
                 {
-                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v /= scale; } );
+                    misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     const value_type tmp_s = std::inner_product( u.col_begin( i ) + i, u.col_end( i ), u.col_begin( i ) + i, value_type( 0 ) );
                     g                      = ( u[i][i] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     const value_type tmp_h = u[i][i] * g - tmp_s;
@@ -4538,7 +4553,7 @@ namespace feng
                         std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_ss, tmp_h]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2 / tmp_h; } );
                     }
 
-                    std::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v *= scale; } );
+                    misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v *= scale; } );
                 }
             }
 
@@ -4553,7 +4568,7 @@ namespace feng
 
                 if ( scale != zero )
                 {
-                    std::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v ) { v /= scale; } );
+                    misc::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     auto const tmp_s = std::inner_product( u.row_begin( i ) + l - 1, u.row_end( i ), u.row_begin( i ) + l - 1, value_type( 0 ) );
                     g                = ( u[i][l - 1] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     auto const tmp_h = u[i][l - 1] * g - tmp_s;
@@ -4566,7 +4581,7 @@ namespace feng
                         std::transform( u.row_begin( j ) + l - 1, u.row_end( j ), arr.begin() + l - 1, u.row_begin( j ) + l - 1, [tmp_ss]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2; } );
                     }
 
-                    std::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
+                    misc::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
                     {
                         v *= scale;
                     } );
@@ -4619,7 +4634,7 @@ namespace feng
                     std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_f]( value_type v1, value_type v2 ) { return v1 + tmp_f * v2; } );
                 }
 
-                std::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v ) { v /= tmp_g; } );
+                misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v ) { v /= tmp_g; } );
             }
             else
                 std::fill( u.col_begin( i ) + i, u.col_end( i ), zero );
@@ -4695,7 +4710,7 @@ namespace feng
                     if ( z < zero )
                     {
                         w[k][k] = -z;
-                        std::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v ) { v = -v; } );
+                        misc::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v ) { v = -v; } );
                     }
 
                     break;
@@ -4728,7 +4743,7 @@ namespace feng
                     g      = g * c - x * s;
                     h      = y * s;
                     y *= c;
-                    for_each( v.col_begin( j ), v.col_end( j ), v.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
+                    misc::for_each( v.col_begin( j ), v.col_end( j ), v.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
                     {
                         const auto vv1( v1 );
                         const auto vv2( v2 );
@@ -4743,7 +4758,7 @@ namespace feng
                         s = h / w[j][j];
                     }
 
-                    for_each( u.col_begin( j ), u.col_end( j ), u.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
+                    misc::for_each( u.col_begin( j ), u.col_end( j ), u.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
                     {
                         const auto vv1( v1 );
                         const auto vv2( v2 );
@@ -4792,7 +4807,7 @@ namespace feng
         matrix<T, A> w;
         matrix<T, A> v;
         singular_value_decomposition( a, u, v, w );
-        std::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
+        misc::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
         return w * v.transpose() * u.transpose();
     }
     template < typename Matrix >
@@ -5603,11 +5618,11 @@ namespace feng
         {
             std::uint_least64_t const offset = std::distance( LL.diag_begin(), std::find( LL.diag_begin(), LL.diag_end(), vec[i + i] ) );
             better_assert( offset < n + n );
-            for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
+            misc::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
             {
                 c.real( r );
             } );
-            for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ) + n, []( std::complex< T2 >& c, T1 const i )
+            misc::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ) + n, []( std::complex< T2 >& c, T1 const i )
             {
                 c.imag( i );
             } );
@@ -5656,7 +5671,7 @@ namespace feng
         matrix< std::complex< T >, A_ > b_( A.col(), 1 );
         std::copy( A.diag_cbegin(), A.diag_cend(), b.begin() );
         matrix< std::complex< T >, A_ > Am( A );
-        std::for_each( Am.begin(), Am.end(), []( std::complex< T >& c )
+        misc::for_each( Am.begin(), Am.end(), []( std::complex< T >& c )
         {
             c = std::conj( c );
         } );
@@ -5958,7 +5973,7 @@ namespace feng
 
             if ( std::abs(factor) < 1.0e-10) return {};
 
-            std::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor](auto& v){ v /= factor; } );
+            misc::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor](auto& v){ v /= factor; } );
 
             for ( auto j : misc::range(row) )
             {
@@ -6352,7 +6367,7 @@ namespace feng
     {
         auto const mn = mean( mat );
         T var{0};
-        std::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
+        misc::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
         return var;
     }
 
