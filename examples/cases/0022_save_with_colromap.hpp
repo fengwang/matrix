@@ -29,4 +29,6 @@ void _0001_save_with_colormap()
     m.load_txt( "./images/star.txt" );
     m.save_as_bmp( "./images/0001_star_hotblue.bmp", "hotblue" );
     m.save_as_bmp( "./images/0001_star_bluehot.bmp", "bluehot" );
+    m.save_as_bmp( "./images/0001_star_hotgreen.bmp", "hotgreen" );
+    m.save_as_bmp( "./images/0001_star_greenhot.bmp", "greenhot" );
 }

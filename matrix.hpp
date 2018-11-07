@@ -775,6 +775,34 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "hotgreen" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                        {
+                            std::make_tuple(255_u8, 255_u8, 255_u8),
+                            std::make_tuple(0_u8, 255_u8, 255_u8),
+                            std::make_tuple(0_u8, 255_u8, 0_u8),
+                            std::make_tuple(0_u8, 0_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "greenhot" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 40_u8, 10_u8),
+                            std::make_tuple(0_u8, 200_u8, 30_u8),
+                            std::make_tuple(100_u8, 255_u8, 200_u8),
+                            std::make_tuple(240_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "hotblue" },
                     make_color_map
                     (
@@ -1319,6 +1347,12 @@ namespace feng
 
         template < typename Function >
         void elementwise_apply( const Function& func ) noexcept
+        {
+            apply( func );
+        }
+
+        template < typename Function >
+        void map( const Function& func ) noexcept
         {
             apply( func );
         }
