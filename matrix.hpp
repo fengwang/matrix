@@ -3371,625 +3371,6 @@ namespace feng
     {
         return blkdiag( m, matrices... );
     }
-    namespace math_private
-    {
-        struct non_complex_tag
-        {
-        };
-        struct complex_tag
-        {
-        };
-        template < typename T >
-        struct tag
-        {
-            typedef non_complex_tag result_tag;
-        };
-        template < typename T >
-        struct tag< std::complex< T >>
-        {
-            typedef complex_tag result_tag;
-        };
-    }
-    ///complex matrix -> real matrix
-    template< typename T, typename A > const matrix< T, A >
-    real( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
-    {
-        matrix< T, A > m{ mm.row(), mm.col() };
-        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::real(c); } );
-        return m;
-    }
-    template< typename T, typename A > const matrix< T, A >
-    imag( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
-    {
-        matrix< T, A > m{ mm.row(), mm.col() };
-        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::imag(c); } );
-        return m;
-    }
-
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    abs( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        auto const& parallel_impl = [&]( std::uint_least64_t r )
-        {
-            for ( auto c = 0UL; c != mm.col(); ++c )
-                ans[r][c] = std::abs( mm[r][c] );
-        };
-        misc::parallel( parallel_impl, mm.row() );
-        return ans;
-    }
-
-    /*
-    template< typename T, typename A > const matrix< T, A >
-    abs( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
-    {
-        matrix< T, A > m{ mm.row(), mm.col() };
-        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::abs(c); } );
-        return m;
-    }
-    template< typename T, typename A > const matrix< T, A >
-    norm( matrix< std::complex<T>, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T>> > const& mm ) noexcept
-    {
-        matrix< T, A > m{ mm.row(), mm.col() };
-        misc::for_each( m.begin(), m.end(), mm.begin(), []( T& t, std::complex<T> const& c ) { t = std::norm(c); } );
-        return m;
-    }
-    */
-    /// complex matrix -> complex matrix
-    template < typename T, typename A > const matrix< std::complex< T >, A >
-    conj( const matrix< std::complex< T >, A >& mm ) noexcept
-    {
-        matrix< std::complex< T >, A > m{ mm };
-        misc::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::conj( val ); } );
-        return m;
-    };
-    template < typename T, typename A > const matrix< std::complex< T >, A >
-    proj( const matrix< std::complex< T >, A >& mm ) noexcept
-    {
-        matrix< std::complex< T >, A > m{ mm };
-        misc::for_each( m.begin(), m.end(), []( std::complex< T >& val ) { val = std::proj( val ); } );
-        return m;
-    };
-
-    /// real matrix + real matrix -> complex matrix
-    template < typename T, typename A >
-    matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > >
-    polar( const matrix< T, A >& mm, const matrix< T, A > nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() );
-        better_assert( mm.col() == nn.col() );
-        matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), nn.begin(), m.begin(), []( const T _mm, const T _nn, std::complex< T >& m ) { m = std::polar( _mm, _nn ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > >
-    polar( const matrix< T, A >& mm, const T nn = T{0} ) noexcept
-    {
-        matrix< std::complex< T >, typename std::allocator_traits<A>:: template rebind_alloc<std::complex<T> > > m{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), m.begin(), [nn]( const T _mm, std::complex< T >& m ) { m = std::polar( _mm, nn ); } );
-        return m;
-    }
-
-
-    template < typename T, typename A >
-    const matrix< T, A > abs( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::abs( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > acos( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::acos( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > acosh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::acosh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > asin( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::asin( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > asinh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::asinh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > atan( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::atan( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > atanh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::atanh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > cbrt( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cbrt( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > ceil( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::ceil( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > cos( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cos( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > cosh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::cosh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > erf( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::erf( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > erfc( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::erfc( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > exp( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > exp2( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::exp2( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > expm1( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::expm1( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > fabs( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::fabs( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > floor( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::floor( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > fma( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::fma( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > frexp( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::frexp( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > ilogb( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::ilogb( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lgamma( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lgamma( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > llrint( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::llrint( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > llround( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::llround( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log10( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log10( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log1p( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log1p( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > log2( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::log2( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > logb( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::logb( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lrint( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lrint( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > lround( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::lround( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > modf( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::modf( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > nearbyint( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::nearbyint( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > rint( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::rint( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > round( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::round( val ); } );
-        return m;
-    };
-    ///
-    template< typename T, typename A >
-    const matrix<T, A> scalbn( matrix<T, A> const& mm, matrix< int, typename std::allocator_traits<T>:: template rebind_alloc<int> > const nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row dim not agree" );
-        better_assert( mm.col() == nn.col() && "col dim not agree" );
-        matrix<T, A> m{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, int exp ){ x = std::scalbn( x, exp ); } );
-        return m;
-    }
-    template< typename T, typename A >
-    const matrix<T, A> scalbln( matrix<T, A> const& mm, matrix< long, typename std::allocator_traits<T>:: template rebind_alloc<long> > const nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row dim not agree" );
-        better_assert( mm.col() == nn.col() && "col dim not agree" );
-        matrix<T, A> m{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), nn.begin(), []( T& x, long exp ){ x = std::scalbln( x, exp ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > sin( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sin( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > sinh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sinh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > sqrt( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::sqrt( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tan( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tan( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tanh( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tanh( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > tgamma( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::tgamma( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > trunc( const matrix< T, A >& mm ) noexcept
-    {
-        matrix< T, A > m( mm );
-        misc::for_each( m.begin(), m.end(), []( T & val ) { val = std::trunc( val ); } );
-        return m;
-    };
-    template < typename T, typename A >
-    const matrix< T, A > atan2( const matrix< T, A >& mm, const matrix< T, A >& nn )
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix<T, A> m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::atan2( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > atan2( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix<T, A> m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::atan2( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > copysign( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::copysign( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > copysign( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::copysign( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > fdim( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fdim( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > fdim( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fdim( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > fmax( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmax( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > fmax( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmax( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > fmin( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmin( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > fmin( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmin( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > fmod( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::fmod( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > fmod( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::fmod( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > hypot( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::hypot( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > hypot( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::hypot( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > ldexp( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::ldexp( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > ldexp( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::ldexp( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > nextafter( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::nextafter( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > nextafter( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::nextafter( v1, v ); } );
-        return m;
-    }
-
-    template < typename T1, typename A1, typename T2, typename A2 >
-    const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const matrix< T2, A2 >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() );
-        better_assert( mm.col() == nn.col() );
-        matrix<T1, A1> m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T1 v1, T2 v2 ) { return std::nexttoward( v1, v2 ); } );
-        return m;
-    }
-    template < typename T1, typename A1, typename T2 >
-    const matrix< T1, A1 > nexttoward( const matrix< T1, A1 >& mm, const T2 v )
-    {
-        matrix< T1, A1 > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T1 v1 ) { return std::nexttoward( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > pow( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::pow( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > pow( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::pow( v1, v ); } );
-        return m;
-    }
-
-    template < typename T, typename A >
-    const matrix< T, A > remainder( const matrix< T, A >& mm, const matrix< T, A >& nn ) noexcept
-    {
-        better_assert( mm.row() == nn.row() && "row not match" );
-        better_assert( mm.col() == nn.col() && "col not match" );
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), nn.begin(), m.begin(), []( T v1, T v2 ) { return std::remainder( v1, v2 ); } );
-        return m;
-    }
-    template < typename T, typename A >
-    const matrix< T, A > remainder( const matrix< T, A >& mm, const T v ) noexcept
-    {
-        matrix< T, A > m{ mm };
-        std::transform( mm.begin(), mm.end(), m.begin(), [v]( T v1 ) { return std::remainder( v1, v ); } );
-        return m;
-    }
 
     template < typename T, typename A >
     matrix< std::complex< T >, A> const ctranspose( const matrix< std::complex< T >, A>& m )
@@ -6359,6 +5740,7 @@ namespace feng
     template< typename T, typename A >
     T const mean( matrix<T,A> const& mat )
     {
+        // TODO: parallel accumulate
         return std::accumulate( mat.begin(), mat.end(), T{} ) / mat.size();
     }
 
@@ -6371,9 +5753,788 @@ namespace feng
         return var;
     }
 
+       template< typename T, typename A >
+       auto const
+       fma( matrix<T, A> const& mat, matrix<T, A> const& nat, matrix<T, A> const& lat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), lat.begin(), []( auto& x, auto const& y, auto const& z ){ x = std::fma(x, y, z); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       ldexp( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::ldexp(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       ldexp( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       ldexp( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       scalbn( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbn(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       scalbn( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       scalbn( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       scalbln( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbln(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       scalbln( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       scalbln( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       pow( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::pow(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       pow( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       pow( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       hypot( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::hypot(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       hypot( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       hypot( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       fmod( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmod(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmod( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmod( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       remainder( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::remainder(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       remainder( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       remainder( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       copysign( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::copysign(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       copysign( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       copysign( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       nextafter( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::nextafter(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       nextafter( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       nextafter( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       fdim( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fdim(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fdim( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fdim( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       fmax( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmax(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmax( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmax( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(y, x); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT, typename AA >
+       auto const
+       fmin( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmin(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmin( matrix<T, A> const& mat, TT const& y )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(x, y); } );
+           return ans;
+       }
+
+       template< typename T, typename A, typename TT >
+       auto const
+       fmin( TT const& y, matrix<T, A> const& mat )
+       {
+           matrix<T, A> ans{ mat.row(), mat.col() };
+           misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(y, x); } );
+           return ans;
+       }
+
+    template< typename T, typename A>
+    auto
+    frexp( matrix<T, A> const& mat )
+    {
+        matrix<T, A> ans{mat};
+        matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > exps{ mat.row(), mat.col() };
+        misc::for_each( ans.begin(), ans.end(), exps.begin(), []( T& x, int& exp ){ x = std::frexp( x, &exp ); } );
+        return std::make_tuple( ans, exps );
+    }
+    template< typename T, typename A>
+    auto
+    modf( matrix<T, A> const& mat )
+    {
+        matrix<T, A> ans{mat};
+        matrix<double, typename std::allocator_traits<A>:: template rebind_alloc<double> > intpart{ mat.row(), mat.col() };
+        misc::for_each( ans.begin(), ans.end(), intpart.begin(), []( T& x, int& ip ){ x = std::modf( x, &ip ); } );
+        return std::make_tuple( ans, intpart );
+    }
+
+     template< typename T, typename A >
+     auto cos( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cos(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto sin( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sin(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto tan( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tan(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto acos( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acos(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto asin( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asin(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto atan( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atan(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto cosh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cosh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto sinh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sinh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto tanh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tanh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto acosh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acosh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto asinh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asinh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto atanh( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atanh(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto exp( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto log( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto log10( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log10(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto exp2( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp2(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto expm1( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::expm1(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto log1p( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log1p(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto log2( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log2(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto logb( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::logb(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto sqrt( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sqrt(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto cbrt( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cbrt(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto erf( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erf(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto erfc( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erfc(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto tgamma( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tgamma(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto lgamma( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::lgamma(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto ceil( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::ceil(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto floor( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::floor(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto trunc( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::trunc(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto round( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::round(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto rint( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::rint(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto nearbyint( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::nearbyint(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto fabs( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::fabs(x); } );
+         return ans;
+     }
+
+     template< typename T, typename A >
+     auto abs( matrix<T,A> const& mat )
+     {
+         matrix<T,A> ans{mat};
+         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::abs(x); } );
+         return ans;
+     }
+
+       template< typename T, typename A >
+       auto const
+       ilogb( matrix<T, A> const& mat )
+       {
+           matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > ans{ mat.row(), mat.col() };
+           misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::ilogb(x); } );
+           return ans;
+       }
+
+       template< typename T, typename A >
+       auto const
+       lround( matrix<T, A> const& mat )
+       {
+           matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
+           misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lround(x); } );
+           return ans;
+       }
+
+       template< typename T, typename A >
+       auto const
+       llround( matrix<T, A> const& mat )
+       {
+           matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
+           misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llround(x); } );
+           return ans;
+       }
+
+       template< typename T, typename A >
+       auto const
+       lrint( matrix<T, A> const& mat )
+       {
+           matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
+           misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lrint(x); } );
+           return ans;
+       }
+
+       template< typename T, typename A >
+       auto const
+       llrint( matrix<T, A> const& mat )
+       {
+           matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
+           misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llrint(x); } );
+           return ans;
+       }
+
+    template< typename T, typename A>
+    auto
+    remquo( matrix<T, A> const& number, matrix<T, A> const& denom )
+    {
+        matrix<T, A> ans{number};
+        matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > quot{ number.row(), number.col() };
+        misc::for_each( ans.begin(), ans.end(), denom.begin(), quot.begin(), [](auto& num, auto const& den, int& quo ) { num = remquo( num, den, &quo ); } );
+        return std::make_tuple( ans, quot );
+    }
+
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    real( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::real( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    imag( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::imag( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    abs( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::abs( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    arg( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::arg( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
+    norm( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
+        auto const& parallel_impl = [&]( std::uint_least64_t r )
+        {
+            for ( auto c = 0UL; c != mm.col(); ++c )
+                ans[r][c] = std::norm( mm[r][c] );
+        };
+        misc::parallel( parallel_impl, mm.row() );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    auto const
+    conj( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        auto ans{ mm };
+        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::conj(x); } );
+        return ans;
+    }
+
+
+    template< typename T, typename A >
+    auto const
+    polar( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        auto ans{ mm };
+        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::polar(x); } );
+        return ans;
+    }
+
+    template< typename T, typename A >
+    auto const
+    proj( matrix<std::complex<T>, A> const& mm ) noexcept
+    {
+        auto ans{ mm };
+        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::proj(x); } );
+        return ans;
+    }
+
 } //namespace feng
 
 //#undef better_assert
 RESTORE_WARNINGS
 
 #endif
+
