@@ -831,6 +831,20 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "tealhot" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 40_u8,  40_u8),
+                            std::make_tuple(0_u8, 200_u8,  200_u8),
+                            std::make_tuple(100_u8, 255_u8,  255_u8),
+                            std::make_tuple(240_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "jet" },
                     make_color_map
                     (
@@ -860,6 +874,18 @@ namespace feng
                 std::make_pair
                 (
                     std::string{ "gray" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 0_u8),
+                            std::make_tuple(255_u8, 255_u8,  255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "grey" },
                     make_color_map
                     (
                         { 0.0, 1.0},
@@ -5601,19 +5627,31 @@ namespace feng
     {
         std::ifstream ifs{file_path, std::ios::binary};
         if ( !ifs )
+        {
+            std::cerr << "load_bmp::Failed to open file " << file_path << "\n";
             return {}; // <- failed to load file
+        }
 
         std::vector<std::uint8_t> const file_content{(std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>())};
         if( file_content.size() <= 54 )
+        {
+            std::cerr << "load_bmp::file " << file_path << " has contents less than 54 byte.\n";
             return {}; // <- failed for bad file
+        }
 
         std::uint_least64_t const col = std::uint_least64_t{file_content[18]}         | (std::uint_least64_t{file_content[19]} << 8) |
                                         (std::uint_least64_t{file_content[20]} << 16) | (std::uint_least64_t{file_content[21]} << 24);
         std::uint_least64_t const row = std::uint_least64_t{file_content[22]}         | (std::uint_least64_t{file_content[23]} << 8) |
                                         (std::uint_least64_t{file_content[24]} << 16) | (std::uint_least64_t{file_content[25]} << 24);
         std::uint_least64_t const padding = ( 4 - ( ( col * 3 ) & 0x3 ) ) & 0x3;
+
         if ( 54+(3*col+padding)*row != file_content.size() )
+        {
+            std::cerr << "load_bmp::file " << file_path << " has insistant contents with its header.\n";
+            std::cerr << "Additional Information: col-" << col << ", row-" << row << ", padding-" << padding << ", file size-" << file_content.size() << "\n";
+            std::cerr << "Expected size-" << 54+(3*col+padding)*row << ", but the file has " << file_content.size() << " bytes\n";
             return {}; //<- error with the data size
+        }
 
         std::array<matrix<std::uint8_t>,3> ans;
         for ( auto& mat : ans ) mat.resize( row, col );
