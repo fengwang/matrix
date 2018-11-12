@@ -30,6 +30,7 @@ SUPPRESS_WARNINGS
 #include "./cases/0024_pooling.hpp"
 #include "./cases/0025_global_save_as_bmp.hpp"
 #include "./cases/0026_mandelbrot.hpp"
+#include "./cases/0027_julia_set.hpp"
 
 int main()
 {
@@ -143,8 +144,14 @@ int main()
     std::cout << "running mandelbrot::1.\n" << std::endl;
     _0001_mandelbrot();
 
-    std::cout << "running mandelbrot::2.\n" << std::endl;
-    _0002_mandelbrot();
+    //std::cout << "running mandelbrot::2.\n" << std::endl;
+    //TOO time consuming
+    //_0002_mandelbrot();
+    //
+    std::cout << "running julia_set::0.\n" << std::endl;
+    _0000_julia_set();
+    std::cout << "running julia_set::1.\n" << std::endl;
+    _0001_julia_set();
 
     return 0;
 }
