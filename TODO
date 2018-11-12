@@ -1,3 +1,4 @@
++ save_as_bmp/txt --> create folder if not present?
 + parallel all possible codes
 + type operator check for all methods
 + CUDA support: cuda_matrix
