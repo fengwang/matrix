@@ -37,10 +37,11 @@ SUPPRESS_WARNINGS
 #include <array>
 #include <cmath>
 #include <complex>
-#include <cstring>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <deque>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <initializer_list>
@@ -1013,6 +1014,15 @@ namespace feng
         {
             static_assert( sizeof...( types ) > 2, "f::for_each requires at least 3 arguments" );
             return for_each_impl_private::for_each_impl_with_dummy< Types... >().impl( types..., for_each_impl_private::dummy() );
+        }
+
+        static bool create_directory_if_not_present( std::string const& file_name )
+        {
+            std::filesystem::path file_path{ file_name };
+            auto directory = file_path.parent_path();
+            if ( ! std::filesystem::exists(directory) )
+                return std::filesystem::create_directories(directory);
+            return true;
         }
 
     }//namespace misc
@@ -2632,13 +2642,14 @@ namespace feng
         bool save_as_txt( char const * const file_name ) const noexcept
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            std::ofstream ofs( file_name );
 
-            if ( !ofs )
-            {
-                std::cerr << "Error: failed write matrix to txt file - " << file_name << "\n";
-                return false;
-            }
+            if ( !misc::create_directory_if_not_present( file_name ) )
+                better_assert( !"save_as_txt", " failed to create parent directory: ", " with the target file name ", file_name );
+
+            std::ofstream ofs( file_name );
+            better_assert( ofs, " with the target file name is ", file_name );
+
+            if ( !ofs ) return false;
 
             ofs.precision( 16 );
             ofs << zen;
@@ -2658,13 +2669,14 @@ namespace feng
         bool save_as_binary( char const* const file_name ) const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            std::ofstream ofs( file_name, std::ios::out | std::ios::binary );
 
-            if ( !ofs )
-            {
-                std::cerr << "Error: failed write matrix to binary file - " << file_name << "!\n";
-                return false;
-            }
+            if ( !misc::create_directory_if_not_present( file_name ) )
+                better_assert( !"save_as_binary", " failed to create directory: ", " with the target file name ", file_name );
+
+            std::ofstream ofs( file_name, std::ios::out | std::ios::binary );
+            better_assert( ofs, " save_as_binary failed to create file: ", " with the target file name ", file_name );
+
+            if ( !ofs ) return false;
 
             auto const r = zen.row();
             ofs.write( reinterpret_cast< char const* >( std::addressof( r ) ), sizeof( r ) );
@@ -2672,11 +2684,8 @@ namespace feng
             ofs.write( reinterpret_cast< char const* >( std::addressof( c ) ), sizeof( c ) );
             ofs.write( reinterpret_cast< char const* >( zen.data() ), sizeof( Type ) * zen.size() );
 
-            if ( !ofs.good() )
-            {
-                std::cerr << "Error: failed write matrix to binary file - " << file_name << " - something bad happened!\n";
-                return false;
-            }
+            better_assert( ofs.good(), " save_as_binary failed to write: ", " with the target file name ", file_name );
+            if ( !ofs.good() ) return false;
 
             ofs.close();
             return true;
@@ -2724,12 +2733,13 @@ namespace feng
                 std::string const extension{ ".bmp" };
                 if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
                     new_file_name += extension;
+
+                if ( !misc::create_directory_if_not_present( new_file_name ) )
+                    better_assert( !"save_as_bmp", " failed to create directory with the target file name is ", new_file_name );
+
                 std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
-                if ( !stream )
-                {
-                    std::cerr << "Failed to open file when saving to " << new_file_name << "\n";
-                    return false;
-                }
+                better_assert( stream, " failed to open file with the target file name is ", new_file_name );
+                if ( !stream ) return false;
 
                 stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
                 return true;
@@ -2759,12 +2769,12 @@ namespace feng
             if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
                 new_file_name += extension;
 
+            if ( !misc::create_directory_if_not_present( new_file_name ) )
+                better_assert( !"save_as_pgm", " failed to create directory with the target file name is ", new_file_name );
+
             std::ofstream stream( new_file_name.c_str() );
-            if ( !stream )
-            {
-                std::cerr << "Error: failed save matrix to pgm - " << file_name << "!\n";
-                return false;
-            }
+            better_assert( stream, " save_as_pgm failed to open file with the target file name is ", new_file_name );
+            if ( !stream ) return false;
 
             {
                 stream << "P2\n";

@@ -150,8 +150,10 @@ int main()
     //
     std::cout << "running julia_set::0.\n" << std::endl;
     _0000_julia_set();
-    std::cout << "running julia_set::1.\n" << std::endl;
-    _0001_julia_set();
+    //std::cout << "running julia_set::1.\n" << std::endl;
+    //_0001_julia_set();
+    std::cout << "running julia_set::2.\n" << std::endl;
+    _0002_julia_set();
 
     return 0;
 }

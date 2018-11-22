@@ -71,10 +71,27 @@ void _0001_julia_set()
         {
             std::cout << "Generating Julia set at the index of (" << r << "/" << n << ", " << c << "/" << n << ")." << std::endl;
             std::complex<double> zc{ double(r)/n*1.8-0.9, double(c)/n*1.8-0.9 };
-            auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, zc );
-            mat.apply( [](auto& x){ x = std::log(1.0+x); } );
-            std::string file_name = std::string{"./images/julia_set/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
-            mat.save_as_bmp( file_name, "jet" );
+            auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, zc, 1024, 1024, 3 );
+            //mat.apply( [](auto& x){ x = std::log(1.0+x); } );
+            //std::string file_name = std::string{"./images/julia_set/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
+            //std::string file_name = std::string{"./images/julia_set_2/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
+            std::string file_name = std::string{"./images/julia_set_3/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
+            mat.save_as_bmp( file_name, "bluehot" );
+        }
+}
+
+void _0002_julia_set()
+{
+    //-0.9, 0.9
+    unsigned long n = 32;
+    for ( unsigned r = 0; r != n; ++r )
+        for ( unsigned c = 0; c != n; ++c )
+        {
+            std::cout << "Generating Julia set at the index of (" << r << "/" << n << ", " << c << "/" << n << ")." << std::endl;
+            std::complex<double> zc{ double(r)/n*1.8-0.9, double(c)/n*1.8-0.9 };
+            auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, zc, 1024, 1024, 4 );
+            std::string file_name = std::string{"./images/julia_set_4/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
+            mat.save_as_bmp( file_name, "tealhot" );
         }
 }
 

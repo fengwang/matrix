@@ -52,7 +52,7 @@ void _0002_mandelbrot()
     double const length = 0.0390625;
     //unsigned long const dims = 512;
     unsigned long const dims = 4096;
-    unsigned long const iterations = 512;
+    unsigned long const iterations = 880;
     unsigned long const samplings = 32;
     double const spacing = length / static_cast<double>(samplings);
 
@@ -62,7 +62,7 @@ void _0002_mandelbrot()
             double x = x_start + spacing * r;
             double y = y_start + spacing * c;
             auto&& mat = make_mandelbrot( std::complex<double>{x, y}, std::complex<double>{x+spacing, y+spacing}, dims, iterations );
-            std::for_each( mat.begin(), mat.end(), [](double& v){ v = std::sqrt(v+1.0); } );
+            //std::for_each( mat.begin(), mat.end(), [](double& v){ v = std::sqrt((v-79)/800); } );
             //std::string const file_name = std::string{ "./images/mandelbrot_4/0002_mandel_brot_" } + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             std::string const file_name = std::string{ "./images/mandelbrot_5/0002_mandel_brot_" } + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             mat.save_as_bmp( file_name, "bluehot" );
