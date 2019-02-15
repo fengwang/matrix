@@ -3007,6 +3007,7 @@ namespace feng
         typedef Type value_type;
         typedef Matrix zen_type;
 
+        #if 0
         value_type max() const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
@@ -3030,6 +3031,59 @@ namespace feng
 
             return min_val;
         }
+        #endif
+
+        template< typename LessThanCompare >
+        auto minmax( LessThanCompare comp ) const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            value_type min_val = std::numeric_limits<value_type>::max();
+            value_type max_val = std::numeric_limits<value_type>::min();
+            auto const [the_row, the_col] = zen.shape();
+            for ( auto r : misc::range(the_row) )
+                for ( auto c : misc::range(the_col) )
+                {
+                    min_val = comp( zen[r][c], min_val ) ? zen[r][c] : min_val;
+                    max_val = comp( max_val, zen[r][c] ) ? zen[r][c] : max_val;
+                }
+
+            return std::make_tuple( min_val, max_val );
+        }
+
+        auto minmax() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            return zen.minmax( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
+        }
+
+        template< typename LessThanCompare >
+        auto min( LessThanCompare comp ) const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            auto const& [mn, mx] = zen.minmax( comp );
+            return mn;
+        }
+
+        template< typename LessThanCompare >
+        auto max( LessThanCompare comp ) const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            auto const& [mn, mx] = zen.minmax( comp );
+            return mx;
+        }
+
+        auto min() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            return zen.min( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
+        }
+
+        auto max() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>( *this );
+            return zen.max( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
+        }
+
     };
 
     template < typename Matrix, typename Type, typename Allocator >

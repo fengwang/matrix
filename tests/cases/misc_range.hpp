@@ -2,7 +2,7 @@ TEST_CASE( "Misc Range", "[miscrange]" )
 {
     {
         auto start = 0UL;
-        auto end = 100UL;
+        auto end = 10UL;
 
         for ( auto x = start; x != end; ++x )
             for ( auto y = x; y != end; ++y )

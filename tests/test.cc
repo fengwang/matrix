@@ -11,6 +11,7 @@ SUPPRESS_WARNINGS
 #include "./cases/size.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/zeros.hpp"
+#include "./cases/minmax.hpp"
 
 RESTORE_WARNINGS
 

@@ -1,7 +1,7 @@
 TEST_CASE( "Operator equal", "[opeq]" )
 {
     {
-        unsigned long N = 100;
+        unsigned long N = 10;
         for ( unsigned long r = 1; r != N; ++r )
             for ( unsigned long c = 1; c != N; ++c )
             {

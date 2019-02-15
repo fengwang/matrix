@@ -1,8 +1,8 @@
 TEST_CASE( "Matrix View Bracket", "[matrixviewbracket]" )
 {
     {
-        auto row = 12UL;
-        auto col = 34UL;
+        auto row = 11UL;
+        auto col = 13UL;
         auto mat = feng::rand<float>( row, col );
 
         for ( auto r = 0UL; r != mat.row(); ++r )
