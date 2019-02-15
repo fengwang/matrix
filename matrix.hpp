@@ -804,6 +804,79 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "valala" },
+                    make_color_map
+                    (
+                        { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 50_u8), // 0.0
+                            std::make_tuple(0_u8, 0_u8, 100_u8), // 0.1
+                            std::make_tuple(0_u8, 0_u8, 150_u8), // 0.2
+                            std::make_tuple(0_u8, 0_u8, 200_u8), // 0.3
+                            std::make_tuple(0_u8, 0_u8, 255_u8), // 0.4
+                            std::make_tuple(0_u8, 85_u8, 255_u8), // 0.5
+                            std::make_tuple(0_u8, 170_u8, 255_u8), // 0.6
+                            std::make_tuple(0_u8, 255_u8, 255_u8), // 0.7
+                            std::make_tuple(85_u8, 255_u8, 255_u8), // 0.8
+                            std::make_tuple(170_u8, 255_u8, 255_u8), // 0.9
+                            std::make_tuple(255_u8, 255_u8, 255_u8) // 1.0
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "vala" },
+                    make_color_map
+                    (
+                        { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8, 50_u8), // 0.0
+                            std::make_tuple(0_u8, 0_u8, 100_u8), // 0.1
+                            std::make_tuple(0_u8, 50_u8, 125_u8), // 0.2
+                            std::make_tuple(50_u8, 150_u8, 200_u8), // 0.3
+                            std::make_tuple(220_u8, 220_u8, 220_u8), // 0.4
+                            std::make_tuple(240_u8, 240_u8, 240_u8), // 0.5
+                            std::make_tuple(255_u8, 255_u8, 255_u8), // 0.6
+                            std::make_tuple(255_u8, 100_u8, 195_u8), // 0.7
+                            std::make_tuple(255_u8, 50_u8, 130_u8), // 0.8
+                            std::make_tuple(255_u8, 0_u8, 65_u8), // 0.9
+                            std::make_tuple(255_u8, 0_u8, 0_u8) // 1.0
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "hela" },
+                    make_color_map
+                    (
+                        { 0.0, 0.4, 0.6, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8,  225_u8),
+                            std::make_tuple(240_u8, 240_u8,  240_u8),
+                            std::make_tuple(255_u8, 255_u8,  255_u8),
+                            std::make_tuple(255_u8, 0_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "whela" },
+                    make_color_map
+                    (
+                        { 0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8,  127_u8),
+                            std::make_tuple(200200_u8, 200_u8,  255_u8),
+                            std::make_tuple(225_u8, 225_u8,  255_u8),
+                            std::make_tuple(255_u8, 255_u8,  255_u8),
+                            std::make_tuple(255_u8, 225_u8,  255_u8),
+                            std::make_tuple(255_u8, 200_u8,  255_u8),
+                            std::make_tuple(255_u8, 0_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "hotblue" },
                     make_color_map
                     (
