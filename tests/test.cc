@@ -9,6 +9,7 @@ SUPPRESS_WARNINGS
 #include "./cases/ones.hpp"
 #include "./cases/operator_equal.hpp"
 #include "./cases/size.hpp"
+#include "./cases/sin.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/zeros.hpp"
 #include "./cases/minmax.hpp"

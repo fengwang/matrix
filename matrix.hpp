@@ -68,7 +68,7 @@ SUPPRESS_WARNINGS
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20180919;
+    constexpr std::uint_least64_t matrix_version = 20190219ULL;
 
     #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
@@ -83,7 +83,7 @@ namespace feng
     #endif
 
     namespace matrix_private
-    {
+    {   // for macro `better_assert`
         template< typename... Args >
         void print_assertion(std::ostream& out, Args&&... args)
         {
@@ -6651,6 +6651,35 @@ namespace feng
         misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::proj(x); } );
         return ans;
     }
+
+    template< typename T, typename A >
+    auto matrix_map( matrix<T, A> const& mat ) noexcept
+    {
+        return [&]( auto const& func ) noexcept
+        {
+            typedef typename std::invoke_result_t<decltype(func), T> value_type;
+            auto mat_alloc = mat.get_allocator();
+            //typedef decltype(mat_alloc) alloc_type;
+            //typedef typename alloc_type::rebind<value_type>::other other_alloc_type;
+            //A::template rebind<U>::other
+            //other_alloc_type ans_alloc{ mat_alloc };
+            typename decltype(mat_alloc)::template rebind<value_type>::other ans_alloc{ mat_alloc };//rebinded allocator
+            auto ans = zeros<value_type>( ans_alloc, mat.row(), mat.col() );
+            misc::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(v); } );
+            return ans;
+        };
+    }
+
+    template< typename Func >
+    auto function_map( Func const& func ) noexcept
+    {
+        return [&]( auto const& mat ) noexcept
+        {
+            return matrix_map( mat )( func );
+        };
+    }
+
+    auto const& msin = function_map( []( auto const& val ){ return std::sin(val); } );
 
 } //namespace feng
 
