@@ -3007,32 +3007,6 @@ namespace feng
         typedef Type value_type;
         typedef Matrix zen_type;
 
-        #if 0
-        value_type max() const noexcept
-        {
-            auto const& zen = static_cast<zen_type const&>( *this );
-            value_type max_val = std::numeric_limits<value_type>::min();
-            auto const [the_row, the_col] = zen.shape();
-            for ( auto r : misc::range(the_row) )
-                for ( auto c : misc::range(the_col) )
-                    max_val = zen[r][c] > max_val ? zen[r][c] : max_val;
-
-            return max_val;
-        }
-
-        value_type min() const noexcept
-        {
-            auto const& zen = static_cast<zen_type const&>( *this );
-            value_type min_val = std::numeric_limits<value_type>::max();
-            auto const [the_row, the_col] = zen.shape();
-            for ( auto r : misc::range(the_row) )
-                for ( auto c : misc::range(the_col) )
-                    min_val = zen[r][c] < min_val ? zen[r][c] : min_val;
-
-            return min_val;
-        }
-        #endif
-
         template< typename LessThanCompare >
         auto minmax( LessThanCompare comp ) const noexcept
         {
@@ -3723,7 +3697,6 @@ namespace feng
         return flipdim( m, 2 );
     }
     template < typename T,
-
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const hilb( const std::uint_least64_t n )
     {
@@ -3739,7 +3712,6 @@ namespace feng
         return ans;
     }
     template < typename T,
-
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
     matrix< T, A > const hilbert( const std::uint_least64_t n )
     {
