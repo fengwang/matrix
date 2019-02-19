@@ -104,7 +104,7 @@ namespace feng
     template < typename Type, class Allocator >
     struct matrix;
 
-    namespace misc
+    namespace matrix_details
     {
 
         template< typename Integer_Type >
@@ -387,7 +387,7 @@ namespace feng
 
                 return [=]( double x )
                 {
-                    for ( auto index : misc::range( values.size() - 1 ) )
+                    for ( auto index : matrix_details::range( values.size() - 1 ) )
                         if ( x <= values[index+1] )
                             return  make_transformation_function( colors[index], values[index], colors[index+1], values[index+1] )(x);
                     better_assert( !"make_color_map::should never reach here! The input value x is ", x, ", and the values.size() is ", values.size() );
@@ -1007,7 +1007,7 @@ namespace feng
                     *start_pos++ =  channel_r[row_index][c];
                 }
             };
-            misc::parallel( fill_row, the_row );
+            matrix_details::parallel( fill_row, the_row );
 
             return {encoding};
         }
@@ -1528,7 +1528,7 @@ namespace feng
             zen_type& zen = static_cast< zen_type& >( *this );
             value_type* x = zen.data();
             auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
-            misc::parallel( parallel_function, zen.size() );
+            matrix_details::parallel( parallel_function, zen.size() );
         }
 
         template < typename Function >
@@ -1646,7 +1646,7 @@ namespace feng
                 std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
             };
 
-            misc::parallel( parallel_function, tmp.row() );
+            matrix_details::parallel( parallel_function, tmp.row() );
 
             zen.swap( tmp );
             return zen;
@@ -1779,7 +1779,7 @@ namespace feng
             {
                 std::copy( other.row_begin(row_index), other.row_end(row_index), zen.row_begin(r0+row_index)+c0 );
             };
-            misc::parallel( copy_function, other.row() );
+            matrix_details::parallel( copy_function, other.row() );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -2189,7 +2189,7 @@ namespace feng
             std::string cache = iss.str();
             //for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
             auto && replace_delimiter_func = [&cache]( size_type idx ){ auto& ch = cache[idx]; ch = (ch==','||ch==';') ? ' ' : ch; };
-            misc::parallel( replace_delimiter_func, cache.size() );
+            matrix_details::parallel( replace_delimiter_func, cache.size() );
 
             iss.str( cache );
             std::vector< value_type > buff;
@@ -2276,7 +2276,7 @@ namespace feng
             {
                 v[offset] -= x[offset];
             };
-            misc::parallel( elementwise_minus, zen.size() );
+            matrix_details::parallel( elementwise_minus, zen.size() );
             return zen;
         }
     };
@@ -2307,7 +2307,7 @@ namespace feng
                 for ( size_type j = 0; j != tmp.col(); ++j )
                     tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
             };
-            misc::parallel( func, tmp.row() );
+            matrix_details::parallel( func, tmp.row() );
             zen.swap( tmp );
             return zen;
         }
@@ -2480,7 +2480,7 @@ namespace feng
             {
                 x[offset] += y[offset];
             };
-            misc::parallel( elementwise_add, zen.size() );
+            matrix_details::parallel( elementwise_add, zen.size() );
             return zen;
         }
     };
@@ -2501,7 +2501,7 @@ namespace feng
             {
                 x[offset] = -x[offset];
             };
-            misc::parallel( minus_function, ans.size() );
+            matrix_details::parallel( minus_function, ans.size() );
             return ans;
         }
     };
@@ -2716,7 +2716,7 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
 
-            if ( !misc::create_directory_if_not_present( file_name ) )
+            if ( !matrix_details::create_directory_if_not_present( file_name ) )
                 better_assert( !"save_as_txt", " failed to create parent directory: ", " with the target file name ", file_name );
 
             std::ofstream ofs( file_name );
@@ -2743,7 +2743,7 @@ namespace feng
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
 
-            if ( !misc::create_directory_if_not_present( file_name ) )
+            if ( !matrix_details::create_directory_if_not_present( file_name ) )
                 better_assert( !"save_as_binary", " failed to create directory: ", " with the target file name ", file_name );
 
             std::ofstream ofs( file_name, std::ios::out | std::ios::binary );
@@ -2775,7 +2775,7 @@ namespace feng
             better_assert( zen.row() && "save_as_bmp: matrix row cannot be zero" );
             better_assert( zen.col() && "save_as_bmp: matrix column cannot be zero" );
 
-            using misc::bmp_details::color_maps;
+            using matrix_details::bmp_details::color_maps;
             std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
             auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
 
@@ -2788,7 +2788,7 @@ namespace feng
 
             auto&& make_colormap = [&]( auto row_index )
             {
-                for ( auto c : misc::range( the_col ) )
+                for ( auto c : matrix_details::range( the_col ) )
                 {
                     auto const[ r_, g_, b_ ] = selected_map( (zen[the_row-row_index-1][c]-mn)/(mx-mn+1.0e-10) );
                     channel_r[row_index][c] = r_;
@@ -2796,9 +2796,9 @@ namespace feng
                     channel_b[row_index][c] = b_;
                 }
             };
-            misc::parallel( make_colormap, the_row );
+            matrix_details::parallel( make_colormap, the_row );
 
-            auto const& encoding = misc::encode_bmp_stream( channel_r, channel_g, channel_b );
+            auto const& encoding = matrix_details::encode_bmp_stream( channel_r, channel_g, channel_b );
 
             if ( encoding )
             {
@@ -2807,7 +2807,7 @@ namespace feng
                 if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
                     new_file_name += extension;
 
-                if ( !misc::create_directory_if_not_present( new_file_name ) )
+                if ( !matrix_details::create_directory_if_not_present( new_file_name ) )
                     better_assert( !"save_as_bmp", " failed to create directory with the target file name is ", new_file_name );
 
                 std::ofstream stream( new_file_name.c_str(), std::ios_base::out | std::ios_base::binary );
@@ -2842,7 +2842,7 @@ namespace feng
             if ( ( new_file_name.size() < 4 ) || ( std::string{ new_file_name.begin() + new_file_name.size() - 4, new_file_name.end() } != extension ) )
                 new_file_name += extension;
 
-            if ( !misc::create_directory_if_not_present( new_file_name ) )
+            if ( !matrix_details::create_directory_if_not_present( new_file_name ) )
                 better_assert( !"save_as_pgm", " failed to create directory with the target file name is ", new_file_name );
 
             std::ofstream stream( new_file_name.c_str() );
@@ -2861,10 +2861,10 @@ namespace feng
             double const divider      = max_val - min_val + 1.0e-10;
 
             //for ( std::uint_least64_t r = 0; r < zen.row(); r++ )
-            for ( auto const r : misc::range( zen.row() ) )
+            for ( auto const r : matrix_details::range( zen.row() ) )
             {
                 //for ( std::uint_least64_t c = 0; c < zen.col(); c++ )
-                for ( auto const c : misc::range( zen.col() ) )
+                for ( auto const c : matrix_details::range( zen.col() ) )
                 {
                     unsigned long const rgb =  static_cast<unsigned long>( 256.0 * ( zen[r][c] - min_val ) / divider );
                     stream << std::min( rgb, 255UL ) << " ";
@@ -3014,8 +3014,8 @@ namespace feng
             value_type min_val = std::numeric_limits<value_type>::max();
             value_type max_val = std::numeric_limits<value_type>::min();
             auto const [the_row, the_col] = zen.shape();
-            for ( auto r : misc::range(the_row) )
-                for ( auto c : misc::range(the_col) )
+            for ( auto r : matrix_details::range(the_row) )
+                for ( auto c : matrix_details::range(the_col) )
                 {
                     min_val = comp( zen[r][c], min_val ) ? zen[r][c] : min_val;
                     max_val = comp( max_val, zen[r][c] ) ? zen[r][c] : max_val;
@@ -3247,6 +3247,38 @@ namespace feng
         matrix( matrix_view<Type, Allocator> const& view ) noexcept;
     };//struct matrix
 
+
+    namespace matrix_details
+    {
+        namespace map_impl_private
+        {
+            template< typename T, typename A >
+            auto map_impl( matrix<T, A> const& mat ) noexcept
+            {
+                return [&]( auto const& func ) noexcept
+                {
+                    typedef typename std::invoke_result_t<decltype(func), T> value_type;
+                    typename std::allocator_traits<A>:: template rebind_alloc<value_type> ans_alloc{ mat.get_allocator() };
+                    matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                    //auto ans = zeros<value_type>( ans_alloc, mat.row(), mat.col() );
+                    matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(v); } );
+                    return ans;
+                };
+            }
+        }
+
+        template< typename Func >
+        auto map( Func const& func ) noexcept
+        {
+            return [&]( auto const& mat ) noexcept
+            {
+                return map_impl_private::map_impl( mat )( func );
+            };
+        }
+
+    }
+
+
     template < typename Type, class Allocator >
     matrix_view<Type, Allocator>::matrix_view( matrix<Type, Allocator> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
     {
@@ -3263,7 +3295,7 @@ namespace feng
     matrix<Type, Allocator>::matrix( matrix_view<Type, Allocator> const& view ) noexcept
     {
         (*this).resize( view.row_dim_.second-view.row_dim_.first, view.col_dim_.second-view.col_dim_.first );
-        for ( auto const row : misc::range((*this).row() ) )//copy row by row
+        for ( auto const row : matrix_details::range((*this).row() ) )//copy row by row
                 std::copy( view.matrix_.row_begin(row+view.row_dim_.first), view.matrix_.row_end(row+view.row_dim_.second), (*this).row_begin(row) );
     }
 
@@ -3801,7 +3833,7 @@ namespace feng
     matrix< bool > is_inf( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
-        misc::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
         {
             a = std::isinf( v ) ? true : false;
         } );
@@ -3816,7 +3848,7 @@ namespace feng
     matrix< bool > is_nan( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
-        misc::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( const T & v, bool & a )
         {
             a = std::isnan( v ) ? true : false;
         } );
@@ -3834,7 +3866,7 @@ namespace feng
             return false;
 
         auto mm = m.transpose() * m;
-        misc::for_each( mm.diag_begin(), mm.diag_end(), []( T & v )
+        matrix_details::for_each( mm.diag_begin(), mm.diag_end(), []( T & v )
         {
             v -= T( 1 );
         } );
@@ -3931,8 +3963,8 @@ namespace feng
             auto const half = n >> 1;
             auto const& m_half = magic( half );
             // L
-            for ( auto r : misc::range( (half+1) >> 1 ) )
-                for ( auto c : misc::range( half ) )
+            for ( auto r : matrix_details::range( (half+1) >> 1 ) )
+                for ( auto c : matrix_details::range( half ) )
                 {
                     auto const val = m_half[r][c];
                     ans[r<<1][c<<1]     = val << 2;         ans[r<<1][(c<<1)+1]     = (val << 2) - 3;
@@ -3940,7 +3972,7 @@ namespace feng
                 }
 
             // U
-            for ( auto c : misc::range(half) )
+            for ( auto c : matrix_details::range(half) )
             {
                 auto const r = (half+1) >> 1;
                 auto const val = m_half[r][c];
@@ -3965,8 +3997,8 @@ namespace feng
                 }
             }
             // X
-            for ( auto r : misc::range( (half+3) >> 1, half ) )
-                for ( auto c : misc::range( half ) )
+            for ( auto r : matrix_details::range( (half+3) >> 1, half ) )
+                for ( auto c : matrix_details::range( half ) )
                 {
                     auto const& val = m_half[r][c];
                     ans[r<<1][c<<1]     = (val << 2) - 3;   ans[r<<1][(c<<1)+1]     = (val << 2);
@@ -4057,7 +4089,7 @@ namespace feng
 
                 if ( scale != zero )
                 {
-                    misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v /= scale; } );
+                    matrix_details::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     const value_type tmp_s = std::inner_product( u.col_begin( i ) + i, u.col_end( i ), u.col_begin( i ) + i, value_type( 0 ) );
                     g                      = ( u[i][i] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     const value_type tmp_h = u[i][i] * g - tmp_s;
@@ -4069,7 +4101,7 @@ namespace feng
                         std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_ss, tmp_h]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2 / tmp_h; } );
                     }
 
-                    misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v *= scale; } );
+                    matrix_details::for_each( u.col_begin( i ) + i, u.col_end( i ), [scale]( value_type & v ) { v *= scale; } );
                 }
             }
 
@@ -4084,7 +4116,7 @@ namespace feng
 
                 if ( scale != zero )
                 {
-                    misc::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v ) { v /= scale; } );
+                    matrix_details::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v ) { v /= scale; } );
                     auto const tmp_s = std::inner_product( u.row_begin( i ) + l - 1, u.row_end( i ), u.row_begin( i ) + l - 1, value_type( 0 ) );
                     g                = ( u[i][l - 1] >= zero ) ? -std::sqrt( tmp_s ) : std::sqrt( tmp_s );
                     auto const tmp_h = u[i][l - 1] * g - tmp_s;
@@ -4097,7 +4129,7 @@ namespace feng
                         std::transform( u.row_begin( j ) + l - 1, u.row_end( j ), arr.begin() + l - 1, u.row_begin( j ) + l - 1, [tmp_ss]( value_type v1, value_type v2 ) { return v1 + tmp_ss * v2; } );
                     }
 
-                    misc::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
+                    matrix_details::for_each( u.row_begin( i ) + l - 1, u.row_end( i ), [scale]( value_type & v )
                     {
                         v *= scale;
                     } );
@@ -4150,7 +4182,7 @@ namespace feng
                     std::transform( u.col_begin( j ) + i, u.col_end( j ), u.col_begin( i ) + i, u.col_begin( j ) + i, [tmp_f]( value_type v1, value_type v2 ) { return v1 + tmp_f * v2; } );
                 }
 
-                misc::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v ) { v /= tmp_g; } );
+                matrix_details::for_each( u.col_begin( i ) + i, u.col_end( i ), [tmp_g]( value_type & v ) { v /= tmp_g; } );
             }
             else
                 std::fill( u.col_begin( i ) + i, u.col_end( i ), zero );
@@ -4226,7 +4258,7 @@ namespace feng
                     if ( z < zero )
                     {
                         w[k][k] = -z;
-                        misc::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v ) { v = -v; } );
+                        matrix_details::for_each( v.col_begin( k ), v.col_end( k ), []( value_type & v ) { v = -v; } );
                     }
 
                     break;
@@ -4259,7 +4291,7 @@ namespace feng
                     g      = g * c - x * s;
                     h      = y * s;
                     y *= c;
-                    misc::for_each( v.col_begin( j ), v.col_end( j ), v.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
+                    matrix_details::for_each( v.col_begin( j ), v.col_end( j ), v.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
                     {
                         const auto vv1( v1 );
                         const auto vv2( v2 );
@@ -4274,7 +4306,7 @@ namespace feng
                         s = h / w[j][j];
                     }
 
-                    misc::for_each( u.col_begin( j ), u.col_end( j ), u.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
+                    matrix_details::for_each( u.col_begin( j ), u.col_end( j ), u.col_begin( j + 1 ), [c, s]( value_type & v1, value_type & v2 )
                     {
                         const auto vv1( v1 );
                         const auto vv2( v2 );
@@ -4323,7 +4355,7 @@ namespace feng
         matrix<T, A> w;
         matrix<T, A> v;
         singular_value_decomposition( a, u, v, w );
-        misc::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
+        matrix_details::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
         return w * v.transpose() * u.transpose();
     }
     template < typename Matrix >
@@ -5134,11 +5166,11 @@ namespace feng
         {
             std::uint_least64_t const offset = std::distance( LL.diag_begin(), std::find( LL.diag_begin(), LL.diag_end(), vec[i + i] ) );
             better_assert( offset < n + n );
-            misc::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
+            matrix_details::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ), []( std::complex< T2 >& c, T1 const r )
             {
                 c.real( r );
             } );
-            misc::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ) + n, []( std::complex< T2 >& c, T1 const i )
+            matrix_details::for_each( V.col_begin( i ), V.col_end( i ), VV.col_begin( offset ) + n, []( std::complex< T2 >& c, T1 const i )
             {
                 c.imag( i );
             } );
@@ -5187,7 +5219,7 @@ namespace feng
         matrix< std::complex< T >, A_ > b_( A.col(), 1 );
         std::copy( A.diag_cbegin(), A.diag_cend(), b.begin() );
         matrix< std::complex< T >, A_ > Am( A );
-        misc::for_each( Am.begin(), Am.end(), []( std::complex< T >& c )
+        matrix_details::for_each( Am.begin(), Am.end(), []( std::complex< T >& c )
         {
             c = std::conj( c );
         } );
@@ -5478,7 +5510,7 @@ namespace feng
 
         auto a = m;
 
-        for ( auto i : misc::range(row) )
+        for ( auto i : matrix_details::range(row) )
         {
             auto const p = std::distance( a.col_begin( i ), std::max_element( a.col_begin( i ) + i, a.col_end( i ), [](auto x, auto y){ return std::abs(x) < std::abs(y); } ) );
 
@@ -5489,9 +5521,9 @@ namespace feng
 
             if ( std::abs(factor) < 1.0e-10) return {};
 
-            misc::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor](auto& v){ v /= factor; } );
+            matrix_details::for_each( a.row_rbegin( i ), a.row_rend( i ) - i, [factor](auto& v){ v /= factor; } );
 
-            for ( auto j : misc::range(row) )
+            for ( auto j : matrix_details::range(row) )
             {
                 if ( i == j ) continue;
 
@@ -5660,7 +5692,7 @@ namespace feng
             return conv( B, A );
 
         matrix<Type, Allocator> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
-        for ( auto row : misc::range(B.row()) )
+        for ( auto row : matrix_details::range(B.row()) )
             std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1) );
 
         matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
@@ -5669,31 +5701,31 @@ namespace feng
         auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, auto row, auto const col ) noexcept
         {
             Type ans{0};
-            for ( auto r : misc::range(row) )
-                for ( auto c : misc::range(col) )
+            for ( auto r : matrix_details::range(row) )
+                for ( auto c : matrix_details::range(col) )
                     ans += a[r][c] * b[r][c];
             return ans;
         };
 
         auto const& func = [&]( std::uint_least64_t row )
         {
-            for ( auto col : misc::range(ans.row() ))
+            for ( auto col : matrix_details::range(ans.row() ))
             {
                 auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
                 ans[row][col] = product( A, view, A.row(), A.col() );
             }
         };
 
-        misc::parallel( func, ans.row() );
+        matrix_details::parallel( func, ans.row() );
         /*
         if constexpr ( parallel_mode == 0 )
         {
-            for ( auto row : misc::range(ans.row() ) )
+            for ( auto row : matrix_details::range(ans.row() ) )
                 func( row );
         }
         else
         {
-            misc::parallel( func, ans.row() );
+            matrix_details::parallel( func, ans.row() );
         }
         */
         return ans;
@@ -5767,9 +5799,9 @@ namespace feng
         auto& [mat_r, mat_g, mat_b] = ans;
 
         auto pos_itor = file_content.begin()+54;
-        for ( auto r : misc::range( row ) )
+        for ( auto r : matrix_details::range( row ) )
         {
-            for ( auto c : misc::range( col ) )
+            for ( auto c : matrix_details::range( col ) )
             {
                 mat_b[row-r-1][c] = *pos_itor++;
                 mat_g[row-r-1][c] = *pos_itor++;
@@ -5826,15 +5858,15 @@ namespace feng
 
         auto const& make_pooling = [&ans, &mat, &the_function, new_col, dim_r, dim_c, init_value]( std::uint_least64_t r )
         {
-            for ( auto c : misc::range( new_col ) )
+            for ( auto c : matrix_details::range( new_col ) )
             {
                 ans[r][c] = init_value;
-                for ( auto rr : misc::range( dim_r ) )
+                for ( auto rr : matrix_details::range( dim_r ) )
                     ans[r][c] = std::accumulate( mat.row_begin(r*dim_r+rr)+c*dim_c, mat.row_begin(r*dim_r+rr)+c*dim_c+dim_c, ans[r][c], the_function );
             }
         };
 
-        misc::parallel( make_pooling, new_row );
+        matrix_details::parallel( make_pooling, new_row );
 
         return ans;
     }
@@ -5862,8 +5894,8 @@ namespace feng
         auto const& [red_mx, red_mn] = std::make_pair( *std::max_element(red_channel.begin(), red_channel.end() ), *std::min_element(red_channel.begin(), red_channel.end() ) );
         auto const& [green_mx, green_mn] = std::make_pair( *std::max_element(green_channel.begin(), green_channel.end() ), *std::min_element(green_channel.begin(), green_channel.end() ) );
         auto const& [blue_mx, blue_mn] = std::make_pair( *std::max_element(blue_channel.begin(), blue_channel.end() ), *std::min_element(blue_channel.begin(), blue_channel.end() ) );
-        for ( auto r : misc::range(row) )
-            for ( auto c : misc::range(col) )
+        for ( auto r : matrix_details::range(row) )
+            for ( auto c : matrix_details::range(col) )
             {
                 channel_r[r][c] = static_cast<std::uint8_t>( 256.0 * (red_channel[r][c] - red_mn) / (red_mx-red_mn+0.1) );
                 channel_g[r][c] = static_cast<std::uint8_t>( 256.0 * (green_channel[r][c] - green_mn) / (green_mx-green_mn+0.1) );
@@ -5871,7 +5903,7 @@ namespace feng
             }
 
         // encode rgb to bitmap stream
-        auto const& encoding = misc::encode_bmp_stream( channel_r, channel_g, channel_b );
+        auto const& encoding = matrix_details::encode_bmp_stream( channel_r, channel_g, channel_b );
         better_assert( encoding, "Failed to convert the 3 matrix to bmp stream in save_as_bmp function, where the file_name is ", file_name );
 
         // write file stream
@@ -5896,7 +5928,7 @@ namespace feng
     {
         auto const mn = mean( mat );
         T var{0};
-        misc::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
+        matrix_details::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
         return var;
     }
 
@@ -5905,7 +5937,7 @@ namespace feng
    fma( matrix<T, A> const& mat, matrix<T, A> const& nat, matrix<T, A> const& lat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), lat.begin(), []( auto& x, auto const& y, auto const& z ){ x = std::fma(x, y, z); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), lat.begin(), []( auto& x, auto const& y, auto const& z ){ x = std::fma(x, y, z); } );
        return ans;
    }
 
@@ -5914,7 +5946,7 @@ namespace feng
    ldexp( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::ldexp(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::ldexp(x, y); } );
        return ans;
    }
 
@@ -5923,7 +5955,7 @@ namespace feng
    ldexp( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(x, y); } );
        return ans;
    }
 
@@ -5932,7 +5964,7 @@ namespace feng
    ldexp( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(y, x); } );
        return ans;
    }
 
@@ -5941,7 +5973,7 @@ namespace feng
    scalbn( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbn(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbn(x, y); } );
        return ans;
    }
 
@@ -5950,7 +5982,7 @@ namespace feng
    scalbn( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(x, y); } );
        return ans;
    }
 
@@ -5959,7 +5991,7 @@ namespace feng
    scalbn( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(y, x); } );
        return ans;
    }
 
@@ -5968,7 +6000,7 @@ namespace feng
    scalbln( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbln(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbln(x, y); } );
        return ans;
    }
 
@@ -5977,7 +6009,7 @@ namespace feng
    scalbln( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(x, y); } );
        return ans;
    }
 
@@ -5986,7 +6018,7 @@ namespace feng
    scalbln( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(y, x); } );
        return ans;
    }
 
@@ -5995,7 +6027,7 @@ namespace feng
    pow( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::pow(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::pow(x, y); } );
        return ans;
    }
 
@@ -6004,7 +6036,7 @@ namespace feng
    pow( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(x, y); } );
        return ans;
    }
 
@@ -6013,7 +6045,7 @@ namespace feng
    pow( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(y, x); } );
        return ans;
    }
 
@@ -6022,7 +6054,7 @@ namespace feng
    hypot( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::hypot(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::hypot(x, y); } );
        return ans;
    }
 
@@ -6031,7 +6063,7 @@ namespace feng
    hypot( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(x, y); } );
        return ans;
    }
 
@@ -6040,7 +6072,7 @@ namespace feng
    hypot( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(y, x); } );
        return ans;
    }
 
@@ -6049,7 +6081,7 @@ namespace feng
    fmod( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmod(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmod(x, y); } );
        return ans;
    }
 
@@ -6058,7 +6090,7 @@ namespace feng
    fmod( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(x, y); } );
        return ans;
    }
 
@@ -6067,7 +6099,7 @@ namespace feng
    fmod( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(y, x); } );
        return ans;
    }
 
@@ -6076,7 +6108,7 @@ namespace feng
    remainder( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::remainder(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::remainder(x, y); } );
        return ans;
    }
 
@@ -6085,7 +6117,7 @@ namespace feng
    remainder( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(x, y); } );
        return ans;
    }
 
@@ -6094,7 +6126,7 @@ namespace feng
    remainder( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(y, x); } );
        return ans;
    }
 
@@ -6103,7 +6135,7 @@ namespace feng
    copysign( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::copysign(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::copysign(x, y); } );
        return ans;
    }
 
@@ -6112,7 +6144,7 @@ namespace feng
    copysign( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(x, y); } );
        return ans;
    }
 
@@ -6121,7 +6153,7 @@ namespace feng
    copysign( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(y, x); } );
        return ans;
    }
 
@@ -6130,7 +6162,7 @@ namespace feng
    nextafter( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::nextafter(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::nextafter(x, y); } );
        return ans;
    }
 
@@ -6139,7 +6171,7 @@ namespace feng
    nextafter( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(x, y); } );
        return ans;
    }
 
@@ -6148,7 +6180,7 @@ namespace feng
    nextafter( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(y, x); } );
        return ans;
    }
 
@@ -6157,7 +6189,7 @@ namespace feng
    fdim( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fdim(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fdim(x, y); } );
        return ans;
    }
 
@@ -6166,7 +6198,7 @@ namespace feng
    fdim( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(x, y); } );
        return ans;
    }
 
@@ -6175,7 +6207,7 @@ namespace feng
    fdim( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(y, x); } );
        return ans;
    }
 
@@ -6184,7 +6216,7 @@ namespace feng
    fmax( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmax(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmax(x, y); } );
        return ans;
    }
 
@@ -6193,7 +6225,7 @@ namespace feng
    fmax( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(x, y); } );
        return ans;
    }
 
@@ -6202,7 +6234,7 @@ namespace feng
    fmax( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(y, x); } );
        return ans;
    }
 
@@ -6211,7 +6243,7 @@ namespace feng
    fmin( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmin(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmin(x, y); } );
        return ans;
    }
 
@@ -6220,7 +6252,7 @@ namespace feng
    fmin( matrix<T, A> const& mat, TT const& y )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(x, y); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(x, y); } );
        return ans;
    }
 
@@ -6229,7 +6261,7 @@ namespace feng
    fmin( TT const& y, matrix<T, A> const& mat )
    {
        matrix<T, A> ans{ mat.row(), mat.col() };
-       misc::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(y, x); } );
+       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(y, x); } );
        return ans;
    }
 
@@ -6239,7 +6271,7 @@ namespace feng
     {
         matrix<T, A> ans{mat};
         matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > exps{ mat.row(), mat.col() };
-        misc::for_each( ans.begin(), ans.end(), exps.begin(), []( T& x, int& exp ){ x = std::frexp( x, &exp ); } );
+        matrix_details::for_each( ans.begin(), ans.end(), exps.begin(), []( T& x, int& exp ){ x = std::frexp( x, &exp ); } );
         return std::make_tuple( ans, exps );
     }
     template< typename T, typename A>
@@ -6248,7 +6280,7 @@ namespace feng
     {
         matrix<T, A> ans{mat};
         matrix<double, typename std::allocator_traits<A>:: template rebind_alloc<double> > intpart{ mat.row(), mat.col() };
-        misc::for_each( ans.begin(), ans.end(), intpart.begin(), []( T& x, int& ip ){ x = std::modf( x, &ip ); } );
+        matrix_details::for_each( ans.begin(), ans.end(), intpart.begin(), []( T& x, int& ip ){ x = std::modf( x, &ip ); } );
         return std::make_tuple( ans, intpart );
     }
 
@@ -6256,7 +6288,7 @@ namespace feng
      auto cos( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cos(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cos(x); } );
          return ans;
      }
 
@@ -6264,7 +6296,7 @@ namespace feng
      auto sin( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sin(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sin(x); } );
          return ans;
      }
 
@@ -6272,7 +6304,7 @@ namespace feng
      auto tan( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tan(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tan(x); } );
          return ans;
      }
 
@@ -6280,7 +6312,7 @@ namespace feng
      auto acos( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acos(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acos(x); } );
          return ans;
      }
 
@@ -6288,7 +6320,7 @@ namespace feng
      auto asin( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asin(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asin(x); } );
          return ans;
      }
 
@@ -6296,7 +6328,7 @@ namespace feng
      auto atan( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atan(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atan(x); } );
          return ans;
      }
 
@@ -6304,7 +6336,7 @@ namespace feng
      auto cosh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cosh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cosh(x); } );
          return ans;
      }
 
@@ -6312,7 +6344,7 @@ namespace feng
      auto sinh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sinh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sinh(x); } );
          return ans;
      }
 
@@ -6320,7 +6352,7 @@ namespace feng
      auto tanh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tanh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tanh(x); } );
          return ans;
      }
 
@@ -6328,7 +6360,7 @@ namespace feng
      auto acosh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acosh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acosh(x); } );
          return ans;
      }
 
@@ -6336,7 +6368,7 @@ namespace feng
      auto asinh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asinh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asinh(x); } );
          return ans;
      }
 
@@ -6344,7 +6376,7 @@ namespace feng
      auto atanh( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atanh(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atanh(x); } );
          return ans;
      }
 
@@ -6352,7 +6384,7 @@ namespace feng
      auto exp( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp(x); } );
          return ans;
      }
 
@@ -6360,7 +6392,7 @@ namespace feng
      auto log( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log(x); } );
          return ans;
      }
 
@@ -6368,7 +6400,7 @@ namespace feng
      auto log10( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log10(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log10(x); } );
          return ans;
      }
 
@@ -6376,7 +6408,7 @@ namespace feng
      auto exp2( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp2(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp2(x); } );
          return ans;
      }
 
@@ -6384,7 +6416,7 @@ namespace feng
      auto expm1( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::expm1(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::expm1(x); } );
          return ans;
      }
 
@@ -6392,7 +6424,7 @@ namespace feng
      auto log1p( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log1p(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log1p(x); } );
          return ans;
      }
 
@@ -6400,7 +6432,7 @@ namespace feng
      auto log2( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log2(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log2(x); } );
          return ans;
      }
 
@@ -6408,7 +6440,7 @@ namespace feng
      auto logb( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::logb(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::logb(x); } );
          return ans;
      }
 
@@ -6416,7 +6448,7 @@ namespace feng
      auto sqrt( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sqrt(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sqrt(x); } );
          return ans;
      }
 
@@ -6424,7 +6456,7 @@ namespace feng
      auto cbrt( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cbrt(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cbrt(x); } );
          return ans;
      }
 
@@ -6432,7 +6464,7 @@ namespace feng
      auto erf( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erf(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erf(x); } );
          return ans;
      }
 
@@ -6440,7 +6472,7 @@ namespace feng
      auto erfc( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erfc(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erfc(x); } );
          return ans;
      }
 
@@ -6448,7 +6480,7 @@ namespace feng
      auto tgamma( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tgamma(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tgamma(x); } );
          return ans;
      }
 
@@ -6456,7 +6488,7 @@ namespace feng
      auto lgamma( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::lgamma(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::lgamma(x); } );
          return ans;
      }
 
@@ -6464,7 +6496,7 @@ namespace feng
      auto ceil( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::ceil(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::ceil(x); } );
          return ans;
      }
 
@@ -6472,7 +6504,7 @@ namespace feng
      auto floor( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::floor(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::floor(x); } );
          return ans;
      }
 
@@ -6480,7 +6512,7 @@ namespace feng
      auto trunc( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::trunc(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::trunc(x); } );
          return ans;
      }
 
@@ -6488,7 +6520,7 @@ namespace feng
      auto round( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::round(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::round(x); } );
          return ans;
      }
 
@@ -6496,7 +6528,7 @@ namespace feng
      auto rint( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::rint(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::rint(x); } );
          return ans;
      }
 
@@ -6504,7 +6536,7 @@ namespace feng
      auto nearbyint( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::nearbyint(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::nearbyint(x); } );
          return ans;
      }
 
@@ -6512,7 +6544,7 @@ namespace feng
      auto fabs( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::fabs(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::fabs(x); } );
          return ans;
      }
 
@@ -6520,7 +6552,7 @@ namespace feng
      auto abs( matrix<T,A> const& mat )
      {
          matrix<T,A> ans{mat};
-         misc::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::abs(x); } );
+         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::abs(x); } );
          return ans;
      }
 
@@ -6529,7 +6561,7 @@ namespace feng
     ilogb( matrix<T, A> const& mat )
     {
         matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > ans{ mat.row(), mat.col() };
-        misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::ilogb(x); } );
+        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::ilogb(x); } );
         return ans;
     }
 
@@ -6538,7 +6570,7 @@ namespace feng
     lround( matrix<T, A> const& mat )
     {
         matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
-        misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lround(x); } );
+        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lround(x); } );
         return ans;
     }
 
@@ -6547,7 +6579,7 @@ namespace feng
     llround( matrix<T, A> const& mat )
     {
         matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
-        misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llround(x); } );
+        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llround(x); } );
         return ans;
     }
 
@@ -6556,7 +6588,7 @@ namespace feng
     lrint( matrix<T, A> const& mat )
     {
         matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
-        misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lrint(x); } );
+        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lrint(x); } );
         return ans;
     }
 
@@ -6565,7 +6597,7 @@ namespace feng
     llrint( matrix<T, A> const& mat )
     {
         matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
-        misc::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llrint(x); } );
+        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llrint(x); } );
         return ans;
     }
 
@@ -6575,7 +6607,7 @@ namespace feng
     {
         matrix<T, A> ans{number};
         matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > quot{ number.row(), number.col() };
-        misc::for_each( ans.begin(), ans.end(), denom.begin(), quot.begin(), [](auto& num, auto const& den, int& quo ) { num = remquo( num, den, &quo ); } );
+        matrix_details::for_each( ans.begin(), ans.end(), denom.begin(), quot.begin(), [](auto& num, auto const& den, int& quo ) { num = remquo( num, den, &quo ); } );
         return std::make_tuple( ans, quot );
     }
 
@@ -6585,7 +6617,7 @@ namespace feng
     real( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::real(x); } );
+        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::real(x); } );
         return ans;
     }
 
@@ -6594,7 +6626,7 @@ namespace feng
     imag( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::imag(x); } );
+        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::imag(x); } );
         return ans;
     }
 
@@ -6603,7 +6635,7 @@ namespace feng
     abs( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::abs(x); } );
+        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::abs(x); } );
         return ans;
     }
 
@@ -6612,7 +6644,7 @@ namespace feng
     arg( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::arg(x); } );
+        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::arg(x); } );
         return ans;
     }
 
@@ -6621,7 +6653,7 @@ namespace feng
     norm( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        misc::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::norm(x); } );
+        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::norm(x); } );
         return ans;
     }
 
@@ -6630,56 +6662,37 @@ namespace feng
     conj( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         auto ans{ mm };
-        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::conj(x); } );
+        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::conj(x); } );
         return ans;
     }
 
+    /*
     template< typename T, typename A >
     auto const
     polar( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         auto ans{ mm };
-        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::polar(x); } );
+        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::polar(x); } );
         return ans;
     }
+    */
 
+    auto const& polar = matrix_details::map( []( auto const& val ){ return std::polar(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     proj( matrix<std::complex<T>, A> const& mm ) noexcept
     {
         auto ans{ mm };
-        misc::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::proj(x); } );
+        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::proj(x); } );
         return ans;
     }
+    */
 
-    template< typename T, typename A >
-    auto matrix_map( matrix<T, A> const& mat ) noexcept
-    {
-        return [&]( auto const& func ) noexcept
-        {
-            typedef typename std::invoke_result_t<decltype(func), T> value_type;
-            auto mat_alloc = mat.get_allocator();
-            //typedef decltype(mat_alloc) alloc_type;
-            //typedef typename alloc_type::rebind<value_type>::other other_alloc_type;
-            //A::template rebind<U>::other
-            //other_alloc_type ans_alloc{ mat_alloc };
-            typename decltype(mat_alloc)::template rebind<value_type>::other ans_alloc{ mat_alloc };//rebinded allocator
-            auto ans = zeros<value_type>( ans_alloc, mat.row(), mat.col() );
-            misc::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(v); } );
-            return ans;
-        };
-    }
+    auto const& proj = matrix_details::map( []( auto const& val ){ return std::proj(val); } );
 
-    template< typename Func >
-    auto function_map( Func const& func ) noexcept
-    {
-        return [&]( auto const& mat ) noexcept
-        {
-            return matrix_map( mat )( func );
-        };
-    }
-
-    auto const& msin = function_map( []( auto const& val ){ return std::sin(val); } );
+    auto const& msin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
 
 } //namespace feng
 

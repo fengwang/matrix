@@ -10,6 +10,7 @@ SUPPRESS_WARNINGS
 #include "./cases/operator_equal.hpp"
 #include "./cases/size.hpp"
 #include "./cases/sin.hpp"
+#include "./cases/proj.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/zeros.hpp"
 #include "./cases/minmax.hpp"
