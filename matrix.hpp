@@ -5267,6 +5267,7 @@ namespace feng
         matrix< std::complex< T >, A_ > b( A.col(), 1 );
         return eigen_power_iteration( A, b.begin(), eps );
     }
+    /*
     template < typename Matrix >
     typename Matrix::value_type
     norm( const Matrix& A )
@@ -5281,6 +5282,7 @@ namespace feng
         } );
         return *( std::max_element( m.begin(), m.end() ) );
     }
+
     template < typename Matrix >
     typename Matrix::value_type
     norm( const Matrix& A, const std::uint_least64_t n )
@@ -5307,6 +5309,7 @@ namespace feng
         better_assert( !"norm:: other norm algorithm has not been implemented!" );
         return value_type( 0 );
     }
+    */
     template < typename Matrix >
     typename Matrix::value_type
     norm_1( const Matrix& A )
@@ -6492,6 +6495,7 @@ namespace feng
          return ans;
      }
 
+     /*
      template< typename T, typename A >
      auto ceil( matrix<T,A> const& mat )
      {
@@ -6499,7 +6503,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::ceil(x); } );
          return ans;
      }
+     */
 
+    auto const& ceil = matrix_details::map( []( auto const& val ){ return std::ceil(val); } );
+
+     /*
      template< typename T, typename A >
      auto floor( matrix<T,A> const& mat )
      {
@@ -6507,7 +6515,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::floor(x); } );
          return ans;
      }
+     */
 
+    auto const& floor = matrix_details::map( []( auto const& val ){ return std::floor(val); } );
+
+     /*
      template< typename T, typename A >
      auto trunc( matrix<T,A> const& mat )
      {
@@ -6515,7 +6527,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::trunc(x); } );
          return ans;
      }
+     */
 
+    auto const& trunc = matrix_details::map( []( auto const& val ){ return std::trunc(val); } );
+
+     /*
      template< typename T, typename A >
      auto round( matrix<T,A> const& mat )
      {
@@ -6523,7 +6539,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::round(x); } );
          return ans;
      }
+     */
 
+    auto const& round = matrix_details::map( []( auto const& val ){ return std::round(val); } );
+
+     /*
      template< typename T, typename A >
      auto rint( matrix<T,A> const& mat )
      {
@@ -6531,7 +6551,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::rint(x); } );
          return ans;
      }
+     */
 
+    auto const& rint = matrix_details::map( []( auto const& val ){ return std::rint(val); } );
+
+     /*
      template< typename T, typename A >
      auto nearbyint( matrix<T,A> const& mat )
      {
@@ -6539,7 +6563,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::nearbyint(x); } );
          return ans;
      }
+     */
 
+    auto const& nearbyint = matrix_details::map( []( auto const& val ){ return std::nearbyint(val); } );
+
+     /*
      template< typename T, typename A >
      auto fabs( matrix<T,A> const& mat )
      {
@@ -6547,7 +6575,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::fabs(x); } );
          return ans;
      }
+     */
 
+    auto const& fabs = matrix_details::map( []( auto const& val ){ return std::fabs(val); } );
+
+     /*
      template< typename T, typename A >
      auto abs( matrix<T,A> const& mat )
      {
@@ -6555,7 +6587,11 @@ namespace feng
          matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::abs(x); } );
          return ans;
      }
+     */
 
+    auto const& abs = matrix_details::map( []( auto const& val ){ return std::abs(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     ilogb( matrix<T, A> const& mat )
@@ -6564,7 +6600,11 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::ilogb(x); } );
         return ans;
     }
+    */
 
+    auto const& ilogb = matrix_details::map( []( auto const& val ){ return std::ilogb(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     lround( matrix<T, A> const& mat )
@@ -6573,7 +6613,11 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lround(x); } );
         return ans;
     }
+    */
 
+    auto const& lround = matrix_details::map( []( auto const& val ){ return std::lround(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     llround( matrix<T, A> const& mat )
@@ -6582,7 +6626,11 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llround(x); } );
         return ans;
     }
+    */
 
+    auto const& llround = matrix_details::map( []( auto const& val ){ return std::llround(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     lrint( matrix<T, A> const& mat )
@@ -6591,7 +6639,11 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lrint(x); } );
         return ans;
     }
+    */
 
+    auto const& lrint = matrix_details::map( []( auto const& val ){ return std::lrint(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     llrint( matrix<T, A> const& mat )
@@ -6600,6 +6652,9 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llrint(x); } );
         return ans;
     }
+    */
+
+    auto const& llrint = matrix_details::map( []( auto const& val ){ return std::llrint(val); } );
 
     template< typename T, typename A>
     auto
@@ -6612,6 +6667,7 @@ namespace feng
     }
 
 
+    /*
     template< typename T, typename A >
     const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
     real( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6620,7 +6676,10 @@ namespace feng
         matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::real(x); } );
         return ans;
     }
+    */
+    auto const& real = matrix_details::map( []( auto const& val ){ return std::real(val); } );
 
+    /*
     template< typename T, typename A >
     const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
     imag( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6629,7 +6688,11 @@ namespace feng
         matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::imag(x); } );
         return ans;
     }
+    */
 
+    auto const& imag = matrix_details::map( []( auto const& val ){ return std::imag(val); } );
+
+    /*
     template< typename T, typename A >
     const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
     abs( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6638,7 +6701,11 @@ namespace feng
         matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::abs(x); } );
         return ans;
     }
+    */
 
+    //auto const& abs = matrix_details::map( []( auto const& val ){ return std::abs(val); } );
+
+    /*
     template< typename T, typename A >
     const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
     arg( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6647,7 +6714,11 @@ namespace feng
         matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::arg(x); } );
         return ans;
     }
+    */
 
+    auto const& arg = matrix_details::map( []( auto const& val ){ return std::arg(val); } );
+
+    /*
     template< typename T, typename A >
     const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
     norm( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6656,7 +6727,11 @@ namespace feng
         matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::norm(x); } );
         return ans;
     }
+    */
 
+    auto const& norm = matrix_details::map( []( auto const& val ){ return std::norm(val); } );
+
+    /*
     template< typename T, typename A >
     auto const
     conj( matrix<std::complex<T>, A> const& mm ) noexcept
@@ -6665,6 +6740,9 @@ namespace feng
         matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::conj(x); } );
         return ans;
     }
+    */
+
+    auto const& conj = matrix_details::map( []( auto const& val ){ return std::conj(val); } );
 
     /*
     template< typename T, typename A >
