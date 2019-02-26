@@ -6403,6 +6403,7 @@ namespace feng
        return ans;
    }
 
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    fmin( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6429,6 +6430,9 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(y, x); } );
        return ans;
    }
+   */
+
+    static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
 
    /*
     template< typename T, typename A>

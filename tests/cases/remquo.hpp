@@ -1,10 +1,6 @@
 #include <cassert>
 TEST_CASE( "Matrix remquo", "[remquo]" )
 {
-    {
-        feng::matrix<std::tuple<int,int>> dummy{ 100, 100 };
-        std::fill( dummy.begin(), dummy.end(), std::make_tuple( 1, 1 ) );
-    }
     unsigned long N = 10;
     for ( unsigned long sz = 1; sz != N; ++sz )
     {
