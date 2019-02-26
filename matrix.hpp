@@ -6931,6 +6931,7 @@ namespace feng
 
     static auto const& llrint = matrix_details::map( []( auto const& val ){ return std::llrint(val); } );
 
+    /*
     template< typename T, typename A>
     auto
     remquo( matrix<T, A> const& number, matrix<T, A> const& denom )
@@ -6940,6 +6941,9 @@ namespace feng
         matrix_details::for_each( ans.begin(), ans.end(), denom.begin(), quot.begin(), [](auto& num, auto const& den, int& quo ) { num = remquo( num, den, &quo ); } );
         return std::make_tuple( ans, quot );
     }
+    */
+
+    static auto const& remquo = matrix_details::map( []( auto const& num, auto const& den ){ int quo; auto const ans = std::remquo(num, den, &quo); return std::make_tuple(ans, quo); } );
 
 
     /*
