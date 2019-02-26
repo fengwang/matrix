@@ -1,7 +1,12 @@
-CXX           = g++
-CXXFLAGS      = -std=c++17 -Wall -Wextra -O2 -fmax-errors=2
+#CXX           = g++
+#CXXFLAGS      = -std=c++17 -Wall -Wextra -O2 -fmax-errors=2
+#LFLAGS        = -O2 -pthread -lstdc++fs
+
+CXX           = clang++
+CXXFLAGS      = -std=c++17 -Wall -Wextra -O2 -ferror-limit=2
+LFLAGS        = -O2 -pthread -lc++fs
+
 LINK          = $(CXX)
-LFLAGS        = -O2 -pthread -lstdc++fs
 
 ####### Output directory
 OBJECTS_DIR   = .

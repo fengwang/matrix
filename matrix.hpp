@@ -355,10 +355,10 @@ namespace feng
             make_transformation_function(  std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_1, double value_1,
                                            std::tuple<std::uint8_t, std::uint8_t, std::uint8_t> const& color_2, double value_2 )
             {
-                auto const& [r1, g1, b1] = color_1;
-                auto const& [r2, g2, b2] = color_2;
+                auto const [r1, g1, b1] = color_1;
+                auto const [r2, g2, b2] = color_2;
 
-                return [=]( double x )
+                return [r1=r1, g1=g1, b1=b1, r2=r2, g2=g2, b2=b2, value_1, value_2]( double x )
                 {
                     double dr = static_cast<double>(r1) - static_cast<double>(r2);
                     double dg = static_cast<double>(g1) - static_cast<double>(g2);
@@ -381,7 +381,7 @@ namespace feng
             static std::function<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>(double)>
             make_color_map( std::vector<double> const& values, std::vector<std::tuple<std::uint8_t, std::uint8_t, std::uint8_t>> const& colors )
             {
-                better_assert( values.size() == colors.size() && "make_color_map::length of values and colors not match!" );
+                better_assert( (values.size() == colors.size()), "make_color_map::length of values and colors not match!" );
                 better_assert( std::abs(*(values.begin())) < 1.0e-10 && "make_color_map::value should start from 0!" );
                 better_assert( std::abs(*(values.rbegin())-1.0) < 1.0e-10 && "make_color_map::value should end at 1!" );
 
@@ -3063,6 +3063,7 @@ namespace feng
     template < typename Matrix, typename Type, typename Allocator >
     using crtp_max_min_view = crtp_max_min<Matrix, Type, Allocator>;
 
+    // constructor from pointer, not from matrix
     template < typename Type, class Allocator >
     struct matrix_view :
         crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
@@ -3251,6 +3252,7 @@ namespace feng
     namespace matrix_details
     {
 
+        /*
         namespace map_impl_private
         {
             template<typename Func>
@@ -3307,6 +3309,7 @@ namespace feng
         {
             return map_impl_private::map_impl<Func>{func};
         }
+        */
 
         /*
         namespace map_impl_private
@@ -3334,6 +3337,61 @@ namespace feng
             };
         }
         */
+
+        namespace map_impl_private
+        {
+            template< typename Type, typename ... Types >
+            struct overload : overload<Type>, overload<Types...>
+            {
+                overload( overload<Type> a, overload<Types...> b ) noexcept: overload<Type>{a}, overload<Types...>{b} {}
+                using overload<Type>::operator();
+                using overload<Types...>::operator();
+            };
+            template< typename Type >
+            struct overload<Type> : Type
+            {
+                overload( Type a ) noexcept : Type{a} {}
+                using Type::operator();
+            };
+
+            template< typename ... Types >
+            auto make_overload( Types ... ts ) noexcept
+            {
+                return overload<Types...>{ ts... };
+            }
+        }
+
+        template< typename Func >
+        auto map( Func const& func ) noexcept
+        {
+            return
+            map_impl_private::make_overload
+            (
+                [&]( auto const& mat ) noexcept
+                {
+                    typedef typename std::remove_reference_t<typename std::remove_cv_t<decltype(mat)>>                  matrix_type;
+                    typedef typename matrix_type::value_type                                                            value_type;
+                    typedef typename matrix_type::allocator_type                                                        allocator_type;
+                    typedef typename std::invoke_result_t<Func, value_type>                                             return_value_type;
+                    typedef typename std::allocator_traits<allocator_type>::template rebind_alloc<return_value_type>    return_allocator_type;
+                    typedef matrix<return_value_type, return_allocator_type>                                            return_matrix_type;
+
+                    if constexpr( std::is_same_v<value_type, return_value_type> )
+                    {
+                        return_matrix_type ans{ mat };
+                        matrix_details::for_each( ans.begin(), ans.end(), [&]( auto& v ){ v = func(v); } );
+                        return ans;
+                    }
+                    else
+                    {
+                        return_allocator_type ans_alloc{ mat.get_allocator() };
+                        matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(v); } );
+                        return ans;
+                    }
+                }
+            );
+        }
 
     }
 
