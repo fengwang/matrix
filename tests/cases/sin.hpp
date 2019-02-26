@@ -7,7 +7,7 @@ TEST_CASE( "Matrix sin", "[sin]" )
         for ( unsigned long tz = 1; tz != N; ++tz )
         {
             feng::matrix<double> const& mat = feng::rand<double>( sz, tz );
-            auto const& mat_sin = feng::msin( mat );
+            auto const& mat_sin = feng::sin( mat );
             for ( unsigned long r = 0; r != sz; ++r )
                 for ( unsigned long c = 0; c != tz; ++c )
                 {

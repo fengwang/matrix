@@ -6110,1007 +6110,150 @@ namespace feng
         return var;
     }
 
-    //!!!
-    /*
-   template< typename T, typename A >
-   auto const
-   fma( matrix<T, A> const& mat, matrix<T, A> const& nat, matrix<T, A> const& lat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), lat.begin(), []( auto& x, auto const& y, auto const& z ){ x = std::fma(x, y, z); } );
-       return ans;
-   }
-   */
-
+    //
+    // Drei-Functions
+    //
     static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   ldexp( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::ldexp(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   ldexp( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   ldexp( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(y, x); } );
-       return ans;
-   }
-   */
-
+    //
+    // Zwei-Functions
+    //
     static auto const& ldexp = matrix_details::map( []( auto const& val, auto const& wal ){ return std::ldexp(val, wal); } );
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   scalbn( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbn(x, y); } );
-       return ans;
-   }
 
-   template< typename T, typename A, typename TT >
-   auto const
-   scalbn( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   scalbn( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(y, x); } );
-       return ans;
-   }
-   */
     static auto const& scalbn = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbn(val, wal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   scalbln( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::scalbln(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   scalbln( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   scalbln( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(y, x); } );
-       return ans;
-   }
-   */
-
     static auto const& scalbln = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbln(val, wal); } );
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   pow( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::pow(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   pow( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   pow( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(y, x); } );
-       return ans;
-   }
-   */
 
     static auto const& pow = matrix_details::map( []( auto const& val, auto const& wal ){ return std::pow(val, wal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   hypot( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::hypot(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   hypot( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   hypot( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(y, x); } );
-       return ans;
-   }
-   */
-
     static auto const& hypot = matrix_details::map( []( auto const& val, auto const& wal ){ return std::hypot(val, wal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   fmod( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmod(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmod( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmod( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(y, x); } );
-       return ans;
-   }
-   */
-
     static auto const& fmod = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmod(val, wal); } );
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   remainder( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::remainder(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   remainder( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   remainder( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(y, x); } );
-       return ans;
-   }
-   */
 
     static auto const& remainder = matrix_details::map( []( auto const& val, auto const& wal ){ return std::remainder(val, wal); } );
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   copysign( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::copysign(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   copysign( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   copysign( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(y, x); } );
-       return ans;
-   }
-   */
 
     static auto const& copysign = matrix_details::map( []( auto const& val, auto const& wal ){ return std::copysign(val, wal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   nextafter( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::nextafter(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   nextafter( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   nextafter( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(y, x); } );
-       return ans;
-   }
-   */
-
     static auto const& nextafter = matrix_details::map( []( auto const& val, auto const& wal ){ return std::nextafter(val, wal); } );
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   fdim( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fdim(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fdim( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fdim( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(y, x); } );
-       return ans;
-   }
-   */
 
     static auto const& fdim = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fdim(val, wal); } );
 
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   fmax( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmax(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmax( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmax( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(y, x); } );
-       return ans;
-   }
-   */
-
     static auto const& fmax = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmax(val, wal); } );
-
-   /*
-   template< typename T, typename A, typename TT, typename AA >
-   auto const
-   fmin( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), []( auto& x, auto const& y ){ x = std::fmin(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmin( matrix<T, A> const& mat, TT const& y )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(x, y); } );
-       return ans;
-   }
-
-   template< typename T, typename A, typename TT >
-   auto const
-   fmin( TT const& y, matrix<T, A> const& mat )
-   {
-       matrix<T, A> ans{ mat.row(), mat.col() };
-       matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmin(y, x); } );
-       return ans;
-   }
-   */
 
     static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
 
-   /*
-    template< typename T, typename A>
-    auto
-    frexp( matrix<T, A> const& mat )
-    {
-        matrix<T, A> ans{mat};
-        matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > exps{ mat.row(), mat.col() };
-        matrix_details::for_each( ans.begin(), ans.end(), exps.begin(), []( T& x, int& exp ){ x = std::frexp( x, &exp ); } );
-        return std::make_tuple( ans, exps );
-    }
-    */
-
+    //
+    // MONO-Functions
+    //
     static auto const& frexp = matrix_details::map( []( auto const& val ){ return std::frexp(val); } );
-
-    /*
-    template< typename T, typename A>
-    auto
-    modf( matrix<T, A> const& mat )
-    {
-        matrix<T, A> ans{mat};
-        matrix<double, typename std::allocator_traits<A>:: template rebind_alloc<double> > intpart{ mat.row(), mat.col() };
-        matrix_details::for_each( ans.begin(), ans.end(), intpart.begin(), []( T& x, int& ip ){ x = std::modf( x, &ip ); } );
-        return std::make_tuple( ans, intpart );
-    }
-    */
 
     static auto const& modf = matrix_details::map( []( auto const& val ){ return std::modf(val); } );
 
-    /*
-     template< typename T, typename A >
-     auto cos( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cos(x); } );
-         return ans;
-     }
-     */
-
     static auto const& cos = matrix_details::map( []( auto const& val ){ return std::cos(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto sin( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sin(x); } );
-         return ans;
-     }
-     */
 
     static auto const& sin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto tan( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tan(x); } );
-         return ans;
-     }
-     */
-
     static auto const& tan = matrix_details::map( []( auto const& val ){ return std::tan(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto acos( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acos(x); } );
-         return ans;
-     }
-     */
 
     static auto const& acos = matrix_details::map( []( auto const& val ){ return std::acos(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto asin( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asin(x); } );
-         return ans;
-     }
-     */
-
     static auto const& asin = matrix_details::map( []( auto const& val ){ return std::asin(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto atan( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atan(x); } );
-         return ans;
-     }
-     */
 
     static auto const& atan = matrix_details::map( []( auto const& val ){ return std::atan(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto cosh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cosh(x); } );
-         return ans;
-     }
-     */
-
     static auto const& cosh = matrix_details::map( []( auto const& val ){ return std::cosh(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto sinh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sinh(x); } );
-         return ans;
-     }
-     */
 
     static auto const& sinh = matrix_details::map( []( auto const& val ){ return std::sinh(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto tanh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tanh(x); } );
-         return ans;
-     }
-     */
-
     static auto const& tanh = matrix_details::map( []( auto const& val ){ return std::tanh(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto acosh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::acosh(x); } );
-         return ans;
-     }
-     */
 
     static auto const& acosh = matrix_details::map( []( auto const& val ){ return std::acosh(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto asinh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::asinh(x); } );
-         return ans;
-     }
-     */
-
     static auto const& asinh = matrix_details::map( []( auto const& val ){ return std::asinh(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto atanh( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::atanh(x); } );
-         return ans;
-     }
-     */
 
     static auto const& atanh = matrix_details::map( []( auto const& val ){ return std::atanh(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto exp( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp(x); } );
-         return ans;
-     }
-     */
-
     static auto const& exp = matrix_details::map( []( auto const& val ){ return std::exp(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto log( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log(x); } );
-         return ans;
-     }
-     */
 
     static auto const& log = matrix_details::map( []( auto const& val ){ return std::log(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto log10( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log10(x); } );
-         return ans;
-     }
-     */
-
     static auto const& log10 = matrix_details::map( []( auto const& val ){ return std::log10(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto exp2( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::exp2(x); } );
-         return ans;
-     }
-     */
 
     static auto const& exp2 = matrix_details::map( []( auto const& val ){ return std::exp2(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto expm1( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::expm1(x); } );
-         return ans;
-     }
-     */
-
     static auto const& expm1 = matrix_details::map( []( auto const& val ){ return std::expm1(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto log1p( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log1p(x); } );
-         return ans;
-     }
-     */
 
     static auto const& log1p = matrix_details::map( []( auto const& val ){ return std::log1p(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto log2( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::log2(x); } );
-         return ans;
-     }
-     */
-
     static auto const& log2 = matrix_details::map( []( auto const& val ){ return std::log2(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto logb( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::logb(x); } );
-         return ans;
-     }
-     */
 
     static auto const& logb = matrix_details::map( []( auto const& val ){ return std::logb(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto sqrt( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::sqrt(x); } );
-         return ans;
-     }
-     */
-
     static auto const& sqrt = matrix_details::map( []( auto const& val ){ return std::sqrt(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto cbrt( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::cbrt(x); } );
-         return ans;
-     }
-     */
 
     static auto const& cbrt = matrix_details::map( []( auto const& val ){ return std::cbrt(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto erf( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erf(x); } );
-         return ans;
-     }
-     */
-
     static auto const& erf = matrix_details::map( []( auto const& val ){ return std::erf(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto erfc( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::erfc(x); } );
-         return ans;
-     }
-     */
 
     static auto const& erfc = matrix_details::map( []( auto const& val ){ return std::erfc(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto tgamma( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::tgamma(x); } );
-         return ans;
-     }
-     */
-
     static auto const& tgamma = matrix_details::map( []( auto const& val ){ return std::tgamma(val); } );
-
-    /*
-     template< typename T, typename A >
-     auto lgamma( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::lgamma(x); } );
-         return ans;
-     }
-     */
 
     static auto const& lgamma = matrix_details::map( []( auto const& val ){ return std::lgamma(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto ceil( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::ceil(x); } );
-         return ans;
-     }
-     */
-
     static auto const& ceil = matrix_details::map( []( auto const& val ){ return std::ceil(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto floor( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::floor(x); } );
-         return ans;
-     }
-     */
 
     static auto const& floor = matrix_details::map( []( auto const& val ){ return std::floor(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto trunc( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::trunc(x); } );
-         return ans;
-     }
-     */
-
     static auto const& trunc = matrix_details::map( []( auto const& val ){ return std::trunc(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto round( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::round(x); } );
-         return ans;
-     }
-     */
 
     static auto const& round = matrix_details::map( []( auto const& val ){ return std::round(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto rint( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::rint(x); } );
-         return ans;
-     }
-     */
-
     static auto const& rint = matrix_details::map( []( auto const& val ){ return std::rint(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto nearbyint( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::nearbyint(x); } );
-         return ans;
-     }
-     */
 
     static auto const& nearbyint = matrix_details::map( []( auto const& val ){ return std::nearbyint(val); } );
 
-     /*
-     template< typename T, typename A >
-     auto fabs( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::fabs(x); } );
-         return ans;
-     }
-     */
-
     static auto const& fabs = matrix_details::map( []( auto const& val ){ return std::fabs(val); } );
-
-     /*
-     template< typename T, typename A >
-     auto abs( matrix<T,A> const& mat )
-     {
-         matrix<T,A> ans{mat};
-         matrix_details::for_each( ans.begin(), ans.end(), []( T& x ){ x = std::abs(x); } );
-         return ans;
-     }
-     */
 
     static auto const& abs = matrix_details::map( []( auto const& val ){ return std::abs(val); } );
 
-    /*
-    template< typename T, typename A >
-    static auto const
-    ilogb( matrix<T, A> const& mat )
-    {
-        matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > ans{ mat.row(), mat.col() };
-        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::ilogb(x); } );
-        return ans;
-    }
-    */
-
     static auto const& ilogb = matrix_details::map( []( auto const& val ){ return std::ilogb(val); } );
-
-    /*
-    template< typename T, typename A >
-    static auto const
-    lround( matrix<T, A> const& mat )
-    {
-        matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
-        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lround(x); } );
-        return ans;
-    }
-    */
 
     static auto const& lround = matrix_details::map( []( auto const& val ){ return std::lround(val); } );
 
-    /*
-    template< typename T, typename A >
-    static auto const
-    llround( matrix<T, A> const& mat )
-    {
-        matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
-        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llround(x); } );
-        return ans;
-    }
-    */
-
     static auto const& llround = matrix_details::map( []( auto const& val ){ return std::llround(val); } );
-
-    /*
-    template< typename T, typename A >
-    static auto const
-    lrint( matrix<T, A> const& mat )
-    {
-        matrix<long int, typename std::allocator_traits<A>:: template rebind_alloc<long int> > ans{ mat.row(), mat.col() };
-        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::lrint(x); } );
-        return ans;
-    }
-    */
 
     static auto const& lrint = matrix_details::map( []( auto const& val ){ return std::lrint(val); } );
 
-    /*
-    template< typename T, typename A >
-    static auto const
-    llrint( matrix<T, A> const& mat )
-    {
-        matrix<long long int, typename std::allocator_traits<A>:: template rebind_alloc<long long int> > ans{ mat.row(), mat.col() };
-        matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), []( auto const& x, auto& y ){ y = std::llrint(x); } );
-        return ans;
-    }
-    */
-
     static auto const& llrint = matrix_details::map( []( auto const& val ){ return std::llrint(val); } );
-
-    /*
-    template< typename T, typename A>
-    auto
-    remquo( matrix<T, A> const& number, matrix<T, A> const& denom )
-    {
-        matrix<T, A> ans{number};
-        matrix<int, typename std::allocator_traits<A>:: template rebind_alloc<int> > quot{ number.row(), number.col() };
-        matrix_details::for_each( ans.begin(), ans.end(), denom.begin(), quot.begin(), [](auto& num, auto const& den, int& quo ) { num = remquo( num, den, &quo ); } );
-        return std::make_tuple( ans, quot );
-    }
-    */
 
     static auto const& remquo = matrix_details::map( []( auto const& num, auto const& den ){ int quo; auto const ans = std::remquo(num, den, &quo); return std::make_tuple(ans, quo); } );
 
-
-    /*
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    real( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::real(x); } );
-        return ans;
-    }
-    */
+    //
+    // Complex Functions
+    //
     static auto const& real = matrix_details::map( []( auto const& val ){ return std::real(val); } );
-
-    /*
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    imag( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::imag(x); } );
-        return ans;
-    }
-    */
 
     static auto const& imag = matrix_details::map( []( auto const& val ){ return std::imag(val); } );
 
-    /*
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    abs( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::abs(x); } );
-        return ans;
-    }
-    */
-
     //auto const& abs = matrix_details::map( []( auto const& val ){ return std::abs(val); } );
-
-    /*
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    arg( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::arg(x); } );
-        return ans;
-    }
-    */
 
     static auto const& arg = matrix_details::map( []( auto const& val ){ return std::arg(val); } );
 
-    /*
-    template< typename T, typename A >
-    const matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> >
-    norm( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        matrix<T, typename std::allocator_traits<A>:: template rebind_alloc<T> > ans{ mm.row(), mm.col() };
-        matrix_details::for_each( mm.begin(), mm.end(), ans.begin(), []( auto const& x, auto& y ) { y = std::norm(x); } );
-        return ans;
-    }
-    */
-
     static auto const& norm = matrix_details::map( []( auto const& val ){ return std::norm(val); } );
-
-    /*
-    template< typename T, typename A >
-    static auto const
-    conj( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        auto ans{ mm };
-        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::conj(x); } );
-        return ans;
-    }
-    */
 
     static auto const& conj = matrix_details::map( []( auto const& val ){ return std::conj(val); } );
 
-    /*
-    template< typename T, typename A >
-    static auto const
-    polar( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        auto ans{ mm };
-        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::polar(x); } );
-        return ans;
-    }
-    */
-
     static auto const& polar = matrix_details::map( []( auto const& val ){ return std::polar(val); } );
-
-    /*
-    template< typename T, typename A >
-    static auto const
-    proj( matrix<std::complex<T>, A> const& mm ) noexcept
-    {
-        auto ans{ mm };
-        matrix_details::for_each( ans.begin(), ans.end(), []( auto& x ){ x = std::proj(x); } );
-        return ans;
-    }
-    */
 
     static auto const& proj = matrix_details::map( []( auto const& val ){ return std::proj(val); } );
 
-    static auto const& msin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
-
+    // already previously defined
+    // abs
+    // sin
+    // cos
+    // ...
+    //
 } //namespace feng
 
 //#undef better_assert
