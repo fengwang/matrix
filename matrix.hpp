@@ -3311,7 +3311,6 @@ namespace feng
         }
         */
 
-        /*
         namespace map_impl_private
         {
             template< typename T, typename A >
@@ -3326,18 +3325,58 @@ namespace feng
                     return ans;
                 };
             }
+
+            template< typename T, typename A, typename T2, typename A2 >
+            auto map_impl( matrix<T, A> const& mat, matrix<T2, A2> const& nat ) noexcept
+            {
+                return [&]( auto const& func ) noexcept
+                {
+                    typedef typename std::invoke_result_t<decltype(func), T, T2> value_type;
+                    typename std::allocator_traits<A>:: template rebind_alloc<value_type> ans_alloc{ mat.get_allocator() };
+                    matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                    matrix_details::for_each( mat.begin(), mat.end(), nat.begin(), ans.begin(), [&]( auto const& u, auto const& v, value_type& a ){ a = func(u, v); } );
+                    return ans;
+                };
+            }
+
+            template< typename T, typename A, typename T2 >
+            auto map_impl( matrix<T, A> const& mat, T2 const& v ) noexcept
+            {
+                return [&]( auto const& func ) noexcept
+                {
+                    typedef typename std::invoke_result_t<decltype(func), T, T2> value_type;
+                    typename std::allocator_traits<A>:: template rebind_alloc<value_type> ans_alloc{ mat.get_allocator() };
+                    matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                    matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& u, value_type& a ){ a = func(u, v); } );
+                    return ans;
+                };
+            }
+
+            template< typename T, typename A, typename T2 >
+            auto map_impl( T2 const& u, matrix<T, A> const& mat ) noexcept
+            {
+                return [&]( auto const& func ) noexcept
+                {
+                    typedef typename std::invoke_result_t<decltype(func), T2, T> value_type;
+                    typename std::allocator_traits<A>:: template rebind_alloc<value_type> ans_alloc{ mat.get_allocator() };
+                    matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                    matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(u, v); } );
+                    return ans;
+                };
+            }
         }
 
         template< typename Func >
         auto map( Func const& func ) noexcept
         {
-            return [&]( auto const& mat ) noexcept
+            //return [&]( auto const& mat ) noexcept
+            return [&]( auto const& ... mat ) noexcept
             {
-                return map_impl_private::map_impl( mat )( func );
+                return map_impl_private::map_impl( mat ... )( func );
             };
         }
-        */
 
+        /*
         namespace map_impl_private
         {
             template< typename Type, typename ... Types >
@@ -3385,14 +3424,14 @@ namespace feng
                     else
                     {
                         return_allocator_type ans_alloc{ mat.get_allocator() };
-                        matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                        return_matrix_type ans{ ans_alloc, mat.row(), mat.col() };
                         matrix_details::for_each( mat.begin(), mat.end(), ans.begin(), [&]( auto const& v, value_type& a ){ a = func(v); } );
                         return ans;
                     }
                 }
             );
         }
-
+        */
     }
 
 
