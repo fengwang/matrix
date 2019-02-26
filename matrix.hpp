@@ -6097,6 +6097,7 @@ namespace feng
         return var;
     }
 
+    //!!!
    template< typename T, typename A >
    auto const
    fma( matrix<T, A> const& mat, matrix<T, A> const& nat, matrix<T, A> const& lat )
@@ -6106,6 +6107,7 @@ namespace feng
        return ans;
    }
 
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    ldexp( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6132,7 +6134,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::ldexp(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& ldexp = matrix_details::map( []( auto const& val, auto const& wal ){ return std::ldexp(val, wal); } );
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    scalbn( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6159,7 +6164,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbn(y, x); } );
        return ans;
    }
+   */
+    static auto const& scalbn = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbn(val, wal); } );
 
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    scalbln( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6186,7 +6194,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::scalbln(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& scalbln = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbln(val, wal); } );
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    pow( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6213,7 +6224,11 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::pow(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& pow = matrix_details::map( []( auto const& val, auto const& wal ){ return std::pow(val, wal); } );
+
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    hypot( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6240,7 +6255,11 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::hypot(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& hypot = matrix_details::map( []( auto const& val, auto const& wal ){ return std::hypot(val, wal); } );
+
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    fmod( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6267,7 +6286,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmod(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& fmod = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmod(val, wal); } );
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    remainder( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6294,7 +6316,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::remainder(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& remainder = matrix_details::map( []( auto const& val, auto const& wal ){ return std::remainder(val, wal); } );
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    copysign( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6321,7 +6346,11 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::copysign(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& copysign = matrix_details::map( []( auto const& val, auto const& wal ){ return std::copysign(val, wal); } );
+
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    nextafter( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6348,7 +6377,10 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::nextafter(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& nextafter = matrix_details::map( []( auto const& val, auto const& wal ){ return std::nextafter(val, wal); } );
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    fdim( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6375,7 +6407,11 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fdim(y, x); } );
        return ans;
    }
+   */
 
+    static auto const& fdim = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fdim(val, wal); } );
+
+   /*
    template< typename T, typename A, typename TT, typename AA >
    auto const
    fmax( matrix<T, A> const& mat, matrix<TT, AA> const& nat )
@@ -6402,6 +6438,9 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), [&y]( auto& x ){ x = std::fmax(y, x); } );
        return ans;
    }
+   */
+
+    static auto const& fmax = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmax(val, wal); } );
 
    /*
    template< typename T, typename A, typename TT, typename AA >
