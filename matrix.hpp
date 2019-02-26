@@ -5753,7 +5753,6 @@ namespace feng
 
         matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
-        //auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, std::uint_least64_t const row, std::uint_least64_t const col ) noexcept
         auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, auto row, auto const col ) noexcept
         {
             Type ans{0};
@@ -5773,17 +5772,7 @@ namespace feng
         };
 
         matrix_details::parallel( func, ans.row() );
-        /*
-        if constexpr ( parallel_mode == 0 )
-        {
-            for ( auto row : matrix_details::range(ans.row() ) )
-                func( row );
-        }
-        else
-        {
-            matrix_details::parallel( func, ans.row() );
-        }
-        */
+
         return ans;
     }
 
