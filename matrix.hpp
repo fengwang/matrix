@@ -3339,6 +3339,19 @@ namespace feng
                 };
             }
 
+            template< typename T, typename A, typename T2, typename A2, typename T3, typename A3 >
+            auto map_impl( matrix<T, A> const& mat, matrix<T2, A2> const& nat, matrix<T3, A3> const& lat ) noexcept
+            {
+                return [&]( auto const& func ) noexcept
+                {
+                    typedef typename std::invoke_result_t<decltype(func), T, T2, T3> value_type;
+                    typename std::allocator_traits<A>:: template rebind_alloc<value_type> ans_alloc{ mat.get_allocator() };
+                    matrix<value_type, decltype(ans_alloc)> ans{ ans_alloc, mat.row(), mat.col() };
+                    matrix_details::for_each( mat.begin(), mat.end(), nat.begin(), lat.begin(), ans.begin(), [&]( auto const& u, auto const& v, auto const& w, value_type& a ){ a = func(u, v, w); } );
+                    return ans;
+                };
+            }
+
             template< typename T, typename A, typename T2 >
             auto map_impl( matrix<T, A> const& mat, T2 const& v ) noexcept
             {
@@ -6098,6 +6111,7 @@ namespace feng
     }
 
     //!!!
+    /*
    template< typename T, typename A >
    auto const
    fma( matrix<T, A> const& mat, matrix<T, A> const& nat, matrix<T, A> const& lat )
@@ -6106,6 +6120,9 @@ namespace feng
        matrix_details::for_each( ans.begin(), ans.end(), nat.begin(), lat.begin(), []( auto& x, auto const& y, auto const& z ){ x = std::fma(x, y, z); } );
        return ans;
    }
+   */
+
+    static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
 
    /*
    template< typename T, typename A, typename TT, typename AA >

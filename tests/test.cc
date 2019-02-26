@@ -13,6 +13,7 @@ SUPPRESS_WARNINGS
 #include "./cases/proj.hpp"
 #include "./cases/norm.hpp"
 #include "./cases/remquo.hpp"
+#include "./cases/fma.hpp"
 #include "./cases/fmin.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/zeros.hpp"
