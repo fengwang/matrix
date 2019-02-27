@@ -3323,10 +3323,53 @@ namespace feng
         template< typename Func >
         auto map( Func const& func ) noexcept
         {
-            //return [&]( auto const& mat ) noexcept
             return [&]( auto const& ... mat ) noexcept
             {
                 return map_impl_private::map_impl( mat ... )( func );
+            };
+        }
+
+        namespace reduce_impl_private
+        {
+            template< typename T, typename A >
+            auto reduce_impl( matrix<T, A> const& mat ) noexcept
+            {
+                return [&]( auto const& func, auto const& init ) noexcept
+                {
+                    auto const& stride_func = [&]( auto start_itor, auto stride, auto end_itor ) noexcept
+                    {
+                        T init_ = init;
+                        for ( auto itor = start_itor; itor < end_itor; itor += stride )
+                            init_ = func( init_, *itor );
+                        return init_;
+                    };
+
+                    std::uint_least64_t parallel_size = std::thread::hardware_concurrency();
+
+                    //direct reduce
+                    if ( parallel_size<= 1 || mat.size() < 32 )
+                        return stride_func( mat.begin(), 1, mat.end() );
+
+                    //parallel reduce to cache
+                    std::vector<T> result_cache( parallel_size );
+                    auto const& paralle_func = [&]( std::uint_least64_t idx ) noexcept
+                    {
+                        result_cache[idx] = stride_func( mat.begin()+idx, parallel_size, mat.end() );
+                    };
+                    matrix_details::parallel( paralle_func, parallel_size );
+
+                    //final reduce
+                    return stride_func( result_cache.begin(), 1, result_cache.end() );
+                };
+            }
+        }//reduce_impl_private
+
+        template< typename Func, typename Type >
+        auto reduce( Func const& func, Type init ) noexcept
+        {
+            return [&]( auto const& mat ) noexcept
+            {
+                return reduce_impl_private::reduce_impl( mat )( func, init );
             };
         }
 
@@ -5967,13 +6010,16 @@ namespace feng
         mat.save_as_bmp( file_name, colormap );
     }
 
+    /*
     template< typename T, typename A >
     T const mean( matrix<T,A> const& mat )
     {
         // TODO: parallel accumulate
         return std::accumulate( mat.begin(), mat.end(), T{} ) / mat.size();
     }
+    */
 
+    /*
     template< typename T, typename A >
     T const variance( matrix<T,A> const& mat )
     {
@@ -5982,6 +6028,7 @@ namespace feng
         matrix_details::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
         return var;
     }
+    */
 
     //
     // Drei-Functions
@@ -6126,6 +6173,21 @@ namespace feng
     // cos
     // ...
     //
+
+    // reduce functions
+    //
+    static auto const& sum = matrix_details::reduce( []( auto x, auto y ) noexcept { return x+y; }, 0.0 );
+
+    static auto const& mean = []( auto const& mat ) noexcept { return sum(mat) / mat.size(); };
+
+    static auto const& variance = []( auto const& mat ) noexcept { return sum( pow( mat - mean( mat ), 2.0 ) ) / mat.size(); };
+
+    static auto const& standard_deviation = []( auto const& mat ) noexcept
+    {
+        if ( mat.size() <= 1 )
+            return 0;
+        return std::sqrt( sum( pow( mat-mean( mat ), 2.0 ) ) / ( mat.size() - 1 ) );
+    };
 } //namespace feng
 
 //#undef better_assert
