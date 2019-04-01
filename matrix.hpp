@@ -1089,6 +1089,36 @@ namespace feng
             return for_each_impl_private::for_each_impl_with_dummy< Types... >().impl( types..., for_each_impl_private::dummy() );
         }
 
+        template<typename Iterator, typename Function >
+        typename std::invoke_result<Function, typename std::iterator_traits<Iterator>::value_type, typename std::iterator_traits<Iterator>::value_type>::type
+        reduce( Iterator begin, Iterator end, typename std::iterator_traits<Iterator>::value_type init, Function const& func )
+        {
+            typedef typename std::iterator_traits<Iterator>::value_type value_type;
+            typedef typename std::invoke_result<Function, value_type, value_type>::type result_type;
+
+            unsigned int const total_cores = std::thread::hardware_concurrency();
+            unsigned long const total_elements = std::distance( begin, end );
+
+            // case of small size, reduce inplace
+            if (total_elements <= total_cores)
+                return std::accumulate( begin, end, init, func );
+
+            // parallel reduce to cache
+            //std::vector<result_type> cache{ static_cast<unsigned long>(total_cores), static_cast<result_type>(init) };// of size `total_cores`, of same value `init`
+            std::vector<result_type> cache;
+            cache.resize( total_cores );
+            std::fill( cache.begin(), cache.end(), init );
+            auto const& thread_reducer = [&]( unsigned long idx )
+            {
+                for ( auto id = idx; id < total_elements; id += total_cores )
+                    cache[idx] = func( cache[idx], *(begin+id) );
+            };
+            parallel( thread_reducer, total_cores );
+
+            // inplace reduce from cache
+            return std::accumulate( cache.begin(), cache.end(), init, func );
+        }
+
         static bool create_directory_if_not_present( std::string const& file_name )
         {
             std::filesystem::path file_path{ file_name };
@@ -3011,6 +3041,7 @@ namespace feng
         auto minmax( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
+            /*
             value_type min_val = std::numeric_limits<value_type>::max();
             value_type max_val = std::numeric_limits<value_type>::min();
             auto const [the_row, the_col] = zen.shape();
@@ -3022,6 +3053,8 @@ namespace feng
                 }
 
             return std::make_tuple( min_val, max_val );
+            */
+            return std::make_tuple( zen.min(comp), zen.max( comp ) );
         }
 
         auto minmax() const noexcept
@@ -3031,28 +3064,30 @@ namespace feng
         }
 
         template< typename LessThanCompare >
-        auto min( LessThanCompare comp ) const noexcept
+        value_type min( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
-            auto const& [mn, mx] = zen.minmax( comp );
-            return mn;
+            //auto const& [mn, mx] = zen.minmax( comp );
+            //return mn;
+            return matrix_details::reduce( zen.begin(), zen.end(), std::numeric_limits<value_type>::max(), [&comp]( value_type const& a, value_type const& b ){ return comp(a, b) ? a : b; } );
         }
 
         template< typename LessThanCompare >
-        auto max( LessThanCompare comp ) const noexcept
+        value_type max( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
-            auto const& [mn, mx] = zen.minmax( comp );
-            return mx;
+            //auto const& [mn, mx] = zen.minmax( comp );
+            //return mx;
+            return matrix_details::reduce( zen.begin(), zen.end(), std::numeric_limits<value_type>::min(), [&comp]( value_type const& a, value_type const& b ){ return comp(a, b) ? b : a; } );
         }
 
-        auto min() const noexcept
+        value_type min() const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
             return zen.min( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
         }
 
-        auto max() const noexcept
+        value_type max() const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
             return zen.max( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
@@ -6030,14 +6065,8 @@ namespace feng
     }
     */
 
-    //
-    // Drei-Functions
-    //
     static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
 
-    //
-    // Zwei-Functions
-    //
     static auto const& ldexp = matrix_details::map( []( auto const& val, auto const& wal ){ return std::ldexp(val, wal); } );
 
     static auto const& scalbn = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbn(val, wal); } );
@@ -6062,9 +6091,6 @@ namespace feng
 
     static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
 
-    //
-    // MONO-Functions
-    //
     static auto const& frexp = matrix_details::map( []( auto const& val ){ return std::frexp(val); } );
 
     static auto const& modf = matrix_details::map( []( auto const& val ){ return std::modf(val); } );

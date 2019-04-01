@@ -1,6 +1,8 @@
 CXX           = g++
-CXXFLAGS      = -std=c++17 -Wall -Wextra -O2 -fmax-errors=2
-LFLAGS        = -O2 -pthread -lstdc++fs
+#CXXFLAGS      = -std=c++17 -Wall -Wextra -pg -O0 -fmax-errors=2
+CXXFLAGS      = -std=c++17 -Wall -Wextra -O3 -fmax-errors=2
+LFLAGS        = -O3 -pthread -lstdc++fs
+#LFLAGS        = -pg -O0 -pthread -lstdc++fs
 
 #CXX           = clang++
 #CXXFLAGS      = -std=c++17 -Wall -Wextra -O2 -ferror-limit=2
