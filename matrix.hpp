@@ -250,7 +250,7 @@ namespace feng
         }
 
         template< typename Function, typename Integer_Type >
-        void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last ) // 1d parallel
+        void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, unsigned long threshold = 256 ) // 1d parallel
         {
             if constexpr( parallel_mode == 0 )
             {
@@ -262,8 +262,8 @@ namespace feng
             {
                 unsigned int const total_cores = std::thread::hardware_concurrency();
 
-                // case of non-parallel
-                if ( total_cores <= 1 )
+                // case of non-parallel or small jobs
+                if ( (total_cores <= 1) || ((dim_last - dim_first) <= threshold) )
                 {
                     for ( auto a : range( dim_first, dim_last ) )
                         func( a );
@@ -1007,7 +1007,7 @@ namespace feng
                     *start_pos++ =  channel_r[row_index][c];
                 }
             };
-            matrix_details::parallel( fill_row, the_row );
+            matrix_details::parallel( fill_row, 0UL, the_row, 0UL );
 
             return {encoding};
         }
@@ -1047,7 +1047,7 @@ namespace feng
                 {
                     f( *(begin1+idx), *(beginn+idx)... );
                 };
-                parallel( func, n );
+                parallel( func, 0UL, n );
                 return f;
             }
             template < typename Function, typename InputIterator1, typename... InputIteratorn >
@@ -1113,7 +1113,7 @@ namespace feng
                 for ( auto id = idx; id < total_elements; id += total_cores )
                     cache[idx] = func( cache[idx], *(begin+id) );
             };
-            parallel( thread_reducer, total_cores );
+            parallel( thread_reducer, static_cast<unsigned int>(0), total_cores, 0UL );
 
             // inplace reduce from cache
             return std::accumulate( cache.begin(), cache.end(), init, func );
@@ -1558,7 +1558,7 @@ namespace feng
             zen_type& zen = static_cast< zen_type& >( *this );
             value_type* x = zen.data();
             auto && parallel_function = [x, &func]( std::uint_least64_t offset ) { func( x[offset] ); };
-            matrix_details::parallel( parallel_function, zen.size() );
+            matrix_details::parallel( parallel_function, 0UL, zen.size(), 0UL );
         }
 
         template < typename Function >
@@ -1676,7 +1676,7 @@ namespace feng
                 std::copy_n( other.row_begin(r+r0)+c0, tmp.col(), tmp.row_begin(r) );
             };
 
-            matrix_details::parallel( parallel_function, tmp.row() );
+            matrix_details::parallel( parallel_function, 0UL, tmp.row(), 0UL );
 
             zen.swap( tmp );
             return zen;
@@ -1809,7 +1809,7 @@ namespace feng
             {
                 std::copy( other.row_begin(row_index), other.row_end(row_index), zen.row_begin(r0+row_index)+c0 );
             };
-            matrix_details::parallel( copy_function, other.row() );
+            matrix_details::parallel( copy_function, 0UL, other.row(), 0UL );
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -2219,7 +2219,7 @@ namespace feng
             std::string cache = iss.str();
             //for_each( cache.begin(), cache.end(), []( auto & ch ) { if ( ch == ',' || ch == ';' ) ch = ' '; } );
             auto && replace_delimiter_func = [&cache]( size_type idx ){ auto& ch = cache[idx]; ch = (ch==','||ch==';') ? ' ' : ch; };
-            matrix_details::parallel( replace_delimiter_func, cache.size() );
+            matrix_details::parallel( replace_delimiter_func, 0UL, cache.size(), 0UL );
 
             iss.str( cache );
             std::vector< value_type > buff;
@@ -2306,7 +2306,7 @@ namespace feng
             {
                 v[offset] -= x[offset];
             };
-            matrix_details::parallel( elementwise_minus, zen.size() );
+            matrix_details::parallel( elementwise_minus, 0UL, zen.size(), 0UL );
             return zen;
         }
     };
@@ -2337,7 +2337,7 @@ namespace feng
                 for ( size_type j = 0; j != tmp.col(); ++j )
                     tmp[i][j] = std::inner_product( zen.row_begin( i ), zen.row_end( i ), other.col_begin( j ), value_type( 0 ) );
             };
-            matrix_details::parallel( func, tmp.row() );
+            matrix_details::parallel( func, 0UL, tmp.row(), 0UL );
             zen.swap( tmp );
             return zen;
         }
@@ -2510,7 +2510,7 @@ namespace feng
             {
                 x[offset] += y[offset];
             };
-            matrix_details::parallel( elementwise_add, zen.size() );
+            matrix_details::parallel( elementwise_add, 0UL, zen.size(), 0UL );
             return zen;
         }
     };
@@ -2531,7 +2531,7 @@ namespace feng
             {
                 x[offset] = -x[offset];
             };
-            matrix_details::parallel( minus_function, ans.size() );
+            matrix_details::parallel( minus_function, 0UL, ans.size(), 0UL );
             return ans;
         }
     };
@@ -2814,7 +2814,8 @@ namespace feng
             matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_g{ the_row, the_col };
             matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_b{ the_row, the_col };
 
-            auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
+            //auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
+            auto const& [mn, mx] = zen.minmax();
 
             auto&& make_colormap = [&]( auto row_index )
             {
@@ -2826,7 +2827,7 @@ namespace feng
                     channel_b[row_index][c] = b_;
                 }
             };
-            matrix_details::parallel( make_colormap, the_row );
+            matrix_details::parallel( make_colormap, 0UL, the_row, 0UL );
 
             auto const& encoding = matrix_details::encode_bmp_stream( channel_r, channel_g, channel_b );
 
@@ -3032,7 +3033,7 @@ namespace feng
     };
 
     template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_max_min
+    struct crtp_minmax
     {
         typedef Type value_type;
         typedef Matrix zen_type;
@@ -3041,7 +3042,6 @@ namespace feng
         auto minmax( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
-            /*
             value_type min_val = std::numeric_limits<value_type>::max();
             value_type max_val = std::numeric_limits<value_type>::min();
             auto const [the_row, the_col] = zen.shape();
@@ -3053,8 +3053,6 @@ namespace feng
                 }
 
             return std::make_tuple( min_val, max_val );
-            */
-            return std::make_tuple( zen.min(comp), zen.max( comp ) );
         }
 
         auto minmax() const noexcept
@@ -3062,13 +3060,18 @@ namespace feng
             auto const& zen = static_cast<zen_type const&>( *this );
             return zen.minmax( []( value_type const& x, value_type const& y ) noexcept { return x < y; } );
         }
+    };
+
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_min_max
+    {
+        typedef Type value_type;
+        typedef Matrix zen_type;
 
         template< typename LessThanCompare >
         value_type min( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
-            //auto const& [mn, mx] = zen.minmax( comp );
-            //return mn;
             return matrix_details::reduce( zen.begin(), zen.end(), std::numeric_limits<value_type>::max(), [&comp]( value_type const& a, value_type const& b ){ return comp(a, b) ? a : b; } );
         }
 
@@ -3076,8 +3079,6 @@ namespace feng
         value_type max( LessThanCompare comp ) const noexcept
         {
             auto const& zen = static_cast<zen_type const&>( *this );
-            //auto const& [mn, mx] = zen.minmax( comp );
-            //return mx;
             return matrix_details::reduce( zen.begin(), zen.end(), std::numeric_limits<value_type>::min(), [&comp]( value_type const& a, value_type const& b ){ return comp(a, b) ? b : a; } );
         }
 
@@ -3096,15 +3097,14 @@ namespace feng
     };
 
     template < typename Matrix, typename Type, typename Allocator >
-    using crtp_max_min_view = crtp_max_min<Matrix, Type, Allocator>;
+    using crtp_minmax_view = crtp_minmax<Matrix, Type, Allocator>;
 
-    // constructor from pointer, not from matrix
     template < typename Type, class Allocator >
     struct matrix_view :
         crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_max_min_view<matrix_view<Type, Allocator>, Type, Allocator>,
+        crtp_minmax_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
         crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
@@ -3137,7 +3137,8 @@ namespace feng
         , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_max_min< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_min_max< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_minmax< matrix< Type, Allocator >, Type, Allocator >
         , crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_multiply_equal_operator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_plus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
@@ -3391,7 +3392,7 @@ namespace feng
                     {
                         result_cache[idx] = stride_func( mat.begin()+idx, parallel_size, mat.end() );
                     };
-                    matrix_details::parallel( paralle_func, parallel_size );
+                    matrix_details::parallel( paralle_func, 0UL, parallel_size, 0UL );
 
                     //final reduce
                     return stride_func( result_cache.begin(), 1, result_cache.end() );
@@ -5849,7 +5850,7 @@ namespace feng
             }
         };
 
-        matrix_details::parallel( func, ans.row() );
+        matrix_details::parallel( func, 0UL, ans.row(), 0UL );
 
         return ans;
     }
@@ -5989,7 +5990,7 @@ namespace feng
             }
         };
 
-        matrix_details::parallel( make_pooling, new_row );
+        matrix_details::parallel( make_pooling, 0UL, new_row, 0UL );
 
         return ans;
     }
