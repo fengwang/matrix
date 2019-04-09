@@ -37,7 +37,7 @@ void _0001_mandelbrot()
     auto&& mat = make_mandelbrot( std::complex<double>{-2.0, -1.25}, std::complex<double>{0.5, 1.25}, dims, iterations );
     mat.save_as_bmp( "./images/0001_mandelbrot.bmp", "bluehot" );
     mat /= static_cast<double>( iterations );
-    std::cout << "Var(mandelbrot) = " << feng::variance( mat );
+    //std::cout << "Var(mandelbrot) = " << feng::variance( mat );
 }
 
 void _0002_mandelbrot()

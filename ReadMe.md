@@ -19,6 +19,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
      - [save/load bmp](#save-load-bmp)
      - [save/load](#save-load)
+     - [plot](#plot)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
      - [plus equal](#operator-plus-equal)
@@ -929,6 +930,25 @@ and blue channel:
 ```
 
 ![image minus equal](images/0002_minus_equal.bmp)
+
+
+#### plot
+
+`plot` is an alias name of `save_as_bmp`:
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.plot( "./images/0000_plot_default.bmp" );
+```
+
+![default_plot](images/0000_plot_default.bmp)
+
+```cpp
+m.plot( "./images/0000_plot_jet.bmp", "jet" );
+```
+
+![default_jet](images/0000_plot_jet.bmp)
 
 
 #### operator multiply equal

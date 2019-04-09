@@ -30,6 +30,7 @@
 #include "./cases/0025_global_save_as_bmp.hpp"
 #include "./cases/0026_mandelbrot.hpp"
 #include "./cases/0027_julia_set.hpp"
+#include "./cases/0028_plot.hpp"
 
 int main()
 {
@@ -153,6 +154,10 @@ int main()
     //_0001_julia_set();
     //std::cout << "running julia_set::2.\n" << std::endl;
     //_0002_julia_set();
+
+    std::cout << "running plot.\n" << std::endl;
+    _0000_plot();
+    _0001_plot();
 
     return 0;
 }

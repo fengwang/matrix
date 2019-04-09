@@ -2766,6 +2766,17 @@ namespace feng
     };
 
     template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_plot
+    {
+        typedef Matrix zen_type;
+        bool plot( std::string const& file_name, std::string const& color_map=std::string{"parula"} ) const noexcept
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            return zen.save_as_bmp( file_name, color_map );
+        }
+    };
+
+    template < typename Matrix, typename Type, typename Allocator >
     struct crtp_save_as_bmp
     {
         typedef Matrix zen_type;
@@ -3107,6 +3118,7 @@ namespace feng
         , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_plot< matrix< Type, Allocator >, Type, Allocator >
         , crtp_min_max< matrix< Type, Allocator >, Type, Allocator >
         , crtp_minmax< matrix< Type, Allocator >, Type, Allocator >
         , crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
