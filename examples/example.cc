@@ -2,7 +2,6 @@
 
 #include "../matrix.hpp"
 
-SUPPRESS_WARNINGS
 #include "./cases/0000_create.hpp"
 #include "./cases/0001_apply.hpp"
 #include "./cases/0002_access.hpp"
@@ -158,5 +157,4 @@ int main()
     return 0;
 }
 
-RESTORE_WARNINGS
 

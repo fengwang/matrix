@@ -1,6 +1,5 @@
 #include "../matrix.hpp"
 
-SUPPRESS_WARNINGS
 #define CATCH_CONFIG_MAIN
 #include "./catch.hpp"
 
@@ -20,5 +19,4 @@ SUPPRESS_WARNINGS
 #include "./cases/minmax.hpp"
 #include "./cases/mean.hpp"
 
-RESTORE_WARNINGS
 
