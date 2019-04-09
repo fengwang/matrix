@@ -37,6 +37,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [guass_jordan_elimination](#gauss-jordan-elimination)
      - [singular_value_decomposition](#singular-value-decomposition)
      - [pooling](#pooling)
+     - [meshgrid](#meshgrid)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
@@ -257,6 +258,47 @@ p.save_as_bmp( "./images/0002_slicing.bmp" );
 ```
 
 ![matrix slicing](./images/0002_slicing.bmp)
+
+
+#### meshgrid
+
+meshgrid returns 2-D grid coordinates based on the coordinates contained in interger x and y.
+
+```cpp
+auto const& [X, Y] = feng::meshgrid( 3, 5 );
+std::cout << X << std::endl;
+std::cout << Y << std::endl;
+```
+
+This will produce
+
+```
+0       1       2
+0       1       2
+0       1       2
+0       1       2
+0       1       2
+
+0       0       0
+1       1       1
+2       2       2
+3       3       3
+4       4       4
+```
+
+while the code below
+
+```cpp
+auto const& [X, Y] = feng::meshgrid( 384, 512 );
+X.save_as_bmp( "./images/0000_meshgrid_x.bmp", "grey" );
+Y.save_as_bmp( "./images/0000_meshgrid_y.bmp", "grey" );
+```
+
+generates two images
+
+![meshgrid x](./images/0000_meshgrid_x.bmp)
+
+![meshgrid y](./images/0000_meshgrid_y.bmp)
 
 
 ----------------------------------------

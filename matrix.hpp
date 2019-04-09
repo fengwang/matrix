@@ -6028,25 +6028,35 @@ namespace feng
         mat.save_as_bmp( file_name, colormap );
     }
 
-    /*
-    template< typename T, typename A >
-    T const mean( matrix<T,A> const& mat )
+    template< typename T >
+    auto meshgrid( T const& x, T const& y ) noexcept
     {
-        // TODO: parallel accumulate
-        return std::accumulate( mat.begin(), mat.end(), T{} ) / mat.size();
-    }
-    */
+        unsigned long const row = static_cast<unsigned long>( y );
+        unsigned long const col = static_cast<unsigned long>( x );
 
-    /*
-    template< typename T, typename A >
-    T const variance( matrix<T,A> const& mat )
-    {
-        auto const mn = mean( mat );
-        T var{0};
-        matrix_details::for_each( mat.begin(), mat.end(), [&var, &mn]( T const& x ){ auto const df = x-mn; var += df*df; } );
-        return var;
+        matrix<T> mat_x{ row, col, T{} };
+        matrix<T> mat_y{ row, col, T{} };
+        /*
+        for ( auto r = 0UL; r != row; ++r )
+            for ( auto c = 0UL; c != col; ++c )
+            {
+                mat_x[r][c] = static_cast<T>(r);
+                mat_y[r][c] = static_cast<T>(c);
+            }
+        */
+        auto const& parallel_func = [&]( unsigned long r )
+        {
+            for ( auto c = 0UL; c != col; ++c )
+            {
+                mat_x[r][c] = static_cast<T>(r);
+                mat_y[r][c] = static_cast<T>(c);
+            }
+        };
+
+        matrix_details::parallel( parallel_func, 0UL, row, 0UL );
+
+        return std::make_pair( mat_y, mat_x );
     }
-    */
 
     static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
 
