@@ -1,6 +1,7 @@
 CXX           = g++
 #CXXFLAGS      = -std=c++17 -Wall -Wextra -pg -O0 -fmax-errors=2
 CXXFLAGS      = -std=c++17 -Wall -Wextra -O3 -fmax-errors=2
+# -lstdc++fs must go after .cpp file
 LFLAGS        = -O3 -pthread -lstdc++fs
 #LFLAGS        = -pg -O0 -pthread -lstdc++fs
 

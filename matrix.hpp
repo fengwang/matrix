@@ -905,6 +905,36 @@ namespace feng
                 ),
                 std::make_pair
                 (
+                    std::string{ "bluewhite" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/3.0, 2.0/3.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8,  0_u8),
+                            std::make_tuple(25_u8, 100_u8,  255_u8),
+                            std::make_tuple(150_u8, 200_u8,  255_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "bwhite" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/5.0, 2.0/5.0, 3.0/5.0, 4.0/5.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 0_u8,  0_u8),
+                            std::make_tuple(0_u8, 50_u8,  200_u8),
+                            std::make_tuple(0_u8, 100_u8,  230_u8),
+                            std::make_tuple(50_u8, 150_u8,  240_u8),
+                            std::make_tuple(100_u8, 200_u8,  250_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
                     std::string{ "tealhot" },
                     make_color_map
                     (
@@ -4162,6 +4192,24 @@ namespace feng
         return std::min_element( m.begin(), m.end() );
     }
     template < typename T >
+    matrix<T> arange( const std::uint_least64_t start, const std::uint_least64_t stop, const std::uint_least64_t step = 1ULL )
+    {
+        matrix<T> ans{ 1, stop-start/step };
+        for ( auto& v : ans )
+        {
+            v = start;
+            start += step;
+        }
+        return ans;
+    }
+    template < typename T >
+    matrix<T> arange( const std::uint_least64_t length )
+    {
+        matrix<T> ans{ 1, length };
+        std::iota( ans.begin(), ans.end(), T{0} );
+        return ans;
+    }
+    template < typename T >
     auto const ones( const std::uint_least64_t r, const std::uint_least64_t c )
     {
         matrix< T > ans{ r, c, T{ 1 } };
@@ -6211,7 +6259,7 @@ namespace feng
     static auto const& standard_deviation = []( auto const& mat ) noexcept
     {
         if ( mat.size() <= 1 )
-            return 0;
+            return 0.0;
         return std::sqrt( sum( pow( mat-mean( mat ), 2.0 ) ) / ( mat.size() - 1 ) );
     };
 } //namespace feng

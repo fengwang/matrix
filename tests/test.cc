@@ -19,6 +19,7 @@ SUPPRESS_WARNINGS
 #include "./cases/zeros.hpp"
 #include "./cases/minmax.hpp"
 #include "./cases/mean.hpp"
+#include "./cases/arange.hpp"
 
 RESTORE_WARNINGS
 
