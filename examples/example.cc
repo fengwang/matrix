@@ -2,7 +2,6 @@
 
 #include "../matrix.hpp"
 
-SUPPRESS_WARNINGS
 #include "./cases/0000_create.hpp"
 #include "./cases/0001_apply.hpp"
 #include "./cases/0002_access.hpp"
@@ -31,6 +30,8 @@ SUPPRESS_WARNINGS
 #include "./cases/0025_global_save_as_bmp.hpp"
 #include "./cases/0026_mandelbrot.hpp"
 #include "./cases/0027_julia_set.hpp"
+#include "./cases/0028_plot.hpp"
+#include "./cases/0029_meshgrid.hpp"
 
 int main()
 {
@@ -148,15 +149,21 @@ int main()
     //TOO time consuming
     //_0002_mandelbrot();
     //
-    std::cout << "running julia_set::0.\n" << std::endl;
-    _0000_julia_set();
+    //std::cout << "running julia_set::0.\n" << std::endl;
+    //_0000_julia_set();
     //std::cout << "running julia_set::1.\n" << std::endl;
     //_0001_julia_set();
-    std::cout << "running julia_set::2.\n" << std::endl;
-    _0002_julia_set();
+    //std::cout << "running julia_set::2.\n" << std::endl;
+    //_0002_julia_set();
+
+    std::cout << "running plot.\n" << std::endl;
+    _0000_plot();
+    _0001_plot();
+
+    std::cout << "running meshgrid.\n" << std::endl;
+    _0000_meshgrid();
 
     return 0;
 }
 
-RESTORE_WARNINGS
 

@@ -19,6 +19,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
      - [save/load bmp](#save-load-bmp)
      - [save/load](#save-load)
+     - [plot](#plot)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
      - [plus equal](#operator-plus-equal)
@@ -36,6 +37,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [guass_jordan_elimination](#gauss-jordan-elimination)
      - [singular_value_decomposition](#singular-value-decomposition)
      - [pooling](#pooling)
+     - [meshgrid](#meshgrid)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
@@ -256,6 +258,47 @@ p.save_as_bmp( "./images/0002_slicing.bmp" );
 ```
 
 ![matrix slicing](./images/0002_slicing.bmp)
+
+
+#### meshgrid
+
+meshgrid returns 2-D grid coordinates based on the coordinates contained in interger x and y.
+
+```cpp
+auto const& [X, Y] = feng::meshgrid( 3, 5 );
+std::cout << X << std::endl;
+std::cout << Y << std::endl;
+```
+
+This will produce
+
+```
+0       1       2
+0       1       2
+0       1       2
+0       1       2
+0       1       2
+
+0       0       0
+1       1       1
+2       2       2
+3       3       3
+4       4       4
+```
+
+while the code below
+
+```cpp
+auto const& [X, Y] = feng::meshgrid( 384, 512 );
+X.save_as_bmp( "./images/0000_meshgrid_x.bmp", "grey" );
+Y.save_as_bmp( "./images/0000_meshgrid_y.bmp", "grey" );
+```
+
+generates two images
+
+![meshgrid x](./images/0000_meshgrid_x.bmp)
+
+![meshgrid y](./images/0000_meshgrid_y.bmp)
 
 
 ----------------------------------------
@@ -929,6 +972,25 @@ and blue channel:
 ```
 
 ![image minus equal](images/0002_minus_equal.bmp)
+
+
+#### plot
+
+`plot` is an alias name of `save_as_bmp`:
+
+```cpp
+feng::matrix<double> m;
+m.load_txt( "./images/Lenna.txt" );
+m.plot( "./images/0000_plot_default.bmp" );
+```
+
+![default_plot](images/0000_plot_default.bmp)
+
+```cpp
+m.plot( "./images/0000_plot_jet.bmp", "jet" );
+```
+
+![default_jet](images/0000_plot_jet.bmp)
 
 
 #### operator multiply equal
