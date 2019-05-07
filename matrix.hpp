@@ -4175,7 +4175,7 @@ namespace feng
         return std::min_element( m.begin(), m.end() );
     }
     template < typename T >
-    matrix<T> arange( const std::uint_least64_t start, const std::uint_least64_t stop, const std::uint_least64_t step = 1ULL )
+    matrix<T> arange( std::uint_least64_t start, const std::uint_least64_t stop, const std::uint_least64_t step = 1ULL )
     {
         matrix<T> ans{ 1, stop-start/step };
         for ( auto& v : ans )

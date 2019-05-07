@@ -32,6 +32,7 @@
 #include "./cases/0027_julia_set.hpp"
 #include "./cases/0028_plot.hpp"
 #include "./cases/0029_meshgrid.hpp"
+#include "./cases/0030_arange.hpp"
 
 int main()
 {
@@ -162,6 +163,9 @@ int main()
 
     std::cout << "running meshgrid.\n" << std::endl;
     _0000_meshgrid();
+
+    std::cout << "running arange.\n" << std::endl;
+    _0000_arange();
 
     return 0;
 }

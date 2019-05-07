@@ -38,6 +38,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [singular_value_decomposition](#singular-value-decomposition)
      - [pooling](#pooling)
      - [meshgrid](#meshgrid)
+     - [arange](#arange)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
@@ -301,7 +302,27 @@ generates two images
 ![meshgrid y](./images/0000_meshgrid_y.bmp)
 
 
+#### arange
+
+```cpp
+arange<Type>([start, ]stop, [step, ])
+```
+
+Return evenly spaced row matrix within a given interval.
+
+```cpp
+auto m = feng::arange<double>( 256*256 );
+m.reshape( 256, 256 );
+m.save_as_bmp( "./images/0000_arange.bmp" );
+```
+
+![arange 256X256](./images/0000_arange.bmp)
+
+
 ----------------------------------------
+
+
+
 
 
 ### iterations
