@@ -39,6 +39,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [pooling](#pooling)
      - [meshgrid](#meshgrid)
      - [arange](#arange)
+     - [clip](#clip)
     + [iterations](#iterations)
       - [element-wise apply](#elementwise-apply)
       - [head->tail iteration](#iteration-from-head-to-tail)
