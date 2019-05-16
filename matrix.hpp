@@ -6255,6 +6255,23 @@ namespace feng
             return 0.0;
         return std::sqrt( sum( pow( mat-mean( mat ), 2.0 ) ) / ( mat.size() - 1 ) );
     };
+
+    static auto const& clip = []( auto const& lower, auto const& upper ) noexcept
+    {
+        better_assert( lower < upper, "Error in clip(lower, upper): lower ", lower, " is supposed to be smaller than upper ", upper );
+        return matrix_details::map
+        (
+            [lower, upper]( auto const& val ) noexcept
+            {
+                if ( val < lower )
+                    return lower;
+                if ( val > upper )
+                    return upper;
+                return val;
+            }
+        );
+    };
+
 } //namespace feng
 
 //#undef better_assert

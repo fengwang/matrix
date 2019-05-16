@@ -33,6 +33,7 @@
 #include "./cases/0028_plot.hpp"
 #include "./cases/0029_meshgrid.hpp"
 #include "./cases/0030_arange.hpp"
+#include "./cases/0031_clip.hpp"
 
 int main()
 {
@@ -166,6 +167,10 @@ int main()
 
     std::cout << "running arange.\n" << std::endl;
     _0000_arange();
+
+    std::cout << "running clip.\n" << std::endl;
+    _0000_clip();
+
 
     return 0;
 }

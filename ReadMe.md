@@ -319,6 +319,47 @@ m.save_as_bmp( "./images/0000_arange.bmp" );
 ![arange 256X256](./images/0000_arange.bmp)
 
 
+
+#### clip
+
+For an normal matrix `m`
+
+```cpp
+    feng::matrix<double> m{ 64, 256 };
+    std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return init; }; }() );
+    m.save_as_bmp( "./images/0000_clip.bmp" );
+```
+
+![clip0](./images/0000_clip.bmp)
+
+it can be transformed to range `[0, 1]` by applying `sin` on it
+
+```cpp
+    m = feng::sin(m);
+    m.save_as_bmp( "./images/0001_clip.bmp" );
+```
+
+![clip1](./images/0001_clip.bmp)
+
+then this matrix can be clipped to range `[0.1, 0.9]`
+
+```cpp
+    auto const& cm0 = feng::clip( 0.1, 0.9 )( m );
+    cm0.save_as_bmp( "./images/0002_clip.bmp" );
+```
+
+![clip2](./images/0002_clip.bmp)
+
+or even to range `[0.4, 0.6]`
+
+```cpp
+    auto const& cm1 = feng::clip( 0.4, 0.6 )( m );
+    cm1.save_as_bmp( "./images/0003_clip.bmp" );
+```
+
+![clip3](./images/0003_clip.bmp)
+
+
 ----------------------------------------
 
 
