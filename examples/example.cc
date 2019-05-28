@@ -34,6 +34,7 @@
 #include "./cases/0029_meshgrid.hpp"
 #include "./cases/0030_arange.hpp"
 #include "./cases/0031_clip.hpp"
+#include "./cases/0032_empty.hpp"
 
 int main()
 {
@@ -170,6 +171,9 @@ int main()
 
     std::cout << "running clip.\n" << std::endl;
     _0000_clip();
+
+    std::cout << "running empty.\n" << std::endl;
+    _0000_empty();
 
 
     return 0;

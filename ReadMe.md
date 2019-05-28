@@ -119,6 +119,17 @@ Please also [`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/pat
     auto one = feng::ones<double>(12, 34);
     ```
 
+    - creating a matrix of size `12 X 34`, with all elements to be uninitialized:
+    ```cpp
+    auto one = feng::empty<double>(12, 34);
+    ```
+
+    - creating a matrix of size `1 X (12*34)`, with all elements from `0` to `12x34`, then reshape to `12 X 34`:
+    ```cpp
+    auto one = feng::arange<double>(12*34);
+    one.reshape( 12, 34 );
+    ```
+
     - loading matrix from a local txt file `./mat.txt`, the delimiter can be either of ` `, `,`, `\t` or `;`, the line end is `\n`:
 
     ```cpp

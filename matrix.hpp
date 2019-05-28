@@ -4193,25 +4193,36 @@ namespace feng
         return ans;
     }
     template < typename T >
-    auto const ones( const std::uint_least64_t r, const std::uint_least64_t c )
+    auto const ones( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
     {
         matrix< T > ans{ r, c, T{ 1 } };
         return ans;
     }
     template < typename T >
-    auto const ones( const std::uint_least64_t n )
+    auto const ones( const std::uint_least64_t n ) noexcept
     {
         return ones< T >( n, n );
     }
     template < typename T, typename A >
-    matrix< T, A > const ones( A const& alloc, std::uint_least64_t r, std::uint_least64_t c )
+    matrix< T, A > const ones( A const& alloc, std::uint_least64_t r, std::uint_least64_t c ) noexcept
     {
-        return { alloc, r , c };
+        return { alloc, r , c, T{1} };
     }
     template < typename T, typename A >
-    matrix< T, A > const ones( A const& alloc, std::uint_least64_t n )
+    matrix< T, A > const ones( A const& alloc, std::uint_least64_t n ) noexcept
     {
-        return { alloc, n , n };
+        return { alloc, n , n, T{1} };
+    }
+
+    template < typename T >
+    auto const empty( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
+    {
+        return matrix< T >{ r, c };
+    }
+    template < typename T, typename A >
+    matrix< T, A > const empty( A const& alloc, std::uint_least64_t r, std::uint_least64_t c ) noexcept
+    {
+        return { alloc, r , c };
     }
 
     template < typename T, typename A_   = std::allocator<  T  >>
