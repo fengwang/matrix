@@ -11,4 +11,5 @@ void _0000_clip()
 
     auto const& cm1 = feng::clip( 0.4, 0.6 )( m );
     cm1.save_as_bmp( "./images/0003_clip.bmp" );
+
 }

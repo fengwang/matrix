@@ -6256,20 +6256,21 @@ namespace feng
         return std::sqrt( sum( pow( mat-mean( mat ), 2.0 ) ) / ( mat.size() - 1 ) );
     };
 
-    static auto const& clip = []( auto const& lower, auto const& upper ) noexcept
+    static auto const& clip = []( auto lower, auto upper ) noexcept
     {
         better_assert( lower < upper, "Error in clip(lower, upper): lower ", lower, " is supposed to be smaller than upper ", upper );
-        return matrix_details::map
-        (
-            [lower, upper]( auto const& val ) noexcept
+        return [=]( auto const& mat ) noexcept
+        {
+            auto ans{ mat };
+            auto&& impl = [=]( auto & v ) noexcept
             {
-                if ( val < lower )
-                    return lower;
-                if ( val > upper )
-                    return upper;
-                return val;
-            }
-        );
+                v = v < lower ? lower :
+                    v > upper ? upper :
+                                v;
+            };
+            ans.map( impl );
+            return ans;
+        };
     };
 
 } //namespace feng
