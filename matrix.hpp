@@ -38,7 +38,7 @@ static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20190219ULL;
+    constexpr std::uint_least64_t matrix_version = 20190625ULL;
 
     #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
@@ -836,7 +836,7 @@ namespace feng
                         { 0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0},
                         {
                             std::make_tuple(0_u8, 0_u8,  127_u8),
-                            std::make_tuple(200200_u8, 200_u8,  255_u8),
+                            std::make_tuple(200_u8, 200_u8,  255_u8),
                             std::make_tuple(225_u8, 225_u8,  255_u8),
                             std::make_tuple(255_u8, 255_u8,  255_u8),
                             std::make_tuple(255_u8, 225_u8,  255_u8),
@@ -856,6 +856,21 @@ namespace feng
                             std::make_tuple(0_u8, 255_u8,  255_u8),
                             std::make_tuple(0_u8, 0_u8,  255_u8),
                             std::make_tuple(0_u8, 0_u8, 0_u8)
+                        }
+                    )
+                ),
+                std::make_pair
+                (
+                    std::string{ "bhot" },
+                    make_color_map
+                    (
+                        { 0.0, 1.0/15.0, 1.0/7.0, 1.0/2.0, 1.0},
+                        {
+                            std::make_tuple(0_u8, 10_u8,  40_u8),
+                            std::make_tuple(0_u8, 10_u8,  40_u8),
+                            std::make_tuple(0_u8, 30_u8,  200_u8),
+                            std::make_tuple(100_u8, 200_u8,  255_u8),
+                            std::make_tuple(255_u8, 255_u8, 255_u8)
                         }
                     )
                 ),
@@ -4190,6 +4205,23 @@ namespace feng
     {
         matrix<T> ans{ 1, length };
         std::iota( ans.begin(), ans.end(), T{0} );
+        return ans;
+    }
+    template < typename T >
+    matrix<T> linspace( T start, T stop, const std::uint_least64_t num = 50ULL, bool end_point=true )
+    {
+        if ( 0 == num )
+            return matrix<T>{};
+        if ( 1 == num )
+            return matrix<T>{1, 1, start};
+
+        matrix<T> ans{ 1, num };
+        T const step = end_point ? (stop-start)/(num-1) : (stop-start)/num;
+        for ( auto& v : ans )
+        {
+            v = start;
+            start += step;
+        }
         return ans;
     }
     template < typename T >

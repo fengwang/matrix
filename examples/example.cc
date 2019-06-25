@@ -35,6 +35,7 @@
 #include "./cases/0030_arange.hpp"
 #include "./cases/0031_clip.hpp"
 #include "./cases/0032_empty.hpp"
+#include "./cases/0033_linspace.hpp"
 
 int main()
 {
@@ -174,6 +175,9 @@ int main()
 
     std::cout << "running empty.\n" << std::endl;
     _0000_empty();
+
+    std::cout << "running linspace.\n" << std::endl;
+    _0000_linspace();
 
 
     return 0;

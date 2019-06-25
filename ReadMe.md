@@ -1161,6 +1161,39 @@ m.save_as_bmp( "./images/0000_eye.bmp" );
 
 ![eye image](./images/0000_eye.bmp)
 
+
+#### linspace
+
+```cpp
+auto const& m = feng::linspace<double>( 1, 10, 10 );
+std::cout << "linspace<double>(1, 10, 10):\n" << m << std::endl;
+```
+
+gives out an array of size 1 x 10:
+
+> linspace<double>(1, 10, 10):
+> 1       2       3       4       5       6       7       8       9       10
+
+
+
+```cpp
+auto const& m = feng::linspace<double>( 1, 10, 10, false );
+std::cout << "linspace<double>(1, 10, 10, false):\n" << m << std::endl;
+
+```
+
+gives out an array of size 1 x 9:
+
+> linspace<double>(1, 10, 10, false):
+> 1       1.89999999999999991     2.79999999999999982     3.69999999999999973     4.59999999999999964     5.5     6.40000000000000036     7.30000000000000071     8.20000000000000107     9.10000000000000142
+
+And the prototype of  `linspace` is:
+
+```cpp
+matrix<T> linspace( T start, T stop, const std::uint_least64_t num = 50ULL, bool end_point=true )
+```
+
+
 #### magic function
 
 

@@ -1,3 +1,4 @@
++ use openimageio to do save/load of images
 + type operator check for all methods
 + CUDA support: cuda_matrix
 + write up a cheatsheet
