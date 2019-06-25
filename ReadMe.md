@@ -30,6 +30,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
      - [elementwise sinh](#elementwise-sinh)
    + [Common functions](#common-functions)
      - [eye](#eye-function)
+     - [linspace](#linspace)
      - [magic](#magic-function)
      - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
