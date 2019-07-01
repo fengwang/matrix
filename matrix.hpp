@@ -3302,15 +3302,23 @@ namespace feng
             return *this;
         }
 
-        self_type& operator = ( const value_type& v )
+        self_type& operator = ( const value_type& v ) noexcept
         {
             std::fill( ( *this ).diag_begin(), ( *this ).diag_end(), v ); //TODO:should move to crtp_xxx
             return *this;
         }
 
         matrix( matrix_view<Type, Allocator> const& view ) noexcept;
-    };//struct matrix
 
+        template< typename T >
+        auto const astype() const noexcept
+        {
+            matrix<T, typename std::allocator_traits<Allocator>:: template rebind_alloc<T> > ans{ (*this).get_allocator(), (*this).row(), (*this).col() };
+            std::copy( (*this).begin(), (*this).end(), ans.begin() ); //TODO: should move to crtp_xxx
+            return ans;
+        }
+
+    };//struct matrix
 
     namespace matrix_details
     {
