@@ -2,4 +2,4 @@
 + type operator check for all methods
 + CUDA support: cuda_matrix
 + write up a cheatsheet
-
++ concatenae( {}, axis=0 )

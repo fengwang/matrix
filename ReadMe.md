@@ -12,6 +12,7 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
       + [slicing](#matrix-slicing)
    + [built-in functions](#functions)
      - [clone -- matrix slicing](#clone----matrix-slicing)
+     - [astype -- converting matrix value type](#astype)
      - [data -- accessing raw memory](#data----raw-memory-access)
      - [det -- matrix determinant](#det----matrix-determinant)
      - [operator `/=`](#operator-divide-equal)
@@ -640,6 +641,32 @@ n.save_as_bmp( "./images/0002_clone.bmp" );
 m slicing of [32:64, 0:64]:
 
 ![clone](./images/0002_clone.bmp)
+
+
+#### astype
+
+For a normal matrix such like
+
+```cpp
+feng::matrix<double> m{ 64, 256 };
+std::generate( m.begin(), m.end(),  [](){ double init = 0.0; return [init]() mutable { init += 0.1; return std::sin(init); }; }() );
+m.save_as_bmp( "./images/0000_astype.bmp" );
+```
+
+There are many colors in its visualization.
+
+![astype_0](./images/0000_astype.bmp)
+
+`astype` can convert it to `3` colors:
+
+```cpp
+m = m * 2.0;
+auto const& mm = m.astype<int>();
+mm.save_as_bmp( "./images/0001_astype.bmp" );
+```
+
+![astype_1](./images/0001_astype.bmp)
+
 
 -------------------
 

@@ -36,6 +36,7 @@
 #include "./cases/0031_clip.hpp"
 #include "./cases/0032_empty.hpp"
 #include "./cases/0033_linspace.hpp"
+#include "./cases/0034_astype.hpp"
 
 int main()
 {
@@ -178,6 +179,9 @@ int main()
 
     std::cout << "running linspace.\n" << std::endl;
     _0000_linspace();
+
+    std::cout << "running astype.\n" << std::endl;
+    _0000_astype();
 
 
     return 0;
