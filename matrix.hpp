@@ -1012,7 +1012,7 @@ namespace feng
             std::vector<std::uint8_t> encoding( header.size()+3*channel_r.size()+the_row*padding_size, std::uint8_t{} );
             std::copy( header.begin(), header.end(), encoding.begin() );
 
-            auto&& fill_row = [&]( auto row_index )
+            auto&& fill_row = [&,the_col=the_col]( auto row_index )
             {
                 auto start_pos = encoding.data() + header.size() + (padding_size + channel_r.col()*3) * row_index;
                 for ( auto c : range( the_col ) )
@@ -1820,7 +1820,7 @@ namespace feng
             better_assert( r1 - r0 == other.row(), " row dim does not match, expected ", other.row(), " rows, but passed parameters are ", r0, " and ", r1 );
             better_assert( c1 - c0 == other.col(), " col dim does not match, expected ", other.col(), " cols, but passed parameters are ", c0, " and ", c1 );
 
-            auto const& copy_function = [&, r0, c0]( size_type const row_index )
+            auto const& copy_function = [&, r0=r0, c0=c0]( size_type const row_index )
             {
                 std::copy( other.row_begin(row_index), other.row_end(row_index), zen.row_begin(r0+row_index)+c0 );
             };
@@ -2843,7 +2843,7 @@ namespace feng
             //auto const& [mx, mn] = std::make_tuple( zen.max(), zen.min() );
             auto const& [mn, mx] = zen.minmax();
 
-            auto&& make_colormap = [&]( auto row_index )
+            auto&& make_colormap = [&, mx=mx, mn=mn, the_row=the_row, the_col=the_col]( auto row_index )
             {
                 for ( auto c : matrix_details::range( the_col ) )
                 {
@@ -4231,6 +4231,11 @@ namespace feng
             start += step;
         }
         return ans;
+    }
+    template < typename T, typename A >
+    matrix< T, A > const ones_like( matrix<T, A> const& mat ) noexcept
+    {
+        return matrix<T, A>{ mat.get_allocator(), mat.row(), mat.col(), T{1} };
     }
     template < typename T >
     auto const ones( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
@@ -6061,7 +6066,7 @@ namespace feng
         auto const [new_row, new_col] = std::make_pair( row/dim_r, col/dim_c );
         matrix< T, A > ans{ new_row, new_col, T{0} };
 
-        auto const& make_pooling = [&ans, &mat, &the_function, new_col, dim_r, dim_c, init_value]( std::uint_least64_t r )
+        auto const& make_pooling = [&ans, &mat, &the_function, new_col=new_col, dim_r, dim_c, init_value]( std::uint_least64_t r )
         {
             for ( auto c : matrix_details::range( new_col ) )
             {
