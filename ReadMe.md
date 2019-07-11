@@ -121,6 +121,12 @@ Please also [`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/pat
     auto one = feng::ones<double>(12, 34);
     ```
 
+    - and `ones_like`:
+
+    ```cpp
+    auto another_one = feng::ones_like( one );
+    ```
+
     - creating a matrix of size `12 X 34`, with all elements to be uninitialized:
     ```cpp
     auto one = feng::empty<double>(12, 34);
