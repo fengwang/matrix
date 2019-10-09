@@ -87,11 +87,13 @@ A modern, C++17-native, single-file header-only dense 2D matrix library.
 #### typical compile and link command
 
 ```bash
-g++ -o your_exe_file your_source_code.cpp -std=c++17 -O2 -pthread -lstdc++fs
+g++ -o your_exe_file your_source_code.cpp -std=c++2a -O2 -pthread -lstdc++fs
 ```
 
 Please note [`std::thread`](https://en.cppreference.com/w/cpp/header/thread) is enabled by default, and option `-pthread` is necesary under Linux/Unix/Mac platform. If you prefer single thread mode, pass `-DNPARALLEL` option to compiler.
 Please also [`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/path) is used,  make sure corresponding library option is passed during link time.
+
+Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([link1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1042r1.html), [link2](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0306r4.html)), so the compiler must be compatible with c++20.
 
 ### basic
 
