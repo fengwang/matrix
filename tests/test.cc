@@ -3,6 +3,7 @@
 #define CATCH_CONFIG_MAIN
 #include "./catch.hpp"
 
+#include "./cases/item.hpp"
 #include "./cases/inverse.hpp"
 #include "./cases/misc_range.hpp"
 #include "./cases/ones.hpp"

@@ -1307,6 +1307,20 @@ namespace feng
     };
 
     template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_item
+    {
+        typedef Matrix zen_type;
+        auto item() const noexcept
+        {
+            auto const& zen = static_cast<zen_type const&>(*this);
+            auto const[row, col] = zen.shape();
+            better_assert( row==1UL, "row of the matrix should be 1 to call item(), but got row=", row );
+            better_assert( col==1UL, "column of the matrix should be 1 to call item(), but got column=", col );
+            return zen[0][0];
+        }
+    };
+
+    template < typename Matrix, typename Type, typename Allocator >
     struct crtp_shape
     {
         typedef Matrix zen_type;
@@ -3161,6 +3175,7 @@ namespace feng
         , crtp_divide_equal_operator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_get_allocator< matrix< Type, Allocator >, Type, Allocator >
         , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_item< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
         , crtp_plot< matrix< Type, Allocator >, Type, Allocator >
