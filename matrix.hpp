@@ -4620,7 +4620,22 @@ namespace feng
     {
         return rand< T, A >( n );
     }
-
+    template < typename T, typename A >
+    matrix< T, A > const rand_like( matrix<T, A> const& mat ) noexcept
+    {
+        auto const[row, col] = mat.shape();
+        return random<T, A>( row, col );
+    }
+    template < typename T, typename A >
+    matrix< T, A > const random_like( matrix<T, A> const& mat ) noexcept
+    {
+        return rand_like<T,A>(mat);
+    }
+    template < typename T, typename A > //pytorch style
+    matrix< T, A > const randn_like( matrix<T, A> const& mat ) noexcept
+    {
+        return rand_like<T,A>(mat);
+    }
     template < typename T, typename A >
     const matrix< T, A >
     repmat( const matrix< T, A >& m, const std::uint_least64_t r, const std::uint_least64_t c )
