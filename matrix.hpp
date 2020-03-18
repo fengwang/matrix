@@ -6068,7 +6068,15 @@ namespace feng
                 std::make_pair
                 (
                     T{0},
-                    //[dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r+dim_c) ); }
+                    [dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r*dim_c) ); }
+                )
+            ),
+            std::make_pair//alias operation of 'mean'
+            (
+                "average",
+                std::make_pair
+                (
+                    T{0},
                     [dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r*dim_c) ); }
                 )
             ),
