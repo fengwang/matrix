@@ -4210,7 +4210,7 @@ namespace feng
     min( const matrix< T, A >& m )
     {
         better_assert( m.size() );
-        return std::min_element( m.begin(), m.end() );
+        return *std::min_element( m.begin(), m.end() );
     }
     template < typename T >
     matrix<T> arange( std::uint_least64_t start, const std::uint_least64_t stop, const std::uint_least64_t step = 1ULL )
@@ -6056,6 +6056,10 @@ namespace feng
     template< typename T, typename A >
     auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim_r, std::uint_least64_t dim_c, std::string const& pooling_action = "mean" )
     {
+        if (dim_r == 0 || dim_c == 0) return matrix<T,A>{};
+
+        if (dim_r==1 && dim_c==1) return mat;
+
         std::map< std::string, std::pair<T, std::function< T(T, T) > > > function_list =
         {
             std::make_pair
@@ -6064,7 +6068,8 @@ namespace feng
                 std::make_pair
                 (
                     T{0},
-                    [dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r+dim_c) ); }
+                    //[dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r+dim_c) ); }
+                    [dim_r, dim_c]( T v1, T v2 ){ return v1 + v2 / ( static_cast<T>(dim_r*dim_c) ); }
                 )
             ),
             std::make_pair

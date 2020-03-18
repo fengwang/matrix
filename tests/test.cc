@@ -21,5 +21,6 @@
 #include "./cases/mean.hpp"
 #include "./cases/arange.hpp"
 #include "./cases/astype.hpp"
+#include "./cases/pooling.hpp"
 
 
