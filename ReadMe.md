@@ -1001,7 +1001,7 @@ Loading a matrix created by `numpy` is straightforward:
 
 ```cpp
 feng::matrix<double> mat;
-mat.load( "./images/64.npy");
+mat.load_npy( "./images/64.npy");
 ```
 
 #### save load bmp
