@@ -1,10 +1,7 @@
 CXX           = g++
-#CXX           = clang++
-#CXXFLAGS      = -std=c++17 -Wall -Wextra -pg -O0 -fmax-errors=2
 CXXFLAGS      = -std=c++2a -Wall -Wextra -O2 -fmax-errors=2
 # -lstdc++fs must go after .cpp file
 LFLAGS        = -O2 -pthread -lstdc++fs
-#LFLAGS        = -pg -O0 -pthread -lstdc++fs
 
 LINK          = $(CXX)
 

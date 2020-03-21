@@ -2312,6 +2312,87 @@ namespace feng
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_load_npy
+    {
+        typedef Matrix zen_type;
+        typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
+        typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
+        bool load_npy( std::string const& file_name ) noexcept
+        {
+            return load_npy( file_name.c_str() );
+        }
+        bool load_npy( char const* const file_name ) noexcept
+        {
+            if constexpr (debug_mode)
+                std::cout << "Loading npy file from " << file_name << std::endl;
+
+            zen_type& zen = static_cast< zen_type& >( *this );
+            std::ifstream ifs( file_name, std::ios::binary );
+            better_assert( ifs, "matrix::load_npy -- failed to open file ", file_name );
+
+            if ( !ifs )
+                return false;
+
+            std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
+
+            //get version
+            std::size_t const version = *(reinterpret_cast< std::uint8_t* >( buffer.data()+6 ));
+            if constexpr (debug_mode)
+                std::cout << "Version: " << version << std::endl;
+
+            //get header length and header
+            std::uint32_t header_length;
+            std::string header;
+            if ( version == 1 ) //version 1 using 2 bytes
+            {
+                std::uint32_t const _l0 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 8 ));
+                std::uint32_t const _l1 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 9 ));
+                header_length = (_l1 << 8) + _l0;
+                header = std::string{ buffer.data() + 10, buffer.data() + 10 + header_length };
+            }
+            else //version 2/3 using 4 bytes
+            {
+                std::uint32_t const _l0 = *(reinterpret_cast<unsigned char*>( buffer.data() + 8 ));
+                std::uint32_t const _l1 = *(reinterpret_cast<unsigned char*>( buffer.data() + 9 ));
+                std::uint32_t const _l2 = *(reinterpret_cast<unsigned char*>( buffer.data() + 10 ));
+                std::uint32_t const _l3 = *(reinterpret_cast<unsigned char*>( buffer.data() + 11 ));
+                header_length = (_l3 << 24) + (_l2 << 16) + (_l1 << 8) + _l0;
+                header = std::string{ buffer.data() + 12, buffer.data() + 12 + header_length };
+            }
+            if constexpr (debug_mode)
+                std::cout << "Extracted npy file header:\n" << header << std::endl;
+
+            // fortran format or not
+            bool const row_major = ( header.find("T") != std::string::npos ) ? false : true;
+            if constexpr (debug_mode)
+                std::cout << "The stored matrix is row major: " << row_major << std::endl;
+
+            //extract row and column
+            std::size_t const shape_pos = header.find("'shape': (");
+            std::size_t const row_pos = shape_pos + 10; //start of row
+            std::size_t const row_pos_end = header.find( ",", row_pos ); //end of row
+            std::string const row_string = header.substr( row_pos, row_pos_end - row_pos );
+            std::size_t const row = std::stoul( row_string );
+            std::size_t const col_pos = row_pos_end + 1; //start of col
+            std::size_t const col_pos_end = header.find( ")", col_pos ); //end of col
+            std::string const col_string = header.substr( col_pos, col_pos_end - col_pos );
+            std::size_t const col = std::stoul( col_string );
+            if constexpr (debug_mode)
+                std::cout << "extracted row: " << row << " and col: " << col << std::endl;
+
+            //resize matrix
+            zen.resize( row, col );
+            if (!row_major)
+                zen.reshape( col, row );
+
+            //copy binary value
+            std::size_t const data_offset = (version==1) ? (10 + header_length) : (12 +header_length);
+            std::copy_n( reinterpret_cast<value_type*>(buffer.data()+data_offset), row*col, zen.data() );
+
+            return true;
+        }
+    };//struct crtp_load_npy
+    template < typename Matrix, typename Type, typename Allocator >
     struct crtp_minus_equal_operator
     {
         typedef Matrix zen_type;
@@ -2582,12 +2663,13 @@ namespace feng
         typedef Matrix zen_type;
         typedef crtp_typedef< Type, Allocator > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
-        void reshape( const size_type new_row, const size_type new_col ) noexcept
+        zen_type& reshape( const size_type new_row, const size_type new_col ) noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             better_assert( new_row * new_col == zen.row() * zen.col() && "error: size before and after reshape does not agree, use resize() instead!" );
             zen.row_ = new_row;
             zen.col_ = new_col;
+            return zen;
         }
     };
     template < typename Matrix, typename Type, typename Allocator >
@@ -3177,6 +3259,7 @@ namespace feng
         , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
         , crtp_item< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_load_npy< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
         , crtp_plot< matrix< Type, Allocator >, Type, Allocator >
         , crtp_min_max< matrix< Type, Allocator >, Type, Allocator >

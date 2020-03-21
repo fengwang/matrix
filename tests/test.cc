@@ -22,5 +22,6 @@
 #include "./cases/arange.hpp"
 #include "./cases/astype.hpp"
 #include "./cases/pooling.hpp"
+#include "./cases/load_npy.hpp"
 
 
