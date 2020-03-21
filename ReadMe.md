@@ -20,6 +20,7 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
      - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
      - [save/load bmp](#save-load-bmp)
      - [save/load](#save-load)
+     - [load npy](#load-npy)
      - [plot](#plot)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
@@ -91,7 +92,7 @@ g++ -o your_exe_file your_source_code.cpp -std=c++2a -O2 -pthread -lstdc++fs
 ```
 
 Please note [`std::thread`](https://en.cppreference.com/w/cpp/header/thread) is enabled by default, and option `-pthread` is necesary under Linux/Unix/Mac platform. If you prefer single thread mode, pass `-DNPARALLEL` option to compiler.
-Please also [`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/path) is used,  make sure corresponding library option is passed during link time.
+[`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/path) is used,  make sure corresponding library option is passed during link time (`-lstdc++fs` for g++).
 
 Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([link1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1042r1.html), [link2](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0306r4.html)), so the compiler must be compatible with c++20.
 
@@ -994,6 +995,15 @@ n.save_as_pgm( "./images/0002_save_load.pgm" );
 ![image saved](./images/0002_save_load.pgm)
 
 
+#### load npy
+
+Loading a matrix created by `numpy` is straightforward:
+
+```cpp
+feng::matrix<double> mat;
+mat.load( "./images/64.npy");
+```
+
 #### save load bmp
 
 To load an image from a bmp file, we can use `feng::load_bmp` function, which will return an oject of type `std::optional<std::array<feng::matrix<std::uint8_t>,3>>`:
@@ -1768,7 +1778,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ## Dependency
 
-This library only depends on a C++-17 standards.
+This library only depends on a C++-20 standard compiler.
 
 ## Installation
 This is a single-file header-only library. Put `matrix.hpp` directly into the project source tree or somewhere reachable from your project.
