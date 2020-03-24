@@ -1,7 +1,7 @@
 #ifndef FENG_MATRIX_HPP_INCLUDED_
 #define FENG_MATRIX_HPP_INCLUDED_
 
-static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please update your compiler!" );
+static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please update your compiler, or enable corresponding option such as -std=c++2a" );
 
 #include <algorithm>
 #include <array>
@@ -38,7 +38,7 @@ static_assert( __cplusplus >= 201703L, "C++17 is a must for this library, please
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20190625ULL;
+    constexpr std::uint_least64_t matrix_version = 20200324ULL;
 
     #ifdef NPARALLEL
     constexpr std::uint_least64_t parallel_mode = 0;
@@ -69,6 +69,14 @@ namespace feng
     #ifdef better_assert
     #undef better_assert
     #endif
+    //
+    // enhancing 'assert' macro, usage:
+    //
+    // int a;
+    // ...
+    // better_assert( a > 0 ); //same as 'assert'
+    // better_assert( a > 0, "a is expected larger than 0, but now a = " a ); //with more info dumped to std::cerr
+    //
     #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : matrix_private::print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
 
     template < typename Type, class Allocator >
@@ -4686,6 +4694,8 @@ namespace feng
     {
         return pinverse( m );
     }
+
+    //generating a matrix uniformly in (0, 1)
     template < typename T = double, typename A = std::allocator< T > >
     matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 ) noexcept
     {
@@ -4697,7 +4707,7 @@ namespace feng
 
         auto const& generator = []() noexcept
         {
-            return static_cast<T>( std::rand() ) / static_cast<T>( RAND_MAX );
+            return ( static_cast<T>( std::rand() ) + 1 ) / ( static_cast<T>( RAND_MAX ) + 2 ); // make sure in open bounds range (0, 1)
         };
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
@@ -6313,10 +6323,6 @@ namespace feng
     static auto const& fmax = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmax(val, wal); } );
 
     static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
-
-    static auto const& frexp = matrix_details::map( []( auto const& val ){ return std::frexp(val); } );
-
-    static auto const& modf = matrix_details::map( []( auto const& val ){ return std::modf(val); } );
 
     static auto const& cos = matrix_details::map( []( auto const& val ){ return std::cos(val); } );
 
