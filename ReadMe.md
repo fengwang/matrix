@@ -22,6 +22,7 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
      - [save/load](#save-load)
      - [load npy](#load-npy)
      - [plot](#plot)
+     - [generating fractional image](#juliet-set)
      - [minus equal](#operator-minus-equal)
      - [multiply equal](#operator-multiply-equal)
      - [plus equal](#operator-plus-equal)
@@ -1113,7 +1114,7 @@ m.plot( "./images/0000_plot_jet.bmp", "jet" );
 ![default_jet](images/0000_plot_jet.bmp)
 
 
-#### juliet set
+#### Juliet set
 
 Having `plot`/`save_as_bmp` method implemented, it is convenient to plot a juliet set to an image.
 The polynomial function is:
@@ -1167,7 +1168,7 @@ for ( unsigned r = 0; r != n; ++r )
 
 A typical result image looks like this:
 
-`[juliet_set](./images/0000_julia_set.bmp)
+![juliet_set](./images/0000_julia_set.bmp)
 
 
 
