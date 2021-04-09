@@ -91,7 +91,7 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
 g++ -o your_exe_file your_source_code.cpp -std=c++2a -O2 -pthread -lstdc++fs
 ```
 
-Please note [`std::thread`](https://en.cppreference.com/w/cpp/header/thread) is enabled by default, and option `-pthread` is necesary under Linux/Unix/Mac platform. If you prefer single thread mode, pass `-DNPARALLEL` option to compiler.
+Please note [`std::thread`](https://en.cppreference.com/w/cpp/header/thread) is not enabled by default. If you prefer multi-thread mode, pass `-DPARALLEL` option to compiler, and add necessary link options.
 [`std::filesystem`](https://en.cppreference.com/w/cpp/filesystem/path) is used,  make sure corresponding library option is passed during link time (`-lstdc++fs` for g++).
 
 Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([link1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1042r1.html), [link2](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0306r4.html)), so the compiler must be compatible with c++20.
@@ -1111,6 +1111,64 @@ m.plot( "./images/0000_plot_jet.bmp", "jet" );
 ```
 
 ![default_jet](images/0000_plot_jet.bmp)
+
+
+#### juliet set
+
+Having `plot`/`save_as_bmp` method implemented, it is convenient to plot a juliet set to an image.
+The polynomial function is:
+f_c(z) = z^n + c
+Suppose we have the ranges of z, the x and y coordinates in a 2D image, the power n and the constant c, we can generate an image like this
+
+```cpp
+auto make_julia_set( std::complex<double> const& lower_left, std::complex<double> const& upper_right, std::complex<double>const& cval, unsigned long const dim = 1024, unsigned long const iterations = 1024, unsigned long const powers = 2 )
+{
+    std::complex<double> spacing_ratio{ (std::real(upper_right)-std::real(lower_left)) / static_cast<double>(dim),
+                                        (std::imag(upper_right)-std::imag(lower_left)) / static_cast<double>(dim) };
+
+    feng::matrix<std::complex<double>> cmat{ dim, dim };
+    for ( auto r = 0UL; r != dim; ++r )
+        for ( auto c = 0UL; c != dim; ++c )
+            cmat[r][c] = std::complex<double>{ static_cast<double>(r), static_cast<double>(c) };
+
+    auto const& converter = [&spacing_ratio, &lower_left, &upper_right, iterations, powers, &cval]( std::complex<double>& c )
+    {
+        std::complex<double> z = lower_left + std::complex<double>{ std::real(spacing_ratio)*std::real(c), std::imag(spacing_ratio)*std::imag(c) };
+        c = std::complex<double>{ static_cast<double>(iterations), 0 };
+        for ( auto idx = 0UL; idx != iterations; ++idx )
+        {
+            z = std::pow( z, powers ) + cval;
+            if ( std::abs(z) > 2.0 )
+            {
+                c = std::complex<double>{ static_cast<double>(idx), 0 };
+                break;
+            }
+        }
+    };
+
+    cmat.apply( converter );
+    return feng::real(cmat);
+}
+```
+where the `lower_left` and `upper_right` defines the size of the canvas, the `cval` is for the constant c, the `dim` gives the sampling density, the `iterations` gives the maximum value in the sampled positions, and the `powers` for the maximum order of the polinomial.
+
+Then we are able to generate a series of the fractional images:
+```cpp
+unsigned long const n = 32;
+for ( unsigned r = 0; r != n; ++r )
+    for ( unsigned c = 0; c != n; ++c )
+    {
+        std::complex<double> zc{ double(r)/n*1.8-0.9, double(c)/n*1.8-0.9 };
+        auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, zc, 1024, 1024, 4 );
+        std::string file_name = std::string{"./images/julia_set_4/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
+        mat.save_as_bmp( file_name, "tealhot" );
+    }
+```
+
+A typical result image looks like this:
+
+`[juliet_set](./images/0000_julia_set.bmp)
+
 
 
 #### operator multiply equal

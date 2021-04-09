@@ -67,7 +67,8 @@ void _0002_mandelbrot()
             //std::string const file_name = std::string{ "./images/mandelbrot_4/0002_mandel_brot_" } + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             std::string const file_name = std::string{ "./images/mandelbrot_5/0002_mandel_brot_" } + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             //mat.save_as_bmp( file_name, "bluehot" );
-            mat.save_as_bmp( file_name, "gray" );
+            //mat.save_as_bmp( file_name, "gray" );
+            mat.save_as_bmp( file_name, "tealhot" );
 
         }
 }

@@ -40,10 +40,10 @@ namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20200324ULL;
 
-    #ifdef NPARALLEL
-    constexpr std::uint_least64_t parallel_mode = 0;
-    #else
+    #ifdef PARALLEL
     constexpr std::uint_least64_t parallel_mode = 1;
+    #else
+    constexpr std::uint_least64_t parallel_mode = 0;
     #endif
 
     #ifdef NDEBUG
@@ -1286,8 +1286,8 @@ namespace feng
         typedef std::uint_least64_t                                     size_type;
         typedef std::ptrdiff_t                                          difference_type;
         typedef std::pair<size_type, size_type>                         range_type;
-        typedef typename Allocator::pointer                             pointer;
-        typedef typename Allocator::const_pointer                       const_pointer;
+        typedef typename std::allocator_traits<Allocator>::pointer      pointer;
+        typedef typename std::allocator_traits<Allocator>::const_pointer const_pointer;
         typedef stride_iterator< value_type* >                          matrix_stride_iterator;
         typedef value_type*                                             row_type;
         typedef const value_type*                                       const_row_type;
