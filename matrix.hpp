@@ -37,6 +37,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 #include <vector>
 
 #ifdef OPENCV // Interfacing cv::Mat. Enable this feature by passing `-DOPENCV` option to g++.
+#include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #endif//OPENCV
 
@@ -1161,7 +1162,7 @@ namespace feng
             return true;
         }
 
-    }//namespace misc
+    }//namespace matrix_details
 
     // for column, diagonal and anti-diagonal iteration
     template < typename Iterator_Type >
@@ -1337,13 +1338,18 @@ namespace feng
         {
             unsigned long const rows = image.rows;
             unsigned long const cols = image.cols;
-            unsigned long const channels = image.channels();
+            //unsigned long const channels = image.channels();
+            unsigned long const channels = 1 + (image.type() >> CV_CN_SHIFT);
 
             auto& zen = static_cast<zen_type&>(*this);
-            zen.resize( rows * channels, cols );
+            zen.resize( cols, rows * channels ); // different orders
 
             auto* img_data = image.data;
-            int const depth = image.depth();
+            //int const depth = image.depth();
+
+            unsigned char const depth = image.type() & CV_MAT_DEPTH_MASK;
+
+            using matrix_details::for_each;
             switch (depth)
             {
                 case CV_8U:

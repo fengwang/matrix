@@ -8,7 +8,7 @@ endif
 
 OP            = -DPARALLEL
 CXX           = g++
-CXXFLAGS      = -std=c++20 -Wall -Wextra -Ofast -fmax-errors=2 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native $(OP) $(OPENCVOP)
+CXXFLAGS      = -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native $(OP) $(OPENCVOP)
 LFLAGS        = -Ofast $(OPENCVLOP)  -pthread -lstdc++fs -Wl,--gc-sections -flto
 
 LINK          = $(CXX)

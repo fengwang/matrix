@@ -149,6 +149,34 @@ Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([lin
     mat.load_txt( './mat.txt' );
     ```
 
+    - loading matrix from an opencv matrix instance with interface `from_opencv`
+
+    ```cpp
+    cv::Mat M( 2, 2, CV_8UC3, cv::Scalar(0, 0, 255) );
+    std::cout << "OPENCV matrix:\n" << M << std::endl;
+    feng::matrix<std::uint32_t> mat;
+    mat.from_opencv( M );
+    std::cout << "Converted to feng::matrix:\n" << mat << std::endl;
+    ```
+
+    This will produce output like:
+
+    ```
+    OPENCV matrix:
+    [  0,   0, 255,   0,   0, 255;
+       0,   0, 255,   0,   0, 255]
+    Converted to feng::matrix:
+    0       0       255     0       0       255
+    0       0       255     0       0       255
+    ```
+
+    However, to compile and link the code above, make sure to
+    1. define the opencv guard by passing `-DOPENCV` option to the compiler (g++),
+    2. tell the compile where to find the opencv header files, for example, passing `pkg-config --cflags opencv4` to the compiler (g++), and
+    3. tell the linker which libraries to link against, for example, passing `pkg-config --cflags opencv4` to the linker (g++).
+
+
+
 + others
      - [eye](#eye-function)
      - [magic](#magic-function)

@@ -61,4 +61,5 @@
 #include "./cases/trunc.hpp"
 #include "./cases/view_bracket.hpp"
 #include "./cases/zeros.hpp"
+#include "./cases/opencv.hpp"
 
