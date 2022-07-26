@@ -1353,7 +1353,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_8UC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_8UC3 ):
                                       cv::Mat( rows, cols, CV_8UC4 );
-                //ans = cv::Mat( rows, cols, CV_8UC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<std::uint8_t*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, std::int8_t>)
@@ -1362,7 +1361,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_8SC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_8SC3 ):
                                       cv::Mat( rows, cols, CV_8SC4 );
-                //ans = cv::Mat( rows, cols, CV_8SC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int8_t*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, std::uint16_t>)
@@ -1371,7 +1369,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_16UC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_16UC3 ):
                                       cv::Mat( rows, cols, CV_16UC4 );
-                //ans = cv::Mat( rows, cols, CV_16UC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<std::uint16_t*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, std::int16_t>)
@@ -1380,7 +1377,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_16SC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_16SC3 ):
                                       cv::Mat( rows, cols, CV_16SC4 );
-                //ans = cv::Mat( rows, cols, CV_16SC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int16_t*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, std::int32_t>)
@@ -1389,7 +1385,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_32SC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_32SC3 ):
                                       cv::Mat( rows, cols, CV_32SC4 );
-                //ans = cv::Mat( rows, cols, CV_32SC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int32_t*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, float>)
@@ -1398,7 +1393,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_32FC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_32FC3 ):
                                       cv::Mat( rows, cols, CV_32FC4 );
-                //ans = cv::Mat( rows, cols, CV_32FC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<float*>( ans.data ) );
             }
             else if constexpr (std::is_same_v<value_type, double>)
@@ -1407,7 +1401,6 @@ namespace feng
                       channels == 2 ? cv::Mat( rows, cols, CV_64FC2 ):
                       channels == 3 ? cv::Mat( rows, cols, CV_64FC3 ):
                                       cv::Mat( rows, cols, CV_64FC4 );
-                //ans = cv::Mat( rows, cols, CV_64FC1 );
                 std::copy( zen.begin(), zen.end(), reinterpret_cast<double*>( ans.data ) );
             }
             else
