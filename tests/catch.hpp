@@ -13,6 +13,8 @@
 // start catch.hpp
 
 
+
+
 #ifdef __clang__
 #    pragma clang system_header
 #elif defined __GNUC__
@@ -206,6 +208,7 @@
 #include <iosfwd>
 #include <string>
 #include <cstdint>
+
 
 namespace Catch {
 
@@ -6628,7 +6631,8 @@ namespace Catch {
     bool FatalConditionHandler::isSet = false;
     struct sigaction FatalConditionHandler::oldSigActions[sizeof(signalDefs)/sizeof(SignalDefs)] = {};
     stack_t FatalConditionHandler::oldSigStack = {};
-    char FatalConditionHandler::altStackMem[SIGSTKSZ] = {};
+    //char FatalConditionHandler::altStackMem[SIGSTKSZ] = {};
+    char FatalConditionHandler::altStackMem[16384] = {};
 
 } // namespace Catch
 

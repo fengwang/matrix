@@ -1,7 +1,8 @@
+OP            = -DPARALLEL
 CXX           = g++
-CXXFLAGS      = -std=c++2a -Wall -Wextra -O2 -fmax-errors=2
+CXXFLAGS      = -std=c++20 -Wall -Wextra -Ofast -fmax-errors=2 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native $(OP)
 # -lstdc++fs must go after .cpp file
-LFLAGS        = -O2 -pthread -lstdc++fs
+LFLAGS        = -Ofast -pthread -lstdc++fs -Wl,--gc-sections -flto
 
 LINK          = $(CXX)
 

@@ -151,8 +151,8 @@ int main()
     _0001_mandelbrot();
 
     std::cout << "running mandelbrot::2.\n" << std::endl;
-    //TOO time consuming
-    _0002_mandelbrot();
+    //disabled as it is time consuming
+    //_0002_mandelbrot();
     //
     //std::cout << "running julia_set::0.\n" << std::endl;
     //_0000_julia_set();

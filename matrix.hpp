@@ -294,7 +294,7 @@ namespace feng
 
         namespace bmp_details
         {
-            static std::vector<std::uint8_t> const generate_bmp_header( std::uint_least64_t const the_row, std::uint_least64_t const the_col )
+            inline std::vector<std::uint8_t> const generate_bmp_header( std::uint_least64_t const the_row, std::uint_least64_t const the_col )
             {
                 auto const& ul_to_byte = []( std::uint_least64_t val ) { return static_cast< std::uint8_t >( val & 0xffUL ); };
                 std::uint8_t file[14] = { 0x42, 0x4D, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0 };
