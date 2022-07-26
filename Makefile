@@ -1,8 +1,15 @@
+ifeq ($(OPENCV), 1)
+	OPENCVOP = -DOPENCV `pkg-config --cflags opencv4` -Wno-deprecated-enum-enum-conversion
+	OPENCVLOP = `pkg-config --libs opencv4`
+else
+	OPENCVOP =
+	OPENCVLOP =
+endif
+
 OP            = -DPARALLEL
 CXX           = g++
-CXXFLAGS      = -std=c++20 -Wall -Wextra -Ofast -fmax-errors=2 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native $(OP)
-# -lstdc++fs must go after .cpp file
-LFLAGS        = -Ofast -pthread -lstdc++fs -Wl,--gc-sections -flto
+CXXFLAGS      = -std=c++20 -Wall -Wextra -Ofast -fmax-errors=2 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native $(OP) $(OPENCVOP)
+LFLAGS        = -Ofast $(OPENCVLOP)  -pthread -lstdc++fs -Wl,--gc-sections -flto
 
 LINK          = $(CXX)
 

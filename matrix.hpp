@@ -36,6 +36,10 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 #include <valarray>
 #include <vector>
 
+#ifdef OPENCV // Interfacing cv::Mat. Enable this feature by passing `-DOPENCV` option to g++.
+#include <opencv2/core/mat.hpp>
+#endif//OPENCV
+
 namespace feng
 {
     constexpr std::uint_least64_t matrix_version = 20200324ULL;
@@ -50,6 +54,12 @@ namespace feng
     constexpr std::uint_least64_t debug_mode = 0;
     #else
     constexpr std::uint_least64_t debug_mode = 1;
+    #endif
+
+    #ifdef OPENCV
+    constexpr std::uint_least64_t enable_cv_mat = 1;
+    #else
+    constexpr std::uint_least64_t enable_cv_mat = 0;
     #endif
 
     namespace matrix_private
@@ -1313,6 +1323,62 @@ namespace feng
         typedef std::reverse_iterator< anti_diag_type >                 reverse_anti_diag_type;
         typedef std::reverse_iterator< const_anti_diag_type >           const_reverse_anti_diag_type;
     };
+
+
+    // interfacing opencv
+    template < typename Matrix, typename Type, typename Allocator >
+    struct crtp_opencv
+    {
+        typedef Matrix zen_type;
+        //std::cerr << "OpenCV is not enabled. Recompile and link your code with \" -DOPENCV `pkg-config --cflags --libs opencv4` \" option.\n" ;
+
+        #ifdef OPENCV
+        auto& from_opencv( cv::Mat const& image )
+        {
+            unsigned long const rows = image.rows;
+            unsigned long const cols = image.cols;
+            unsigned long const channels = image.channels();
+
+            auto& zen = static_cast<zen_type&>(*this);
+            zen.resize( rows * channels, cols );
+
+            auto* img_data = image.data;
+            int const depth = image.depth();
+            switch (depth)
+            {
+                case CV_8U:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<std::uint8_t const*>(img_data), []( auto& v, std::uint8_t x ){ v = x; } );
+                    break;
+                case CV_8S:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<std::int8_t const*>(img_data), []( auto& v, std::int8_t x ){ v = x; } );
+                    break;
+                case CV_16U:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<std::uint16_t const*>(img_data), []( auto& v, std::uint16_t x ){ v = x; } );
+                    break;
+                case CV_16S:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<std::int16_t const*>(img_data), []( auto& v, std::int16_t x ){ v = x; } );
+                    break;
+                case CV_32S:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<std::int32_t const*>(img_data), []( auto& v, std::int32_t x ){ v = x; } );
+                    break;
+                case CV_32F:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<float const*>(img_data), []( auto& v, float x ){ v = x; } );
+                    break;
+                case CV_64F:
+                    for_each( zen.begin(), zen.end(), reinterpret_cast<double const*>(img_data), []( auto& v, double x ){ v = x; } );
+                    break;
+                default:
+                    better_assert( false, "Unknown image depth. Exit." );
+            }
+
+            return *this;
+        }
+        #endif
+
+    }; // struct crtp_opencv
+
+
+
 
     template < typename Matrix, typename Type, typename Allocator >
     struct crtp_item
@@ -3269,6 +3335,7 @@ namespace feng
         , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_npy< matrix< Type, Allocator >, Type, Allocator >
         , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
+        , crtp_opencv< matrix< Type, Allocator >, Type, Allocator >
         , crtp_plot< matrix< Type, Allocator >, Type, Allocator >
         , crtp_min_max< matrix< Type, Allocator >, Type, Allocator >
         , crtp_minmax< matrix< Type, Allocator >, Type, Allocator >
