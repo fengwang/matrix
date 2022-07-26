@@ -1331,23 +1331,106 @@ namespace feng
     struct crtp_opencv
     {
         typedef Matrix zen_type;
-        //std::cerr << "OpenCV is not enabled. Recompile and link your code with \" -DOPENCV `pkg-config --cflags --libs opencv4` \" option.\n" ;
+        typedef Type value_type;
 
         #ifdef OPENCV
+
+        cv::Mat const to_opencv( unsigned long channels = 1 ) const
+        {
+            better_assert( ((channels>=1) && (channels<=4)), "Expecting 1-4 channels." );
+
+            auto const& zen = static_cast<zen_type const&>(*this);
+
+            unsigned long rows = static_cast<unsigned long>( zen.col() / channels );
+            unsigned long cols = zen.row();
+            better_assert( rows * channels == zen.col(), "Error: cannot cast this matrix to opencv matrix with the selected channels, cannot divide it." );
+
+            cv::Mat ans;
+
+            if constexpr (std::is_same_v<value_type, std::uint8_t>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_8UC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_8UC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_8UC3 ):
+                                      cv::Mat( rows, cols, CV_8UC4 );
+                //ans = cv::Mat( rows, cols, CV_8UC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<std::uint8_t*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, std::int8_t>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_8SC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_8SC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_8SC3 ):
+                                      cv::Mat( rows, cols, CV_8SC4 );
+                //ans = cv::Mat( rows, cols, CV_8SC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int8_t*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, std::uint16_t>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_16UC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_16UC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_16UC3 ):
+                                      cv::Mat( rows, cols, CV_16UC4 );
+                //ans = cv::Mat( rows, cols, CV_16UC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<std::uint16_t*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, std::int16_t>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_16SC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_16SC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_16SC3 ):
+                                      cv::Mat( rows, cols, CV_16SC4 );
+                //ans = cv::Mat( rows, cols, CV_16SC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int16_t*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, std::int32_t>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_32SC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_32SC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_32SC3 ):
+                                      cv::Mat( rows, cols, CV_32SC4 );
+                //ans = cv::Mat( rows, cols, CV_32SC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<std::int32_t*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, float>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_32FC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_32FC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_32FC3 ):
+                                      cv::Mat( rows, cols, CV_32FC4 );
+                //ans = cv::Mat( rows, cols, CV_32FC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<float*>( ans.data ) );
+            }
+            else if constexpr (std::is_same_v<value_type, double>)
+            {
+                ans = channels == 1 ? cv::Mat( rows, cols, CV_64FC1 ):
+                      channels == 2 ? cv::Mat( rows, cols, CV_64FC2 ):
+                      channels == 3 ? cv::Mat( rows, cols, CV_64FC3 ):
+                                      cv::Mat( rows, cols, CV_64FC4 );
+                //ans = cv::Mat( rows, cols, CV_64FC1 );
+                std::copy( zen.begin(), zen.end(), reinterpret_cast<double*>( ans.data ) );
+            }
+            else
+            {
+                better_assert( false, "Cannot convert this type of matrix to a OpenCV matrix." );
+            }
+
+            return ans;
+        }
+
         auto& from_opencv( cv::Mat const& image )
         {
             unsigned long const rows = image.rows;
             unsigned long const cols = image.cols;
-            //unsigned long const channels = image.channels();
             unsigned long const channels = 1 + (image.type() >> CV_CN_SHIFT);
+            unsigned char const depth = image.type() & CV_MAT_DEPTH_MASK;
+            auto* img_data = image.data;
+
+            if ( img_data == nullptr )
+                return *this;
 
             auto& zen = static_cast<zen_type&>(*this);
             zen.resize( cols, rows * channels ); // different orders
-
-            auto* img_data = image.data;
-            //int const depth = image.depth();
-
-            unsigned char const depth = image.type() & CV_MAT_DEPTH_MASK;
 
             using matrix_details::for_each;
             switch (depth)
