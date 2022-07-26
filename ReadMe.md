@@ -176,6 +176,15 @@ Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([lin
     3. tell the linker which libraries to link against, for example, passing `pkg-config --cflags opencv4` to the linker (g++).
 
 
+    And to convert a matrix instance to opencv matrix:
+
+    ```cpp
+    cv::Mat m = mat.to_opencv( 3 );
+    ```
+
+    in whcih the parameter `3` is for the image channels. By default this parameter is `1`, and up to 4 channels are allowed.
+
+
 
 + others
      - [eye](#eye-function)
