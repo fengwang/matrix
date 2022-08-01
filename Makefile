@@ -1,3 +1,4 @@
+OPENCV := 0
 ifeq ($(OPENCV), 1)
 	OPENCVOP = -DOPENCV `pkg-config --cflags opencv4` -Wno-deprecated-enum-enum-conversion
 	OPENCVLOP = `pkg-config --libs opencv4`
