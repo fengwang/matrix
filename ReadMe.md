@@ -173,7 +173,12 @@ Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([lin
     However, to compile and link the code above, make sure to
     1. define the opencv guard by passing `-DOPENCV` option to the compiler (g++),
     2. tell the compile where to find the opencv header files, for example, passing `pkg-config --cflags opencv4` to the compiler (g++), and
-    3. tell the linker which libraries to link against, for example, passing `pkg-config --cflags opencv4` to the linker (g++).
+    3. tell the linker which libraries to link against, for example, passing `pkg-config --libs opencv4` to the linker (g++). Or
+    4. compile and link in a single command, such as
+    ```bash
+    g++ -o ./test_test  -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL -DOPENCV `pkg-config --cflags opencv4` -Wno-deprecated-enum-enum-conversion `pkg-config --libs opencv4`  -pthread -lstdc++fs -Wl,--gc-sections -flto tests/test.cc
+    ```
+
 
 
     And to convert a matrix instance to opencv matrix:
