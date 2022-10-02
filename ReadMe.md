@@ -1,5 +1,10 @@
 A modern, C++20-native, single-file header-only dense 2D matrix library.
 
+
+![CI](https://github.com/fengwang/matrix/actions/workflows/ci.yml/badge.svg)
+
+----
+
 ### Contents
 
 - [Example usage](#example-usage)

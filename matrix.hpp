@@ -6612,7 +6612,7 @@ namespace feng
 
 } //namespace feng
 
-//#undef better_assert
+#undef better_assert
 
 #endif
 
