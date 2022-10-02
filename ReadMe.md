@@ -89,7 +89,7 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
 #### typical compile and link command
 
 ```bash
-g++ -o your_exe_file your_source_code.cpp -std=c++2a -O2 -pthread -lstdc++fs
+g++ -o your_exe_file your_source_code.cpp -std=c++20 -O2 -pthread -lstdc++fs
 ```
 
 Please note [`std::thread`](https://en.cppreference.com/w/cpp/header/thread) is not enabled by default. If you prefer multi-thread mode, pass `-DPARALLEL` option to compiler, and add necessary link options.
