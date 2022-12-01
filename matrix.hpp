@@ -1141,11 +1141,15 @@ namespace feng
             //std::vector<result_type> cache{ static_cast<unsigned long>(total_cores), static_cast<result_type>(init) };// of size `total_cores`, of same value `init`
             std::vector<result_type> cache;
             cache.resize( total_cores );
-            std::fill( cache.begin(), cache.end(), init );
+            auto const block_size = total_elements / total_cores;
             auto const& thread_reducer = [&]( unsigned long idx )
             {
-                for ( auto id = idx; id < total_elements; id += total_cores )
-                    cache[idx] = func( cache[idx], *(begin+id) );
+                auto const block_begin = idx * block_size;
+                auto const block_end = idx + 1 != total_cores ? block_begin + block_size : total_elements;
+                result_type temp = *(begin+block_begin);
+                for ( auto id : range( block_begin + 1, block_end ) )
+                    temp = func( temp, *(begin+id) );
+                cache[idx] = temp;
             };
             parallel( thread_reducer, static_cast<unsigned int>(0), total_cores, 0UL );
 
