@@ -7,6 +7,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 #include <array>
 #include <cmath>
 #include <complex>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -90,7 +91,46 @@ namespace feng
     //
     #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : matrix_private::print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
 
-    template < typename Type, class Allocator >
+    //
+    // begin of concept of allocators
+    //
+    template< typename T, typename=void >
+    struct has_value_type : std::false_type{};
+
+    template< typename T >
+    struct has_value_type<T, std::void_t<typename T::value_type>> : std::true_type{};
+
+    template< typename T >
+    inline constexpr bool has_value_type_v = has_value_type<T>::value;
+
+    template< typename T, typename=void >
+    struct has_allocate : std::false_type {};
+
+    template< typename T >
+    struct has_allocate<T, std::void_t<decltype(std::declval<T&>().allocate(1UL)) >> : std::true_type{};
+
+    template< typename T >
+    inline constexpr bool has_allocate_v = has_allocate<T>::value;
+
+    template< typename T ,typename=void >
+    struct has_deallocate : std::false_type{};
+
+    template< typename T >
+    struct has_deallocate<T, std::void_t<decltype(std::declval<T&>().deallocate(std::declval<typename T::value_type*>(), 1UL))>> : std::true_type {};
+
+    template<typename T>
+    inline constexpr bool has_deallocate_v = has_deallocate<T>::value;
+
+    template< typename T>
+    concept Allocator = has_value_type_v<T> && has_allocate_v<T> && has_deallocate_v<T>;
+
+    //
+    // begin of concept of allocators
+    //
+
+
+
+    template < typename Type, Allocator Alloc >
     struct matrix;
 
     namespace matrix_details
@@ -1291,18 +1331,18 @@ namespace feng
         }
     };
 
-    template < typename Type, typename Allocator >
+    template < typename Type, Allocator Alloc >
     struct crtp_typedef
     {
         typedef typename std::decay< Type >::type                       value_type;
         typedef value_type*                                             iterator;
         typedef const value_type*                                       const_iterator;
-        typedef Allocator                                               allocator_type;
+        typedef Alloc                                               allocator_type;
         typedef std::uint_least64_t                                     size_type;
         typedef std::ptrdiff_t                                          difference_type;
         typedef std::pair<size_type, size_type>                         range_type;
-        typedef typename std::allocator_traits<Allocator>::pointer      pointer;
-        typedef typename std::allocator_traits<Allocator>::const_pointer const_pointer;
+        typedef typename std::allocator_traits<Alloc>::pointer      pointer;
+        typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer;
         typedef stride_iterator< value_type* >                          matrix_stride_iterator;
         typedef value_type*                                             row_type;
         typedef const value_type*                                       const_row_type;
@@ -1331,7 +1371,7 @@ namespace feng
 
 
     // interfacing opencv
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_opencv
     {
         typedef Matrix zen_type;
@@ -1466,7 +1506,7 @@ namespace feng
 
 
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_item
     {
         typedef Matrix zen_type;
@@ -1480,7 +1520,7 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_shape
     {
         typedef Matrix zen_type;
@@ -1491,10 +1531,10 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
-    using crtp_shape_view = crtp_shape<Matrix, Type, Allocator>;
+    template < typename Matrix, typename Type, Allocator Alloc >
+    using crtp_shape_view = crtp_shape<Matrix, Type, Alloc>;
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_get_allocator
     {
         typedef Matrix zen_type;
@@ -1505,11 +1545,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_anti_diag_iterator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::difference_type difference_type;
         typedef typename type_proxy_type::anti_diag_type anti_diag_type;
@@ -1735,7 +1775,7 @@ namespace feng
             return lower_anti_diag_crend( -index );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_apply
     {
         typedef Matrix  zen_type;
@@ -1762,11 +1802,11 @@ namespace feng
             apply( func );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_bracket_operator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::row_type row_type;
@@ -1799,11 +1839,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_bracket_operator_view
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::row_type row_type;
@@ -1823,11 +1863,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_clear
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         void clear() noexcept
         {
             zen_type& zen = static_cast< zen_type& >( *this );
@@ -1838,11 +1878,11 @@ namespace feng
             zen.col_ = 0;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_clone
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         template < typename Other_Matrix >
         zen_type& clone( const Other_Matrix& other, std::initializer_list<size_type> r, std::initializer_list<size_type> c ) noexcept
@@ -1888,11 +1928,11 @@ namespace feng
             return ans;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_col_iterator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::col_type col_type;
         typedef typename type_proxy_type::const_col_type const_col_type;
@@ -1954,14 +1994,14 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
-    using crtp_col_iterator_view =  crtp_col_iterator<Matrix, Type, Allocator>;
+    template < typename Matrix, typename Type, Allocator Alloc >
+    using crtp_col_iterator_view =  crtp_col_iterator<Matrix, Type, Alloc>;
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_copy
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         template < typename Other_Matrix >
         void copy( const Other_Matrix& rhs ) noexcept
@@ -2001,11 +2041,11 @@ namespace feng
             matrix_details::parallel( copy_function, 0UL, other.row(), 0UL );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_data
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::pointer pointer;
         typedef typename type_proxy_type::const_pointer const_pointer;
         pointer data() noexcept
@@ -2020,11 +2060,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_det
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
@@ -2059,11 +2099,11 @@ namespace feng
             return P.det() * tmp.det();
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_diag_iterator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::difference_type difference_type;
         typedef typename type_proxy_type::diag_type diag_type;
@@ -2249,11 +2289,11 @@ namespace feng
             return lower_diag_crend( -index );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_direct_iterator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::iterator iterator;
         typedef typename type_proxy_type::reverse_iterator reverse_iterator;
         typedef typename type_proxy_type::const_iterator const_iterator;
@@ -2314,11 +2354,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_divide_equal_operator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         zen_type& operator/=( const value_type& rhs ) noexcept
         {
@@ -2333,11 +2373,11 @@ namespace feng
             return zen;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_inverse
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
@@ -2383,12 +2423,12 @@ namespace feng
             return ans;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_load_txt
     {
         typedef Matrix zen_type;
-        typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
-        typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
+        typedef typename crtp_typedef< Type, Alloc >::value_type value_type;
+        typedef typename crtp_typedef< Type, Alloc >::size_type size_type;
         bool load_txt( std::string const& file_name ) noexcept
         {
             return load_txt(file_name.c_str());
@@ -2432,12 +2472,12 @@ namespace feng
             return true;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_load_binary
     {
         typedef Matrix zen_type;
-        typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
-        typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
+        typedef typename crtp_typedef< Type, Alloc >::value_type value_type;
+        typedef typename crtp_typedef< Type, Alloc >::size_type size_type;
         bool load_binary( std::string const& file_name ) noexcept
         {
             return load_binary( file_name.c_str() );
@@ -2471,12 +2511,12 @@ namespace feng
             return true;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_load_npy
     {
         typedef Matrix zen_type;
-        typedef typename crtp_typedef< Type, Allocator >::value_type value_type;
-        typedef typename crtp_typedef< Type, Allocator >::size_type size_type;
+        typedef typename crtp_typedef< Type, Alloc >::value_type value_type;
+        typedef typename crtp_typedef< Type, Alloc >::size_type size_type;
         bool load_npy( std::string const& file_name ) noexcept
         {
             return load_npy( file_name.c_str() );
@@ -2552,11 +2592,11 @@ namespace feng
             return true;
         }
     };//struct crtp_load_npy
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_minus_equal_operator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
 
@@ -2580,11 +2620,11 @@ namespace feng
             return zen;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_multiply_equal_operator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::range_type range_type;
@@ -2755,11 +2795,11 @@ namespace feng
             return strassen_multiply( other );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_plus_equal_operator
     {
         typedef Matrix                                  zen_type;
-        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef crtp_typedef< Type, Alloc >         type_proxy_type;
         typedef typename type_proxy_type::value_type    value_type;
         typedef typename type_proxy_type::size_type     size_type;
         zen_type& operator+=( const value_type& rhs ) noexcept
@@ -2784,11 +2824,11 @@ namespace feng
             return zen;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_prefix_minus
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         const zen_type operator-() const noexcept
@@ -2805,11 +2845,11 @@ namespace feng
             return ans;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_prefix_plus
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::size_type size_type;
         const zen_type operator+() const noexcept
@@ -2817,11 +2857,11 @@ namespace feng
             return static_cast< zen_type const& >( *this );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_reshape
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         zen_type& reshape( const size_type new_row, const size_type new_col ) noexcept
         {
@@ -2832,11 +2872,11 @@ namespace feng
             return zen;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_resize
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         zen_type& resize( const size_type new_row, const size_type new_col ) noexcept
@@ -2855,11 +2895,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_row_col_size
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         size_type row() const noexcept
         {
@@ -2877,11 +2917,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_row_col_size_view
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         size_type row() const noexcept
         {
@@ -2900,11 +2940,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_row_iterator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::row_type row_type;
         typedef typename type_proxy_type::const_row_type const_row_type;
@@ -2967,11 +3007,11 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
-    struct crtp_row_iterator_view : crtp_row_iterator<Matrix, Type, Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
+    struct crtp_row_iterator_view : crtp_row_iterator<Matrix, Type, Alloc >
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::row_type row_type;
         typedef typename type_proxy_type::const_row_type const_row_type;
@@ -3004,7 +3044,7 @@ namespace feng
 
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_save_as_txt
     {
         typedef Matrix zen_type;
@@ -3031,7 +3071,7 @@ namespace feng
             return true;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_save_as_binary
     {
         typedef Matrix zen_type;
@@ -3066,7 +3106,7 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_plot
     {
         typedef Matrix zen_type;
@@ -3077,7 +3117,7 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_save_as_bmp
     {
         typedef Matrix zen_type;
@@ -3139,10 +3179,10 @@ namespace feng
         }
     }; //crtp_save_as_bmp
 
-    template < typename Matrix, typename Type, typename Allocator >
-    using crtp_save_as_bmp_view = crtp_save_as_bmp<Matrix, Type, Allocator>;
+    template < typename Matrix, typename Type, Allocator Alloc >
+    using crtp_save_as_bmp_view = crtp_save_as_bmp<Matrix, Type, Alloc>;
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_save_as_pgm
     {
         typedef Matrix zen_type;
@@ -3193,11 +3233,11 @@ namespace feng
             return save_as_pgm( std::string{ file_name } );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_shrink_to_size
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
 
@@ -3224,11 +3264,11 @@ namespace feng
             return zen;
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_stream_operator
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         friend std::ostream& operator<<( std::ostream& lhs, zen_type const& rhs )
@@ -3271,7 +3311,7 @@ namespace feng
             return is;
         }
     };
-    template < typename Matrix, typename T, typename A >
+    template < typename Matrix, typename T, Allocator A >
     struct crtp_swap
     {
         typedef Matrix zen_type;
@@ -3284,11 +3324,11 @@ namespace feng
             std::swap( zen.allocator_, other.allocator_ );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_tr
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::value_type value_type;
         const value_type tr() const noexcept
         {
@@ -3296,11 +3336,11 @@ namespace feng
             return std::accumulate( zen.diag_begin(), zen.diag_end(), value_type() );
         }
     };
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_transpose
     {
         typedef Matrix zen_type;
-        typedef crtp_typedef< Type, Allocator > type_proxy_type;
+        typedef crtp_typedef< Type, Alloc > type_proxy_type;
         typedef typename type_proxy_type::size_type size_type;
         const zen_type transpose() const noexcept
         {
@@ -3314,7 +3354,7 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_minmax
     {
         typedef Type value_type;
@@ -3344,7 +3384,7 @@ namespace feng
         }
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
+    template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_min_max
     {
         typedef Type value_type;
@@ -3378,74 +3418,74 @@ namespace feng
 
     };
 
-    template < typename Matrix, typename Type, typename Allocator >
-    using crtp_minmax_view = crtp_minmax<Matrix, Type, Allocator>;
+    template < typename Matrix, typename Type, Allocator Alloc >
+    using crtp_minmax_view = crtp_minmax<Matrix, Type, Alloc>;
 
-    template < typename Type, class Allocator >
+    template < typename Type, Allocator Alloc >
     struct matrix_view :
-        crtp_save_as_bmp_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_shape_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_bracket_operator_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_minmax_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_row_col_size_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_row_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>,
-        crtp_col_iterator_view<matrix_view<Type, Allocator>, Type, Allocator>
+        crtp_save_as_bmp_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_shape_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_bracket_operator_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_minmax_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_row_col_size_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_row_iterator_view<matrix_view<Type, Alloc>, Type, Alloc>,
+        crtp_col_iterator_view<matrix_view<Type, Alloc>, Type, Alloc>
     {
-        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef crtp_typedef< Type, Alloc >         type_proxy_type;
         typedef typename type_proxy_type::size_type     size_type;
-        matrix_view( matrix<Type, Allocator> const& mat,
+        matrix_view( matrix<Type, Alloc> const& mat,
                      std::pair<size_type, size_type> const& row_dim,
                      std::pair<size_type, size_type> const& col_dim ) noexcept;
 
-        matrix<Type, Allocator> const&                  matrix_;
+        matrix<Type, Alloc> const&                  matrix_;
         std::pair<size_type, size_type>                 row_dim_;
         std::pair<size_type, size_type>                 col_dim_;
     };//struct matrix_view
 
-    template < typename Type, class Allocator = std::allocator<Type> >
-    struct matrix : crtp_anti_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_apply< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_bracket_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_clear< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_clone< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_col_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_copy< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_data< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_det< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_diag_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_direct_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_divide_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_get_allocator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_inverse< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_item< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_load_binary< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_load_npy< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_load_txt< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_opencv< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_plot< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_min_max< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_minmax< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_minus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_multiply_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_plus_equal_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_prefix_minus< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_prefix_plus< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_reshape< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_resize< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_row_col_size< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_row_iterator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_save_as_binary< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_save_as_bmp< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_save_as_pgm< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_save_as_txt< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_shape< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_shrink_to_size< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_stream_operator< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_swap< matrix< Type, Allocator >, Type, Allocator >
-        , crtp_transpose< matrix< Type, Allocator >, Type, Allocator >
+    template < typename Type, Allocator Alloc = std::allocator<Type> >
+    struct matrix : crtp_anti_diag_iterator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_apply< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_bracket_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_clear< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_clone< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_col_iterator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_copy< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_data< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_det< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_diag_iterator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_direct_iterator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_divide_equal_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_get_allocator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_inverse< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_item< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_load_binary< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_load_npy< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_load_txt< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_opencv< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_plot< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_min_max< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_minmax< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_minus_equal_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_multiply_equal_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_plus_equal_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_prefix_minus< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_prefix_plus< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_reshape< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_resize< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_row_col_size< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_row_iterator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_save_as_binary< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_save_as_bmp< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_save_as_pgm< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_save_as_txt< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_shape< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_shrink_to_size< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_stream_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_swap< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_transpose< matrix< Type, Alloc >, Type, Alloc >
     {
         typedef matrix self_type;
-        typedef crtp_typedef< Type, Allocator >                         type_proxy_type;
+        typedef crtp_typedef< Type, Alloc >                         type_proxy_type;
         typedef typename type_proxy_type::value_type                    value_type;
         typedef typename type_proxy_type::size_type                     size_type;
         typedef typename type_proxy_type::difference_type               difference_type;
@@ -3463,9 +3503,9 @@ namespace feng
             (*this).clear();
         }
 
-        matrix( size_type const row, size_type const col, std::initializer_list<value_type> const& value_list ) noexcept : matrix{}
+        matrix( std::integral auto row, std::integral auto col, std::initializer_list<value_type> const& value_list ) noexcept : matrix{}
         {
-            (*this).resize( row, col );
+            (*this).resize( static_cast<unsigned long>(row), static_cast<unsigned long>(col) );
             size_type elements_to_copy = std::min( (*this).size(), value_list.size() );
             std::copy( value_list.begin(), value_list.begin()+elements_to_copy, (*this).begin() );
         }
@@ -3491,7 +3531,7 @@ namespace feng
             }
         }
 
-        template < typename T, typename A >
+        template < typename T, Allocator A >
         matrix( matrix< T, A> const& other ) noexcept : row_{ other.row_ }, col_{ other.col_ }, dat_{ nullptr }, allocator_{ other.allocator_ }
         {
             if ( row_*col_ != 0 )
@@ -3519,7 +3559,7 @@ namespace feng
             }
         }
 
-        template< typename T, typename A >
+        template< typename T, Allocator A >
         matrix( matrix<T,A> const& other, std::initializer_list<size_type> rr, std::initializer_list<size_type> rc ) noexcept : row_{0}, col_{0}, dat_{nullptr}, allocator_{ other.get_allocator() }
         {
             better_assert( rr.size() == 2 && "row dims not match!" );
@@ -3538,12 +3578,12 @@ namespace feng
             (*this).clone( other, rr0, rr1, rc0, rc1 );
         }
 
-        template < typename T, typename A >
+        template < typename T, Allocator A >
         matrix( const matrix< T, A >& other, const range_type& rr, const range_type& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} } {}
 
         matrix( matrix const& other, range_type const& rr, range_type const& rc ) noexcept : matrix{ other, {rr.first, rr.second}, {rc.first, rc.second} } {}
 
-        template < typename T, typename A >
+        template < typename T, Allocator A >
         matrix( const matrix< T, A >& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} } {}
 
         matrix( self_type const& other, size_type r0, size_type r1, size_type c0, size_type c1 ) noexcept : matrix{ other, {r0, r1}, {c0, c1} } {}
@@ -3554,7 +3594,7 @@ namespace feng
             return *this;
         }
 
-        template < typename T, typename A >
+        template < typename T, Allocator A >
         self_type& operator = ( const matrix< T, A >& rhs ) noexcept
         {
             ( *this ).copy( rhs );
@@ -3567,12 +3607,12 @@ namespace feng
             return *this;
         }
 
-        matrix( matrix_view<Type, Allocator> const& view ) noexcept;
+        matrix( matrix_view<Type, Alloc> const& view ) noexcept;
 
         template< typename T >
         auto const astype() const noexcept
         {
-            matrix<T, typename std::allocator_traits<Allocator>:: template rebind_alloc<T> > ans{ (*this).get_allocator(), (*this).row(), (*this).col() };
+            matrix<T, typename std::allocator_traits<Alloc>:: template rebind_alloc<T> > ans{ (*this).get_allocator(), (*this).row(), (*this).col() };
             std::copy( (*this).begin(), (*this).end(), ans.begin() ); //TODO: should move to crtp_xxx
             return ans;
         }
@@ -3584,7 +3624,7 @@ namespace feng
 
         namespace map_impl_private
         {
-            template< typename T, typename A >
+            template< typename T, Allocator A >
             auto map_impl( matrix<T, A> const& mat ) noexcept
             {
                 return [&]( auto const& func ) noexcept
@@ -3597,7 +3637,7 @@ namespace feng
                 };
             }
 
-            template< typename T, typename A, typename T2, typename A2 >
+            template< typename T, Allocator A, typename T2, Allocator A2 >
             auto map_impl( matrix<T, A> const& mat, matrix<T2, A2> const& nat ) noexcept
             {
                 return [&]( auto const& func ) noexcept
@@ -3610,7 +3650,7 @@ namespace feng
                 };
             }
 
-            template< typename T, typename A, typename T2, typename A2, typename T3, typename A3 >
+            template< typename T, Allocator A, typename T2, Allocator A2, typename T3, Allocator A3 >
             auto map_impl( matrix<T, A> const& mat, matrix<T2, A2> const& nat, matrix<T3, A3> const& lat ) noexcept
             {
                 return [&]( auto const& func ) noexcept
@@ -3623,7 +3663,7 @@ namespace feng
                 };
             }
 
-            template< typename T, typename A, typename T2 >
+            template< typename T, Allocator A, typename T2 >
             auto map_impl( matrix<T, A> const& mat, T2 const& v ) noexcept
             {
                 return [&]( auto const& func ) noexcept
@@ -3636,7 +3676,7 @@ namespace feng
                 };
             }
 
-            template< typename T, typename A, typename T2 >
+            template< typename T, Allocator A, typename T2 >
             auto map_impl( T2 const& u, matrix<T, A> const& mat ) noexcept
             {
                 return [&]( auto const& func ) noexcept
@@ -3661,7 +3701,7 @@ namespace feng
 
         namespace reduce_impl_private
         {
-            template< typename T, typename A >
+            template< typename T, Allocator A >
             auto reduce_impl( matrix<T, A> const& mat ) noexcept
             {
                 return [&]( auto const& func, auto const& init ) noexcept
@@ -3705,8 +3745,8 @@ namespace feng
 
     }
 
-    template < typename Type, class Allocator >
-    matrix_view<Type, Allocator>::matrix_view( matrix<Type, Allocator> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
+    template < typename Type, class Alloc >
+    matrix_view<Type, Alloc>::matrix_view( matrix<Type, Alloc> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
     {
         row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
         col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
@@ -3714,27 +3754,27 @@ namespace feng
         col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
     }
 
-        //matrix<Type, Allocator> const&                  matrix_;
+        //matrix<Type, Alloc> const&                  matrix_;
         //std::pair<size_type, size_type>                 row_dim_;
         //std::pair<size_type, size_type>                 col_dim_;
-    template < typename Type, class Allocator >
-    matrix<Type, Allocator>::matrix( matrix_view<Type, Allocator> const& view ) noexcept
+    template < typename Type, class Alloc >
+    matrix<Type, Alloc>::matrix( matrix_view<Type, Alloc> const& view ) noexcept
     {
         (*this).resize( view.row_dim_.second-view.row_dim_.first, view.col_dim_.second-view.col_dim_.first );
         for ( auto const row : matrix_details::range((*this).row() ) )//copy row by row
                 std::copy( view.matrix_.row_begin(row+view.row_dim_.first), view.matrix_.row_end(row+view.row_dim_.second), (*this).row_begin(row) );
     }
 
-    template< typename Type, typename Allocator, typename Integer_Type >
-    matrix_view<Type, Allocator> const
-    make_view( matrix<Type, Allocator> const& matrix_, std::initializer_list<Integer_Type> row_dim, std::initializer_list<Integer_Type> col_dim ) noexcept
+    template< typename Type, Allocator Alloc, typename Integer_Type >
+    matrix_view<Type, Alloc> const
+    make_view( matrix<Type, Alloc> const& matrix_, std::initializer_list<Integer_Type> row_dim, std::initializer_list<Integer_Type> col_dim ) noexcept
     {
-        typedef crtp_typedef< Type, Allocator >         type_proxy_type;
+        typedef crtp_typedef< Type, Alloc >         type_proxy_type;
         typedef typename type_proxy_type::size_type     size_type;
 
         better_assert( row_dim.size() == 2 && "Error: row parameters for a matrix view should be 2!" );
         better_assert( col_dim.size() == 2 && "Error: col parameters for a matrix view should be 2!" );
-        return matrix_view<Type, Allocator>
+        return matrix_view<Type, Alloc>
         {
             matrix_,
             std::make_pair( static_cast<size_type>(*(row_dim.begin())), static_cast<size_type>(*(row_dim.begin()+1)) ),
@@ -3742,7 +3782,7 @@ namespace feng
         };
     }
 
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator+( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3751,7 +3791,7 @@ namespace feng
         return ans;
     }
 
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator-( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3759,7 +3799,7 @@ namespace feng
         ans -= rhs;
         return ans;
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator*( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3767,7 +3807,7 @@ namespace feng
         ans *= rhs;
         return ans;
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator/( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3775,36 +3815,36 @@ namespace feng
         ans /= rhs;
         return ans;
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     bool operator<( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
         better_assert( lhs.row() == rhs.row() );
         better_assert( lhs.col() == rhs.col() );
         return std::lexicographical_compare( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     bool operator==( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
         better_assert( lhs.row() == rhs.row() );
         better_assert( lhs.col() == rhs.col() );
         return std::equal( lhs.begin(), lhs.end(), rhs.begin() );
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     bool operator>( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
         return !( ( lhs < rhs ) || ( lhs == rhs ) );
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     bool operator>=( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
         return !( lhs < rhs );
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     bool operator<=( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
         return !( lhs > rhs );
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator||( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3829,7 +3869,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     const matrix< T1, A1 >
     operator&&( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
     {
@@ -3854,7 +3894,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const T_* const rhs )
     {
@@ -3865,7 +3905,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const T_* lhs, const matrix< T, A >& rhs )
     {
@@ -3876,7 +3916,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const std::valarray< T_ >& rhs )
     {
@@ -3888,7 +3928,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const std::valarray< T_ >& lhs, const matrix< T, A >& rhs )
     {
@@ -3900,7 +3940,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const std::vector< T_ >& rhs )
     {
@@ -3912,7 +3952,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A, typename T_ >
+    template < typename T, Allocator A, typename T_ >
     const matrix< T, A >
     operator*( const std::vector< T_ >& lhs, const matrix< T, A >& rhs )
     {
@@ -3929,55 +3969,55 @@ namespace feng
     // zeros: creating matrix of all zeros.
     //
     template< typename T = double >
-    auto const zeros( std::uint_least64_t r, std::uint_least64_t c )
+    auto const zeros( std::integral auto r, std::integral auto c )
     {
-        return matrix<T>{ r, c };
+        return matrix<T>{ static_cast<unsigned long>(r), static_cast<unsigned long>(c) };
     }
 
-    template< typename T, typename A >
-    auto const zeros( A const& alloc, std::uint_least64_t r, std::uint_least64_t c )
+    template< typename T, Allocator A >
+    auto const zeros( A const& alloc, std::integral auto r, std::integral auto c )
     {
-        return matrix<T, A>{ alloc, r, c };
+        return matrix<T, A>{ alloc, static_cast<unsigned long>(r), static_cast<unsigned long>(c) };
     }
 
     template< typename T = double >
-    auto const zeros( std::uint_least64_t n )
+    auto const zeros( std::integral auto n )
     {
         return zeros( n, n );
     }
 
-    template < typename T1, typename A1, typename T2, typename A2 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2 >
     matrix< T1, A1 > const blkdiag( const matrix< T1, A1 >& m1, const matrix< T2, A2 >& m2 )
     {
         return ( m1 || zeros( m1, m1.row(), m2.col() ) ) && ( zeros( m1, m2.row(), m1.col() ) || m2 );
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename... Matrices >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename... Matrices >
     matrix< T1, A1 > const blkdiag( const matrix< T1, A1 >& m1, const matrix< T2, A2 >& m2, const Matrices& ... matrices )
     {
         return blkdiag( blkdiag( m1, m2 ), matrices... );
     }
-    template < typename T, typename A, typename... Matrices >
+    template < typename T, Allocator A, typename... Matrices >
     matrix< T, A > const blk_diag( const matrix< T, A >& m, const Matrices& ... matrices )
     {
         return blkdiag( m, matrices... );
     }
-    template < typename T, typename A, typename... Matrices >
+    template < typename T, Allocator A, typename... Matrices >
     matrix< T, A > const block_diag( const matrix< T, A >& m, const Matrices& ... matrices )
     {
         return blkdiag( m, matrices... );
     }
 
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< std::complex< T >, A> const ctranspose( const matrix< std::complex< T >, A>& m )
     {
         return conj( m.transpose() );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     T const det( const matrix< T, A >& m )
     {
         return m.det();
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const diag( const matrix< T, A >& m, const std::ptrdiff_t offset = 0 )
     {
         const std::uint_least64_t dim = std::min( m.row(), m.col() ) + ( offset > 0 ? offset : -offset );
@@ -3997,22 +4037,22 @@ namespace feng
             return ans;
         }
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T > const diag( const std::vector< T, A >& v, const std::ptrdiff_t offset = 0 )
     {
         return diag_private::impl_diag( v.begin(), v.end(), offset );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T > const diag( const std::deque< T, A >& v, const std::ptrdiff_t offset = 0 )
     {
         return diag_private::impl_diag( v.begin(), v.end(), offset );
     }
-    template < typename T, typename C, typename A >
+    template < typename T, typename C, Allocator A>
     matrix< T > const diag( const std::set< T, C, A >& v, const std::ptrdiff_t offset = 0 )
     {
         return diag_private::impl_diag( v.begin(), v.end(), offset );
     }
-    template < typename T, typename C, typename A >
+    template < typename T, typename C, Allocator A>
     matrix< T > const diag( const std::multiset< T, C, A >& v, const std::ptrdiff_t offset = 0 )
     {
         return diag_private::impl_diag( v.begin(), v.end(), offset );
@@ -4031,13 +4071,13 @@ namespace feng
                 : pos( pos_ )
             {
             }
-            template < typename T, typename A, typename Arg, typename... Args >
+            template < typename T, Allocator A, typename Arg, typename... Args >
             void operator()( matrix< T, A >& m, const Arg& arg, const Args& ... args ) const
             {
                 m[pos][pos] = arg;
                 impl_make_diag( pos + 1 )( m, args... );
             }
-            template < typename T, typename A, typename Arg >
+            template < typename T, Allocator A, typename Arg >
             void operator()( matrix< T, A >& m, const Arg& arg ) const
             {
                 *( m.diag_rbegin() ) = arg;
@@ -4052,12 +4092,12 @@ namespace feng
         make_diag_private::impl_make_diag()( ans, v1, vn... );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     void display( const matrix< T, A >& m )
     {
         std::cout << m << std::endl;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     void disp( const matrix< T, A >& m )
     {
         display( m );
@@ -4106,7 +4146,7 @@ namespace feng
     {
         return eye< T, A >( m.row(), m.col() );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const flipdim( const matrix< T, A >& m, const std::uint_least64_t dim )
     {
         matrix< T, A > ans{ m };
@@ -4144,12 +4184,12 @@ namespace feng
         better_assert( !"the second argument of flipdim should be '1' or '2'" );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const fliplr( const matrix< T, A >& m )
     {
         return flipdim( m, 1 );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const flipud( const matrix< T, A >& m )
     {
         return flipdim( m, 2 );
@@ -4205,37 +4245,37 @@ namespace feng
     {
         return m.inverse();
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_column( const matrix< T, A >& m )
     {
         return m.col() == 1;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_column_matrix( const matrix< T, A >& m )
     {
         return is_column( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool iscolumn( const matrix< T, A >& m )
     {
         return is_column( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_empty( const matrix< T, A >& m )
     {
         return m.size() == 0;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_empty_matrix( const matrix< T, A >& m )
     {
         return is_empty( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool isempty( const matrix< T, A >& m )
     {
         return is_empty( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_equal( const matrix< T, A >& m1, const matrix< T, A > m2 )
     {
         return m1 == m2;
@@ -4245,7 +4285,7 @@ namespace feng
     {
         return is_equal( m1, m2 ) && is_equal( m2, mn... );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool isequal( const matrix< T, A >& m1, const matrix< T, A > m2 )
     {
         return is_equal( m1, m2 );
@@ -4255,7 +4295,7 @@ namespace feng
     {
         return is_equal( m1, m2 ) && is_equal( m2, mn... );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< bool > is_inf( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
@@ -4265,12 +4305,12 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< bool > isinf( const matrix< T, A >& m )
     {
         return is_inf( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< bool > is_nan( const matrix< T, A >& m )
     {
         matrix< bool > ans( m.row(), m.col() );
@@ -4280,12 +4320,12 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< bool > isnan( const matrix< T, A >& m )
     {
         return is_nan( m );
     }
-    template < typename T, typename A, typename F >
+    template < typename T, Allocator A, typename F >
     bool is_orthogonal( const matrix< T, A >& m, F f )
     {
         if ( m.row() != m.col() )
@@ -4298,7 +4338,7 @@ namespace feng
         } );
         return std::all_of( mm.begin(), mm.end(), f );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_orthogonal( const matrix< T, A >& m )
     {
         return is_orthogonal( m, []( const T v )
@@ -4306,7 +4346,7 @@ namespace feng
             return v == T( 0 );
         } );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_positive_definite( const matrix< T, A >& m )
     {
         typedef matrix< T, A > matrix_type;
@@ -4325,22 +4365,22 @@ namespace feng
 
         return true;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_row( const matrix< T, A >& m )
     {
         return m.row() == 1;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_row_matrix( const matrix< T, A >& m )
     {
         return is_row( m );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool isrow( const matrix< T, A >& m )
     {
         return is_row( m );
     }
-    template < typename T, typename A, typename F >
+    template < typename T, Allocator A, typename F >
     bool is_symmetric( const matrix< T, A >& m, F f )
     {
         if ( m.row() != m.col() )
@@ -4352,7 +4392,7 @@ namespace feng
 
         return true;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     bool is_symmetric( const matrix< T, A >& m )
     {
         return is_symmetric( m, []( const T v1, const T v2 )
@@ -4442,14 +4482,14 @@ namespace feng
         std::swap_ranges( ans.upper_anti_diag_begin( n >> 1 ), ans.upper_anti_diag_end( n >> 1 ), ans.lower_anti_diag_rbegin( n >> 1 ) );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     T const
     max( const matrix< T, A >& m )
     {
         better_assert( m.size() );
         return *std::max_element( m.begin(), m.end() );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     T const
     min( const matrix< T, A >& m )
     {
@@ -4491,40 +4531,40 @@ namespace feng
         }
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const ones_like( matrix<T, A> const& mat ) noexcept
     {
         return matrix<T, A>{ mat.get_allocator(), mat.row(), mat.col(), T{1} };
     }
     template < typename T >
-    auto const ones( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
+    matrix<T, std::allocator<T>> const ones( std::integral auto r, std::integral auto c ) noexcept
     {
-        matrix< T > ans{ r, c, T{ 1 } };
+        matrix< T > ans{ static_cast<unsigned long>(r), static_cast<unsigned long>(c), T{ 1 } };
         return ans;
     }
     template < typename T >
-    auto const ones( const std::uint_least64_t n ) noexcept
+    matrix<T, std::allocator<T>> const ones( std::integral auto n ) noexcept
     {
         return ones< T >( n, n );
     }
-    template < typename T, typename A >
-    matrix< T, A > const ones( A const& alloc, std::uint_least64_t r, std::uint_least64_t c ) noexcept
+    template < typename T, Allocator A>
+    matrix< T, A > const ones( A const& alloc, std::integral auto r, std::integral auto c ) noexcept
     {
-        return { alloc, r , c, T{1} };
+        return { alloc, static_cast<unsigned long>(r) , static_cast<unsigned long>(c), T{1} };
     }
-    template < typename T, typename A >
-    matrix< T, A > const ones( A const& alloc, std::uint_least64_t n ) noexcept
+    template < typename T, Allocator A>
+    matrix< T, A > const ones( A const& alloc, std::integral auto n ) noexcept
     {
-        return { alloc, n , n, T{1} };
+        return { alloc, static_cast<unsigned long>(n) , static_cast<unsigned long>(n), T{1} };
     }
 
     template < typename T >
-    auto const empty( const std::uint_least64_t r, const std::uint_least64_t c ) noexcept
+    auto const empty( const std::integral auto r, const std::integral auto c ) noexcept
     {
-        return matrix< T >{ r, c };
+        return matrix< T >{ static_cast<unsigned long>(r), static_cast<unsigned long>(c) };
     }
-    template < typename T, typename A >
-    matrix< T, A > const empty( A const& alloc, std::uint_least64_t r, std::uint_least64_t c ) noexcept
+    template < typename T, Allocator A>
+    matrix< T, A > const empty( A const& alloc, std::integral auto r, std::integral auto c ) noexcept
     {
         return { alloc, r , c };
     }
@@ -4807,7 +4847,7 @@ namespace feng
         return 0;
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     std::optional< std::tuple<matrix<T, A>, matrix<T, A>, matrix<T, A>> >
     singular_value_decomposition( matrix<T,A> const& a ) noexcept
     {
@@ -4819,13 +4859,13 @@ namespace feng
             return std::forward_as_tuple( u, w, v );
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     auto svd( matrix<T,A> const& a ) noexcept
     {
         return singular_value_decomposition( a );
     }
 
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix<T,A> const svd_inverse( matrix<T, A> const& a )
     {
         matrix<T, A> u;
@@ -4872,32 +4912,32 @@ namespace feng
     }
 
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::uint_least64_t r, const std::uint_least64_t c )
+    matrix< T, A > const random( std::integral auto r, std::integral auto c )
     {
         return rand< T, A >( r, c );
     }
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::uint_least64_t n )
+    matrix< T, A > const random( const std::integral auto n )
     {
         return rand< T, A >( n );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const rand_like( matrix<T, A> const& mat ) noexcept
     {
         auto const[row, col] = mat.shape();
         return random<T, A>( row, col );
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const random_like( matrix<T, A> const& mat ) noexcept
     {
         return rand_like<T,A>(mat);
     }
-    template < typename T, typename A > //pytorch style
+    template < typename T, Allocator A> //pytorch style
     matrix< T, A > const randn_like( matrix<T, A> const& mat ) noexcept
     {
         return rand_like<T,A>(mat);
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     repmat( const matrix< T, A >& m, const std::uint_least64_t r, const std::uint_least64_t c )
     {
@@ -4949,7 +4989,7 @@ namespace feng
     {
         return m.transpose();
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const tril( const matrix< T, A >& m )
     {
         matrix< T, A > ans{ m.row(), m.col() };
@@ -4959,7 +4999,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     matrix< T, A > const triu( const matrix< T, A >& m )
     {
         matrix< T, A > ans{ m.row(), m.col() };
@@ -4969,7 +5009,7 @@ namespace feng
 
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator+( const matrix< std::complex< T >, A>& lhs, const T& rhs )
     {
@@ -4980,13 +5020,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator+( const T& lhs, const matrix< std::complex< T >, A>& rhs )
     {
         return rhs + lhs;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator-( const matrix< std::complex< T >, A>& lhs, const T& rhs )
     {
@@ -4997,7 +5037,7 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator-( const T& lhs, const matrix< std::complex< T >, A>& rhs )
     {
@@ -5008,7 +5048,7 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator*( const matrix< std::complex< T >, A>& lhs, const T& rhs )
     {
@@ -5019,13 +5059,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator*( const T& lhs, const matrix< std::complex< T >, A>& rhs )
     {
         return rhs * lhs;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator/( const matrix< std::complex< T >, A>& lhs, const T& rhs )
     {
@@ -5036,13 +5076,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< std::complex< T >, A>
     operator/( const T& lhs, const matrix< std::complex< T >, A>& rhs )
     {
         return lhs * rhs.inverse();
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator+( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5053,13 +5093,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator+( const T& lhs, const matrix< T, A >& rhs )
     {
         return rhs + lhs;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator-( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5070,7 +5110,7 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator-( const T& lhs, const matrix< T, A >& rhs )
     {
@@ -5081,7 +5121,7 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator*( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5092,13 +5132,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator*( const T& lhs, const matrix< T, A >& rhs )
     {
         return rhs * lhs;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator/( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5109,13 +5149,13 @@ namespace feng
         } );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator/( const T& lhs, const matrix< T, A >& rhs )
     {
         return lhs * rhs.inverse();
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator||( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5127,7 +5167,7 @@ namespace feng
         std::fill( ans.col_begin( lhs.col() ), ans.col_end( lhs.col() ), rhs );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator||( const T& lhs, const matrix< T, A >& rhs )
     {
@@ -5139,7 +5179,7 @@ namespace feng
         std::fill( ans.col_begin( 0 ), ans.col_end( 0 ), rhs );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator&&( const matrix< T, A >& lhs, const T& rhs )
     {
@@ -5151,7 +5191,7 @@ namespace feng
         std::fill( ans.row_begin( lhs.row() ), ans.row_end( lhs.row() ), rhs );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator&&( const T& lhs, const matrix< T, A >& rhs )
     {
@@ -5163,7 +5203,7 @@ namespace feng
         std::fill( ans.row_begin( 0 ), ans.row_end( 0 ), rhs );
         return ans;
     }
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     const matrix< T, A >
     operator^( const matrix< T, A >& lhs, std::uint_least64_t n )
     {
@@ -5182,7 +5222,7 @@ namespace feng
         auto const& lhs_2 = lhs ^ ( n >> 1 );
         return lhs_2 * lhs_2;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int backward_substitution( const matrix< T1, A1 >& A,
                                matrix< T2, A2 >& x,
                                const matrix< T3, A3 >& b )
@@ -5209,7 +5249,7 @@ namespace feng
 
         return 0;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int biconjugate_gradient_stabilized_method( const matrix< T1, A1 >& A,
             matrix< T2, A2 >& x,
             const matrix< T3, A3 >& b,
@@ -5276,7 +5316,7 @@ namespace feng
 
         return 0;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int bicgstab( const matrix< T1, A1 >& A,
                   matrix< T2, A2 >& x,
                   const matrix< T3, A3 >& b,
@@ -5303,7 +5343,7 @@ namespace feng
         for ( std::uint_least64_t i = 1; i < n; ++i )
             std::fill( a.upper_diag_begin( i ), a.upper_diag_end( i ), value_type() );
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int conjugate_gradient_squared( const matrix< T1, A1 >& A,
                                     matrix< T2, A2 >& x,
                                     const matrix< T3, A3 >& b,
@@ -5369,7 +5409,7 @@ namespace feng
 
         return 0;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int cgs( const matrix< T1, A1 >& A,
              matrix< T2, A2 >& x,
              const matrix< T3, A3 >& b,
@@ -5640,7 +5680,7 @@ namespace feng
         Lambda = T( 0 );
         return eigen_hermitian_impl( A, V, Lambda.diag_begin(), eps );
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename Otor, typename T = double >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename Otor, typename T = double >
     void eigen_hermitian_impl( const matrix< std::complex< T1 >, A1 >& A, matrix< std::complex< T2 >, A2 >& V, Otor o, const T eps = T( 1.0e-20 ) )
     {
         better_assert( A.row() == A.col() );
@@ -5974,7 +6014,7 @@ namespace feng
 
         return X;
     }
-    template < typename T1, typename A1, typename T2, typename A2, typename T3, typename A3 >
+    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int forward_substitution( const matrix< T1, A1 >& A, matrix< T2, A2 >& x, const matrix< T3, A3 >& b )
     {
         typedef matrix< T1, A1 > matrix_type;
@@ -5999,7 +6039,7 @@ namespace feng
         return 0;
     }
 
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     std::optional<matrix<T,A>> gauss_jordan_elimination( matrix< T, A > const& m ) noexcept
     {
         auto const& [row, col] = m.shape();
@@ -6033,7 +6073,7 @@ namespace feng
     }
 
     // matlab alias
-    template < typename T, typename A >
+    template < typename T, Allocator A>
     std::optional<matrix<T,A>> rref( matrix< T, A > const& m ) noexcept
     {
         return gauss_jordan_elimination( m );
@@ -6105,8 +6145,8 @@ namespace feng
         return X;
     }
 
-    template < typename Type, typename Allocator>
-    int lu_decomposition( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& L, matrix< Type, Allocator >& U )
+    template < typename Type, Allocator Alloc>
+    int lu_decomposition( const matrix< Type, Alloc >& A, matrix< Type, Alloc >& L, matrix< Type, Alloc >& U )
     {
         typedef Type value_type;
         better_assert( A.row() == A.col() && "Square Matrix Requred!" );
@@ -6138,19 +6178,19 @@ namespace feng
         return 0;
     }
 
-    template < typename Type, typename Allocator>
-    std::optional<std::tuple<matrix<Type, Allocator>, matrix<Type, Allocator>>> lu_decomposition( const matrix< Type, Allocator >& A )
+    template < typename Type, Allocator Alloc>
+    std::optional<std::tuple<matrix<Type, Alloc>, matrix<Type, Alloc>>> lu_decomposition( const matrix< Type, Alloc >& A )
     {
-        if ( matrix<Type, Allocator> L, U; lu_decomposition( A, L, U ) == 1 )
+        if ( matrix<Type, Alloc> L, U; lu_decomposition( A, L, U ) == 1 )
             return {};
         else
             return std::make_tuple( L, U );
     }
 
-    template < typename Type, typename Allocator >
-    int lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator >& x, const matrix< Type, Allocator >& b )
+    template < typename Type, Allocator Alloc >
+    int lu_solver( const matrix< Type, Alloc >& A, matrix< Type, Alloc >& x, const matrix< Type, Alloc >& b )
     {
-        typedef matrix< Type, Allocator > matrix_type;
+        typedef matrix< Type, Alloc > matrix_type;
         better_assert( A.row() == A.col() );
         better_assert( A.row() == b.row() );
         better_assert( b.col() == 1 );
@@ -6170,31 +6210,31 @@ namespace feng
         return 0;
     }
 
-    template < typename Type, typename Allocator >
-    std::optional<matrix<Type, Allocator>> lu_solver( const matrix< Type, Allocator >& A, matrix< Type, Allocator > const& b )
+    template < typename Type, Allocator Alloc >
+    std::optional<matrix<Type, Alloc>> lu_solver( const matrix< Type, Alloc >& A, matrix< Type, Alloc > const& b )
     {
-        if ( matrix<Type, Allocator> x; lu_solver(A, x, b) == 1 )
+        if ( matrix<Type, Alloc> x; lu_solver(A, x, b) == 1 )
             return {};
         else
             return x;
     }
 
-    template< typename Type, typename Allocator >
-    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B ) noexcept
+    template< typename Type, Allocator Alloc >
+    matrix<Type, Alloc> const conv( matrix<Type, Alloc> const& A, matrix<Type, Alloc> const& B ) noexcept
     {
         if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
-            return matrix<Type, Allocator>{0, 0};
+            return matrix<Type, Alloc>{0, 0};
 
         if ( A.size() > B.size() )
             return conv( B, A );
 
-        matrix<Type, Allocator> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
+        matrix<Type, Alloc> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
         for ( auto row : matrix_details::range(B.row()) )
             std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1) );
 
-        matrix<Type, Allocator> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
+        matrix<Type, Alloc> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
-        auto const& product = []( matrix<Type, Allocator> const& a, matrix_view<Type, Allocator> const& b, auto row, auto const col ) noexcept
+        auto const& product = []( matrix<Type, Alloc> const& a, matrix_view<Type, Alloc> const& b, auto row, auto const col ) noexcept
         {
             Type ans{0};
             for ( auto r : matrix_details::range(row) )
@@ -6217,8 +6257,8 @@ namespace feng
         return ans;
     }
 
-    template< typename Type, typename Allocator >
-    matrix<Type, Allocator> const conv( matrix<Type, Allocator> const& A, matrix<Type, Allocator> const& B, std::string const& mode ) noexcept
+    template< typename Type, Allocator Alloc >
+    matrix<Type, Alloc> const conv( matrix<Type, Alloc> const& A, matrix<Type, Alloc> const& B, std::string const& mode ) noexcept
     {
         auto const& default_conv = conv( A, B );
 
@@ -6299,7 +6339,7 @@ namespace feng
         return {ans};
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim_r, std::uint_least64_t dim_c, std::string const& pooling_action = "mean" )
     {
         if (dim_r == 0 || dim_c == 0) return matrix<T,A>{};
@@ -6370,13 +6410,13 @@ namespace feng
         return ans;
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim, std::string const& pooling_action = "mean"  )
     {
         return pooling( mat, dim, dim, pooling_action );
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     void save_as_bmp( std::string const& file_name, matrix<T,A> const& red_channel, matrix<T,A> const& green_channel, matrix<T,A> const& blue_channel )
     {
         better_assert( red_channel.row()==green_channel.row(), "Row not match for red and green matrix! The row for red is ", red_channel.row(), " but for green is ", green_channel.row() );
@@ -6415,7 +6455,7 @@ namespace feng
         stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
     }
 
-    template< typename T, typename A >
+    template< typename T, Allocator A>
     void save_as_bmp( std::string const& file_name, matrix<T,A> const& mat, std::string const& colormap = std::string{"parula"} )
     {
         mat.save_as_bmp( file_name, colormap );
