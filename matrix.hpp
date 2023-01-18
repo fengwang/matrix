@@ -92,7 +92,7 @@ namespace feng
     #define better_assert(EXPRESSION, ... ) ((EXPRESSION) ? (void)0 : matrix_private::print_assertion(std::cerr, "[Assertion Failure]: '", #EXPRESSION, "' in File: ", __FILE__, " in Line: ",  __LINE__ __VA_OPT__(,) __VA_ARGS__))
 
     //
-    // begin of concept of allocators
+    // begin of concept allocators
     //
     template< typename T, typename=void >
     struct has_value_type : std::false_type{};
@@ -125,7 +125,7 @@ namespace feng
     concept Allocator = has_value_type_v<T> && has_allocate_v<T> && has_deallocate_v<T>;
 
     //
-    // begin of concept of allocators
+    // end of concept allocators
     //
 
 
