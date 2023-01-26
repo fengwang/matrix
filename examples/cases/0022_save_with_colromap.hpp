@@ -21,6 +21,9 @@ void _0000_save_with_colormap()
     m.save_as_bmp( "./images/0000_save_with_colormap_bone.bmp", "bone" );
     m.save_as_bmp( "./images/0000_save_with_colormap_copper.bmp", "copper" );
     m.save_as_bmp( "./images/0000_save_with_colormap_lines.bmp", "lines" );
+
+    m.save_as_png( "./images/0000_save_with_colormap_default.png" );
+    m.save_as_png( "./images/0000_save_with_colormap_parula.png", "parula" );
 }
 
 void _0001_save_with_colormap()

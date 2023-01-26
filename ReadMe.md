@@ -24,6 +24,7 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
      - [inverse](#matrix-inverse)
      - [save matrix to images with colormap](#save-matrix-to-images-with-colormap)
      - [save/load bmp](#save-load-bmp)
+     - [save png](#save-png)
      - [save/load](#save-load)
      - [load npy](#load-npy)
      - [plot](#plot)
@@ -1052,6 +1053,7 @@ feng::matrix<double> mat;
 mat.load_npy( "./images/64.npy");
 ```
 
+
 #### save load bmp
 
 To load an image from a bmp file, we can use `feng::load_bmp` function, which will return an oject of type `std::optional<std::array<feng::matrix<std::uint8_t>,3>>`:
@@ -1113,6 +1115,15 @@ and blue channel:
 
 ![blue channel](./images/0001_save_load_julia_blue.bmp)
 
+#### save png
+It is possible to save matrix as a png file the same way as bmp
+
+```cpp
+m.save_as_png( "./images/0000_save_with_colormap_default.png" );
+m.save_as_png( "./images/0000_save_with_colormap_parula.png", "parula" );
+```
+
+![png](./images/0000_save_with_colormap_parula.png)
 
 
 #### operator minus equal

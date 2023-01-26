@@ -10,6 +10,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <deque>
 #include <filesystem>
@@ -3115,7 +3116,305 @@ namespace feng
             zen_type const& zen = static_cast< zen_type const& >( *this );
             return zen.save_as_bmp( file_name, color_map );
         }
-    };
+    };//struct crtp_plot
+
+    namespace
+    {
+        // adapted from https://github.com/miloyip/svpng/blob/master/svpng.inc
+        inline static void save_png( std::uint8_t* img,  unsigned w, unsigned h, int alpha, char const* const file_name ) noexcept
+        {
+            constexpr unsigned t[] = { 0, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c, 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c };
+            unsigned a = 1, b = 0, c, p = w * ( alpha ? 4 : 3 ) + 1, x, y, i;
+            FILE* fp = fopen( file_name, "wb" );
+
+            for ( i = 0; i < 8; i++ )
+                fputc( ( "\x89PNG\r\n\32\n" )[i], fp );;
+
+            {
+                {
+                    fputc( ( 13 ) >> 24, fp );
+                    fputc( ( ( 13 ) >> 16 ) & 255, fp );
+                    fputc( ( ( 13 ) >> 8 ) & 255, fp );
+                    fputc( ( 13 ) & 255, fp );
+                }
+                c = ~0U;
+
+                for ( i = 0; i < 4; i++ )
+                {
+                    fputc( ( "IHDR" )[i], fp );
+                    c ^= ( ( "IHDR" )[i] );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+            {
+                {
+                    fputc( ( w ) >> 24, fp );
+                    c ^= ( ( w ) >> 24 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( w ) >> 16 ) & 255, fp );
+                    c ^= ( ( ( w ) >> 16 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( w ) >> 8 ) & 255, fp );
+                    c ^= ( ( ( w ) >> 8 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( w ) & 255, fp );
+                    c ^= ( ( w ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+            {
+                {
+                    fputc( ( h ) >> 24, fp );
+                    c ^= ( ( h ) >> 24 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( h ) >> 16 ) & 255, fp );
+                    c ^= ( ( ( h ) >> 16 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( h ) >> 8 ) & 255, fp );
+                    c ^= ( ( ( h ) >> 8 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( h ) & 255, fp );
+                    c ^= ( ( h ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+            {
+                fputc( 8, fp );
+                c ^= ( 8 );
+                c = ( c >> 4 ) ^ t[c & 15];
+                c = ( c >> 4 ) ^ t[c & 15];
+            }
+            {
+                fputc( alpha ? 6 : 2, fp );
+                c ^= ( alpha ? 6 : 2 );
+                c = ( c >> 4 ) ^ t[c & 15];
+                c = ( c >> 4 ) ^ t[c & 15];
+            }
+
+            for ( i = 0; i < 3; i++ )
+            {
+                fputc( ( "\0\0\0" )[i], fp );
+                c ^= ( ( "\0\0\0" )[i] );
+                c = ( c >> 4 ) ^ t[c & 15];
+                c = ( c >> 4 ) ^ t[c & 15];
+            }
+
+            {
+                fputc( ( ~c ) >> 24, fp );
+                fputc( ( ( ~c ) >> 16 ) & 255, fp );
+                fputc( ( ( ~c ) >> 8 ) & 255, fp );
+                fputc( ( ~c ) & 255, fp );
+            }
+
+            {
+                {
+                    fputc( ( 2 + h * ( 5 + p ) + 4 ) >> 24, fp );
+                    fputc( ( ( 2 + h * ( 5 + p ) + 4 ) >> 16 ) & 255, fp );
+                    fputc( ( ( 2 + h * ( 5 + p ) + 4 ) >> 8 ) & 255, fp );
+                    fputc( ( 2 + h * ( 5 + p ) + 4 ) & 255, fp );
+                }
+                c = ~0U;
+
+                for ( i = 0; i < 4; i++ )
+                {
+                    fputc( ( "IDAT" )[i], fp );
+                    c ^= ( ( "IDAT" )[i] );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+
+            for ( i = 0; i < 2; i++ )
+            {
+                fputc( ( "\x78\1" )[i], fp );
+                c ^= ( ( "\x78\1" )[i] );
+                c = ( c >> 4 ) ^ t[c & 15];
+                c = ( c >> 4 ) ^ t[c & 15];
+            }
+
+            for ( y = 0; y < h; y++ )
+            {
+                {
+                    fputc( y == h - 1, fp );
+                    c ^= ( y == h - 1 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    {
+                        fputc( ( p ) & 255, fp );
+                        c ^= ( ( p ) & 255 );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                    {
+                        fputc( ( ( p ) >> 8 ) & 255, fp );
+                        c ^= ( ( ( p ) >> 8 ) & 255 );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                }
+                {
+                    {
+                        fputc( ( ~p ) & 255, fp );
+                        c ^= ( ( ~p ) & 255 );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                    {
+                        fputc( ( ( ~p ) >> 8 ) & 255, fp );
+                        c ^= ( ( ( ~p ) >> 8 ) & 255 );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                }
+                {
+                    {
+                        fputc( 0, fp );
+                        c ^= ( 0 );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                    a = ( a + ( 0 ) ) % 65521;
+                    b = ( b + a ) % 65521;
+                }
+
+                for ( x = 0; x < p - 1; x++, img++ )
+                {
+                    {
+                        fputc( *img, fp );
+                        c ^= ( *img );
+                        c = ( c >> 4 ) ^ t[c & 15];
+                        c = ( c >> 4 ) ^ t[c & 15];
+                    }
+                    a = ( a + ( *img ) ) % 65521;
+                    b = ( b + a ) % 65521;
+                }
+            }
+
+            {
+                {
+                    fputc( ( ( b << 16 ) | a ) >> 24, fp );
+                    c ^= ( ( ( b << 16 ) | a ) >> 24 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( ( b << 16 ) | a ) >> 16 ) & 255, fp );
+                    c ^= ( ( ( ( b << 16 ) | a ) >> 16 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( ( b << 16 ) | a ) >> 8 ) & 255, fp );
+                    c ^= ( ( ( ( b << 16 ) | a ) >> 8 ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+                {
+                    fputc( ( ( b << 16 ) | a ) & 255, fp );
+                    c ^= ( ( ( b << 16 ) | a ) & 255 );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+
+            {
+                fputc( ( ~c ) >> 24, fp );
+                fputc( ( ( ~c ) >> 16 ) & 255, fp );
+                fputc( ( ( ~c ) >> 8 ) & 255, fp );
+                fputc( ( ~c ) & 255, fp );
+            }
+
+            {
+                {
+                    fputc( ( 0 ) >> 24, fp );
+                    fputc( ( ( 0 ) >> 16 ) & 255, fp );
+                    fputc( ( ( 0 ) >> 8 ) & 255, fp );
+                    fputc( ( 0 ) & 255, fp );
+                }
+                c = ~0U;
+
+                for ( i = 0; i < 4; i++ )
+                {
+                    fputc( ( "IEND" )[i], fp );
+                    c ^= ( ( "IEND" )[i] );
+                    c = ( c >> 4 ) ^ t[c & 15];
+                    c = ( c >> 4 ) ^ t[c & 15];
+                }
+            }
+
+            {
+                fputc( ( ~c ) >> 24, fp );
+                fputc( ( ( ~c ) >> 16 ) & 255, fp );
+                fputc( ( ( ~c ) >> 8 ) & 255, fp );
+                fputc( ( ~c ) & 255, fp );
+            }
+
+            fclose( fp );
+        }//save_png
+    }
+
+    template < typename Matrix, typename Type, Allocator Alloc >
+    struct crtp_save_as_png
+    {
+        typedef Matrix zen_type;
+        bool save_as_png( const std::string& file_name, std::string const& color_map = std::string{ "parula" } ) const
+        {
+            zen_type const& zen = static_cast< zen_type const& >( *this );
+            better_assert( zen.row() && "save_as_png: matrix row cannot be zero" );
+            better_assert( zen.col() && "save_as_png: matrix column cannot be zero" );
+
+            using matrix_details::bmp_details::color_maps;
+            std::string const& map_name       = ( color_maps.find( color_map ) == color_maps.end() ) ? std::string{ "default" } : color_map;
+            auto&& selected_map               = ( *( color_maps.find( map_name ) ) ).second;
+
+            auto const [the_row, the_col] = zen.shape();
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_r{ the_row, the_col };
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_g{ the_row, the_col };
+            matrix<std::uint8_t, std::allocator<std::uint8_t>> channel_b{ the_row, the_col };
+
+            auto const& [mn, mx] = zen.minmax();
+            std::vector<std::uint8_t> cache;
+            cache.reserve( the_row * the_col * 3 );
+
+            for ( auto row_index : matrix_details::range( the_row ) )
+                for ( auto c : matrix_details::range( the_col ) )
+                {
+                    //auto const[ r_, g_, b_ ] = selected_map( (zen[the_row-row_index-1][c]-mn)/(mx-mn+1.0e-10) );
+                    auto const[ r_, g_, b_ ] = selected_map( (zen[row_index][c]-mn)/(mx-mn+1.0e-10) );
+                    cache.push_back( r_ );
+                    cache.push_back( g_ );
+                    cache.push_back( b_ );
+                }
+
+            save_png( cache.data(), the_col, the_row, 0, file_name.c_str() );
+
+            return true;
+        }
+    };//struct crtp_save_as_png
+
 
     template < typename Matrix, typename Type, Allocator Alloc >
     struct crtp_save_as_bmp
@@ -3461,12 +3760,12 @@ namespace feng
         , crtp_load_binary< matrix< Type, Alloc >, Type, Alloc >
         , crtp_load_npy< matrix< Type, Alloc >, Type, Alloc >
         , crtp_load_txt< matrix< Type, Alloc >, Type, Alloc >
-        , crtp_opencv< matrix< Type, Alloc >, Type, Alloc >
-        , crtp_plot< matrix< Type, Alloc >, Type, Alloc >
         , crtp_min_max< matrix< Type, Alloc >, Type, Alloc >
         , crtp_minmax< matrix< Type, Alloc >, Type, Alloc >
         , crtp_minus_equal_operator< matrix< Type, Alloc >, Type, Alloc >
         , crtp_multiply_equal_operator< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_opencv< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_plot< matrix< Type, Alloc >, Type, Alloc >
         , crtp_plus_equal_operator< matrix< Type, Alloc >, Type, Alloc >
         , crtp_prefix_minus< matrix< Type, Alloc >, Type, Alloc >
         , crtp_prefix_plus< matrix< Type, Alloc >, Type, Alloc >
@@ -3477,6 +3776,7 @@ namespace feng
         , crtp_save_as_binary< matrix< Type, Alloc >, Type, Alloc >
         , crtp_save_as_bmp< matrix< Type, Alloc >, Type, Alloc >
         , crtp_save_as_pgm< matrix< Type, Alloc >, Type, Alloc >
+        , crtp_save_as_png< matrix< Type, Alloc >, Type, Alloc >
         , crtp_save_as_txt< matrix< Type, Alloc >, Type, Alloc >
         , crtp_shape< matrix< Type, Alloc >, Type, Alloc >
         , crtp_shrink_to_size< matrix< Type, Alloc >, Type, Alloc >
