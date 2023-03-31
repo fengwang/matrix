@@ -1456,8 +1456,11 @@ namespace feng
             return ans;
         }
 
-        auto& from_opencv( cv::Mat const& image )
+        auto& from_opencv( cv::Mat image )
         {
+            if ( !image.isContiguous() ) // data stored in Mat is not always continuous in memory
+                image = image.clone();
+
             unsigned long const rows = image.rows;
             unsigned long const cols = image.cols;
             unsigned long const channels = 1 + (image.type() >> CV_CN_SHIFT);
