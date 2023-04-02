@@ -45,7 +45,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20230331ULL;
+    constexpr std::uint_least64_t matrix_version = 20230402ULL;
 
     #ifdef PARALLEL
     constexpr std::uint_least64_t parallel_mode = 1;
