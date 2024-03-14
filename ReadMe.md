@@ -142,6 +142,14 @@ Variadic macro `__VA_OPT__` is used. It is officially supported since c++20([lin
     auto one = feng::empty<double>(12, 34);
     ```
 
+    - converting value types
+
+    ```cpp
+    auto one_fp32 = feng::empty<float>(12, 34);
+    auto one_fp64 = one_fp32.astype<double>(); //
+    ```
+
+
     - creating a matrix of size `1 X (12*34)`, with all elements from `0` to `12x34`, then reshape to `12 X 34`:
     ```cpp
     auto one = feng::arange<double>(12*34);

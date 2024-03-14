@@ -127,6 +127,7 @@ namespace feng
     template< typename T>
     concept Allocator = has_value_type_v<T> && has_allocate_v<T> && has_deallocate_v<T>;
 
+
     //
     // end of concept allocators
     //
@@ -239,41 +240,6 @@ namespace feng
                 return lhs.value_ >= rhs.value_;
             }
         };
-
-        /*
-        template< typename Integer_Type >
-        struct integer_range
-        {
-            static_assert(std::is_integral_v<Integer_Type>, "Integral required");
-            typedef Integer_Type value_type;
-            value_type first_;
-            value_type last_;
-
-            integer_range( value_type first, value_type last ) noexcept : first_{first}, last_{last} {}
-
-            auto const begin() const noexcept
-            {
-                return integer_iterator<value_type>{first_};
-            }
-
-            auto const end() const noexcept
-            {
-                return integer_iterator<value_type>{last_};
-            }
-        };
-
-        template< typename Integer_Type >
-        integer_range<Integer_Type> range( Integer_Type first, Integer_Type last ) noexcept
-        {
-            return {first, last};
-        }
-
-        template< typename Integer_Type >
-        integer_range<Integer_Type> range( Integer_Type last ) noexcept
-        {
-            return { Integer_Type{0}, last };
-        }
-        */
 
 
         template< std::weakly_incrementable W >
@@ -3943,6 +3909,18 @@ namespace feng
         }
 
     };//struct matrix
+
+    template< typename T >
+    struct is_matrix : std::false_type{};
+
+    template< typename T, Allocator A >
+    struct is_matrix< matrix<T,A> > : std::true_type{};
+
+    template< typename M >
+    inline constexpr bool is_matrix_v = is_matrix<M>::value;
+
+    template< typename M >
+    concept Matrix = is_matrix_v<M>;
 
     namespace matrix_details
     {
