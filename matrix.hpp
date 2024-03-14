@@ -27,6 +27,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 #include <numeric>
 #include <optional>
 #include <random>
+#include <ranges>
 #include <set>
 #include <sstream>
 #include <streambuf>
@@ -45,7 +46,7 @@ static_assert( __cplusplus >= 201709L, "C++20 is a must for this library, please
 
 namespace feng
 {
-    constexpr std::uint_least64_t matrix_version = 20230402ULL;
+    constexpr std::uint_least64_t matrix_version = 20240314ULL;
 
     #ifdef PARALLEL
     constexpr std::uint_least64_t parallel_mode = 1;
@@ -64,6 +65,7 @@ namespace feng
     #else
     constexpr std::uint_least64_t enable_cv_mat = 0;
     #endif
+
 
     namespace matrix_private
     {   // for macro `better_assert`
@@ -128,7 +130,6 @@ namespace feng
     //
     // end of concept allocators
     //
-
 
 
     template < typename Type, Allocator Alloc >
@@ -239,6 +240,7 @@ namespace feng
             }
         };
 
+        /*
         template< typename Integer_Type >
         struct integer_range
         {
@@ -271,15 +273,30 @@ namespace feng
         {
             return { Integer_Type{0}, last };
         }
+        */
 
-        template<typename Integer_Type, typename Function>
+
+        template< std::weakly_incrementable W >
+        constexpr auto range( W val_begin, W val_end )
+        {
+            return std::ranges::iota_view( val_begin, val_end );
+        }
+
+        template< std::weakly_incrementable W >
+        constexpr auto range( W val_end )
+        {
+            return range( W{0}, val_end );
+        }
+
+
+        template<std::integral Integer_Type, typename Function>
         void repeat( Function function, Integer_Type n )
         {
             while ( n-- )
                 function();
         }
 
-        template< typename Function, typename Integer_Type >
+        template< typename Function, std::integral Integer_Type >
         void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, unsigned long threshold = 1024 ) // 1d parallel
         {
             if constexpr( parallel_mode == 0 )
@@ -1202,8 +1219,8 @@ namespace feng
         {
             std::filesystem::path file_path{ file_name };
             auto directory = file_path.parent_path();
-            if ( ! std::filesystem::exists(directory) )
-                return std::filesystem::create_directories(directory);
+            if ( directory.empty() ) return true;
+            if ( ! std::filesystem::exists(directory) ) return std::filesystem::create_directories(directory);
             return true;
         }
 
@@ -1876,7 +1893,9 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
 
-            zen.get_allocator().deallocate( zen.data(), zen.size() );
+            if ( zen.data() != nullptr )
+                zen.get_allocator().deallocate( zen.data(), zen.size() );
+
             zen.dat_ = nullptr;
             zen.row_ = 0;
             zen.col_ = 0;
@@ -2527,9 +2546,6 @@ namespace feng
         }
         bool load_npy( char const* const file_name ) noexcept
         {
-            if constexpr (debug_mode)
-                std::cout << "Loading npy file from " << file_name << std::endl;
-
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name, std::ios::binary );
             better_assert( ifs, "matrix::load_npy -- failed to open file ", file_name );
@@ -2541,8 +2557,6 @@ namespace feng
 
             //get version
             std::size_t const version = *(reinterpret_cast< std::uint8_t* >( buffer.data()+6 ));
-            if constexpr (debug_mode)
-                std::cout << "Version: " << version << std::endl;
 
             //get header length and header
             std::uint32_t header_length;
@@ -2563,13 +2577,9 @@ namespace feng
                 header_length = (_l3 << 24) + (_l2 << 16) + (_l1 << 8) + _l0;
                 header = std::string{ buffer.data() + 12, buffer.data() + 12 + header_length };
             }
-            if constexpr (debug_mode)
-                std::cout << "Extracted npy file header:\n" << header << std::endl;
 
             // fortran format or not
             bool const row_major = ( header.find("T") != std::string::npos ) ? false : true;
-            if constexpr (debug_mode)
-                std::cout << "The stored matrix is row major: " << row_major << std::endl;
 
             //extract row and column
             std::size_t const shape_pos = header.find("'shape': (");
@@ -2581,8 +2591,6 @@ namespace feng
             std::size_t const col_pos_end = header.find( ")", col_pos ); //end of col
             std::string const col_string = header.substr( col_pos, col_pos_end - col_pos );
             std::size_t const col = std::stoul( col_string );
-            if constexpr (debug_mode)
-                std::cout << "extracted row: " << row << " and col: " << col << std::endl;
 
             //resize matrix
             zen.resize( row, col );
@@ -3735,11 +3743,17 @@ namespace feng
     {
         typedef crtp_typedef< Type, Alloc >         type_proxy_type;
         typedef typename type_proxy_type::size_type     size_type;
-        matrix_view( matrix<Type, Alloc> const& mat,
-                     std::pair<size_type, size_type> const& row_dim,
-                     std::pair<size_type, size_type> const& col_dim ) noexcept;
+        //matrix_view( matrix<Type, Alloc> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept;
+        //template < typename Type, class Alloc >
+        matrix_view( matrix<Type, Alloc> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
+        {
+            row_dim_.first = (row_dim.first >= matrix_.row() || row_dim.first >= row_dim.second) ? 0 : row_dim.first;
+            col_dim_.first = (col_dim.first >= matrix_.col() || col_dim.first >= col_dim.second) ? 0 : col_dim.first;
+            row_dim_.second = (row_dim.second <= matrix_.row()) ? row_dim.second : matrix_.row();
+            col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
+        }
 
-        matrix<Type, Alloc> const&                  matrix_;
+        matrix<Type, Alloc> const&                      matrix_;
         std::pair<size_type, size_type>                 row_dim_;
         std::pair<size_type, size_type>                 col_dim_;
     };//struct matrix_view
@@ -3910,7 +3924,7 @@ namespace feng
             return *this;
         }
 
-        matrix( matrix_view<Type, Alloc> const& view ) noexcept;
+        //matrix( matrix_view<Type, Alloc> const& view ) noexcept;
 
         template< typename T >
         auto const astype() const noexcept
@@ -3918,6 +3932,14 @@ namespace feng
             matrix<T, typename std::allocator_traits<Alloc>:: template rebind_alloc<T> > ans{ (*this).get_allocator(), (*this).row(), (*this).col() };
             std::copy( (*this).begin(), (*this).end(), ans.begin() ); //TODO: should move to crtp_xxx
             return ans;
+        }
+
+        //template < typename Type, class Alloc >
+        matrix( matrix_view<Type, Alloc> const& view ) noexcept
+        {
+            (*this).resize( view.row_dim_.second-view.row_dim_.first, view.col_dim_.second-view.col_dim_.first );
+            for ( auto const row : matrix_details::range((*this).row() ) )//copy row by row
+                    std::copy( view.matrix_.row_begin(row+view.row_dim_.first), view.matrix_.row_end(row+view.row_dim_.second), (*this).row_begin(row) );
         }
 
     };//struct matrix
@@ -4048,6 +4070,7 @@ namespace feng
 
     }
 
+    /*
     template < typename Type, class Alloc >
     matrix_view<Type, Alloc>::matrix_view( matrix<Type, Alloc> const& mat, std::pair<size_type, size_type> const& row_dim, std::pair<size_type, size_type> const& col_dim ) noexcept: matrix_{ mat }
     {
@@ -4056,10 +4079,13 @@ namespace feng
         row_dim_.second = (row_dim.second <= matrix_.row()) ? row_dim.second : matrix_.row();
         col_dim_.second = (col_dim.second <= matrix_.col()) ? col_dim.second : matrix_.col();
     }
+    */
 
         //matrix<Type, Alloc> const&                  matrix_;
         //std::pair<size_type, size_type>                 row_dim_;
         //std::pair<size_type, size_type>                 col_dim_;
+
+    /*
     template < typename Type, class Alloc >
     matrix<Type, Alloc>::matrix( matrix_view<Type, Alloc> const& view ) noexcept
     {
@@ -4067,6 +4093,7 @@ namespace feng
         for ( auto const row : matrix_details::range((*this).row() ) )//copy row by row
                 std::copy( view.matrix_.row_begin(row+view.row_dim_.first), view.matrix_.row_end(row+view.row_dim_.second), (*this).row_begin(row) );
     }
+    */
 
     template< typename Type, Allocator Alloc, typename Integer_Type >
     matrix_view<Type, Alloc> const
@@ -6533,7 +6560,7 @@ namespace feng
 
         matrix<Type, Alloc> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
         for ( auto row : matrix_details::range(B.row()) )
-            std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1) );
+            std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1)+A.col()-1 );
 
         matrix<Type, Alloc> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
@@ -6548,7 +6575,8 @@ namespace feng
 
         auto const& func = [&]( std::uint_least64_t row )
         {
-            for ( auto col : matrix_details::range(ans.row() ))
+            //for ( auto col : matrix_details::range(ans.row() ))
+            for ( auto col : matrix_details::range(ans.col() ))
             {
                 auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
                 ans[row][col] = product( A, view, A.row(), A.col() );
@@ -6563,6 +6591,9 @@ namespace feng
     template< typename Type, Allocator Alloc >
     matrix<Type, Alloc> const conv( matrix<Type, Alloc> const& A, matrix<Type, Alloc> const& B, std::string const& mode ) noexcept
     {
+        //if ( A.size() > B.size() )
+        //    return conv( B, A, mode );
+
         auto const& default_conv = conv( A, B );
 
         auto const [ra, ca] = A.shape();
@@ -6772,14 +6803,7 @@ namespace feng
 
         matrix<T> mat_x{ row, col, T{} };
         matrix<T> mat_y{ row, col, T{} };
-        /*
-        for ( auto r = 0UL; r != row; ++r )
-            for ( auto c = 0UL; c != col; ++c )
-            {
-                mat_x[r][c] = static_cast<T>(r);
-                mat_y[r][c] = static_cast<T>(c);
-            }
-        */
+
         auto const& parallel_func = [&]( unsigned long r )
         {
             for ( auto c = 0UL; c != col; ++c )
@@ -6819,6 +6843,8 @@ namespace feng
     static auto const& fmax = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmax(val, wal); } );
 
     static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
+
+    static auto const& atan2 = matrix_details::map( []( auto const& val, auto const& wal ){ return std::atan2(val, wal); } );
 
     static auto const& cos = matrix_details::map( []( auto const& val ){ return std::cos(val); } );
 
