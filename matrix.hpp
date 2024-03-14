@@ -6152,11 +6152,10 @@ namespace feng
         return value_type( 0 );
     }
     */
-    template < typename Matrix >
-    typename Matrix::value_type
-    norm_1( const Matrix& A )
+    template < Matrix Mat >
+    auto norm_1( Mat const& A )
     {
-        typedef typename Matrix::value_type value_type;
+        typedef typename Mat::value_type value_type;
         std::vector< value_type > m( A.col() );
 
         for ( std::uint_least64_t i = 0; i != A.col(); ++i )
@@ -6166,6 +6165,7 @@ namespace feng
         } );
         return *( std::max_element( m.begin(), m.end() ) );
     }
+
     template < typename T, typename A_ >
     T norm_1( const matrix< std::complex< T >, A_ >& A )
     {
@@ -6178,12 +6178,12 @@ namespace feng
         } );
         return *( std::max_element( m.begin(), m.end() ) );
     }
-    template < typename Matrix >
-    typename Matrix::value_type
-    norm_2( const Matrix& A )
+    template < Matrix Mat >
+    auto norm_2( Mat const& A )
     {
         return std::sqrt( eigen_power_iteration( A ) );
     }
+
     namespace expm_private
     {
         template < typename T >
@@ -6197,11 +6197,10 @@ namespace feng
             typedef typename fix_complex_value_type< T >::value_type value_type;
         };
     }
-    template < typename T, typename A_ >
-    const matrix< T, A_ >
-    expm( const matrix< T, A_ >& A )
+    template < Matrix Mat >
+    Mat expm( Mat const& A )
     {
-        typedef matrix< T, A_ > matrix_type;
+        typedef Mat matrix_type;
         typedef typename matrix_type::value_type value_type_;
         typedef typename expm_private::fix_complex_value_type< value_type_ >::value_type value_type;
         typedef typename matrix_type::size_type size_type;
@@ -6270,10 +6269,12 @@ namespace feng
             typedef std::complex< T > result_type;
         };
     }
-    template < typename T >
-    auto fft( matrix< T > const& x )
+
+    template < Matrix Mat >
+    auto fft( Mat const& x )
     {
-        typedef typename fft_private::add_complex< T >::result_type complex_type;
+        typedef typename Mat::value_type value_type;
+        typedef typename fft_private::add_complex< value_type >::result_type complex_type;
         matrix< complex_type > X( x.row(), x.col() );
         auto make_omege = []( auto k, auto n, auto N )
         {
@@ -6304,8 +6305,9 @@ namespace feng
 
         return X;
     }
-    template < typename T >
-    auto fftshift( matrix< T > const& x )
+
+    template < Matrix Mat >
+    auto fftshift( Mat const& x )
     {
         auto X                          = fft( x );
         std::uint_least64_t const R           = X.row();
@@ -6322,10 +6324,11 @@ namespace feng
 
         return X;
     }
-    template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
-    int forward_substitution( const matrix< T1, A1 >& A, matrix< T2, A2 >& x, const matrix< T3, A3 >& b )
+
+    template < Matrix Mat >
+    int forward_substitution( Mat const& A, Mat& x, Mat const& b )
     {
-        typedef matrix< T1, A1 > matrix_type;
+        typedef Mat matrix_type;
         typedef typename matrix_type::value_type value_type;
         typedef typename matrix_type::size_type size_type;
         better_assert( A.row() == A.col() );
@@ -6347,8 +6350,8 @@ namespace feng
         return 0;
     }
 
-    template < typename T, Allocator A>
-    std::optional<matrix<T,A>> gauss_jordan_elimination( matrix< T, A > const& m ) noexcept
+    template < Matrix Mat >
+    std::optional<Mat> gauss_jordan_elimination( Mat const& m ) noexcept
     {
         auto const& [row, col] = m.shape();
         better_assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
@@ -6381,8 +6384,8 @@ namespace feng
     }
 
     // matlab alias
-    template < typename T, Allocator A>
-    std::optional<matrix<T,A>> rref( matrix< T, A > const& m ) noexcept
+    template < Matrix Mat >
+    std::optional<Mat> rref( Mat const& m ) noexcept
     {
         return gauss_jordan_elimination( m );
     }
@@ -6400,8 +6403,8 @@ namespace feng
             typedef std::complex< T > result_type;
         };
     }
-    template < typename T >
-    auto ifft( matrix< T > const& x )
+    template < typename T, Allocator A >
+    auto ifft( matrix<T, A> const& x )
     {
         typedef typename ifft_private::add_complex< T >::result_type complex_type;
         matrix< complex_type > X( x.row(), x.col() );
@@ -6434,8 +6437,8 @@ namespace feng
 
         return X;
     }
-    template < typename T >
-    auto ifftshift( matrix< T > const& x )
+    template < Matrix Mat >
+    auto ifftshift( Mat const& x )
     {
         auto X                          = ifft( x );
         std::uint_least64_t const R           = X.row();
@@ -6453,10 +6456,10 @@ namespace feng
         return X;
     }
 
-    template < typename Type, Allocator Alloc>
-    int lu_decomposition( const matrix< Type, Alloc >& A, matrix< Type, Alloc >& L, matrix< Type, Alloc >& U )
+    template< Matrix Mat >
+    int lu_decomposition( Mat const& A, Mat& L, Mat& U )
     {
-        typedef Type value_type;
+        typedef typename Mat::value_type value_type;
         better_assert( A.row() == A.col() && "Square Matrix Requred!" );
 
         const std::uint_least64_t n = A.row();
@@ -6486,19 +6489,19 @@ namespace feng
         return 0;
     }
 
-    template < typename Type, Allocator Alloc>
-    std::optional<std::tuple<matrix<Type, Alloc>, matrix<Type, Alloc>>> lu_decomposition( const matrix< Type, Alloc >& A )
+    template< Matrix Mat >
+    std::optional<std::tuple<Mat, Mat>> lu_decomposition( Mat const& A )
     {
-        if ( matrix<Type, Alloc> L, U; lu_decomposition( A, L, U ) == 1 )
+        if ( Mat L, U; lu_decomposition( A, L, U ) == 1 )
             return {};
         else
             return std::make_tuple( L, U );
     }
 
-    template < typename Type, Allocator Alloc >
-    int lu_solver( const matrix< Type, Alloc >& A, matrix< Type, Alloc >& x, const matrix< Type, Alloc >& b )
+    template< Matrix Mat >
+    int lu_solver( Mat const& A, Mat& x, Mat const& b )
     {
-        typedef matrix< Type, Alloc > matrix_type;
+        typedef Mat matrix_type;
         better_assert( A.row() == A.col() );
         better_assert( A.row() == b.row() );
         better_assert( b.col() == 1 );
@@ -6518,33 +6521,33 @@ namespace feng
         return 0;
     }
 
-    template < typename Type, Allocator Alloc >
-    std::optional<matrix<Type, Alloc>> lu_solver( const matrix< Type, Alloc >& A, matrix< Type, Alloc > const& b )
+    template< Matrix Mat >
+    std::optional<Mat> lu_solver( Mat const& A, Mat const& b )
     {
-        if ( matrix<Type, Alloc> x; lu_solver(A, x, b) == 1 )
+        if ( Mat x; lu_solver(A, x, b) == 1 )
             return {};
         else
             return x;
     }
 
-    template< typename Type, Allocator Alloc >
-    matrix<Type, Alloc> const conv( matrix<Type, Alloc> const& A, matrix<Type, Alloc> const& B ) noexcept
+    template< Matrix Mat >
+    Mat conv( Mat const& A, Mat const& B ) noexcept
     {
         if ( ( 0 == A.size() ) || ( 0 == B.size() ) )
-            return matrix<Type, Alloc>{0, 0};
+            return Mat{0, 0};
 
         if ( A.size() > B.size() )
             return conv( B, A );
 
-        matrix<Type, Alloc> padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
+        Mat padded_B{ B.row()+2*A.row()-2, B.col()+2*A.col()-2 };
         for ( auto row : matrix_details::range(B.row()) )
             std::copy( B.row_begin(row), B.row_end(row), padded_B.row_begin(row+A.row()-1)+A.col()-1 );
 
-        matrix<Type, Alloc> ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
+        Mat ans{ A.row()+B.row()-1, A.col()+B.col()-1 };
 
-        auto const& product = []( matrix<Type, Alloc> const& a, matrix_view<Type, Alloc> const& b, auto row, auto const col ) noexcept
+        auto const& product = []( Mat const& a, auto const& b, auto row, auto const col ) noexcept
         {
-            Type ans{0};
+            typename Mat::value_type ans{0};
             for ( auto r : matrix_details::range(row) )
                 for ( auto c : matrix_details::range(col) )
                     ans += a[r][c] * b[r][c];
@@ -6553,7 +6556,6 @@ namespace feng
 
         auto const& func = [&]( std::uint_least64_t row )
         {
-            //for ( auto col : matrix_details::range(ans.row() ))
             for ( auto col : matrix_details::range(ans.col() ))
             {
                 auto const& view = make_view( padded_B, {row, row+A.row()}, {col, col+A.col()} );
@@ -6566,12 +6568,9 @@ namespace feng
         return ans;
     }
 
-    template< typename Type, Allocator Alloc >
-    matrix<Type, Alloc> const conv( matrix<Type, Alloc> const& A, matrix<Type, Alloc> const& B, std::string const& mode ) noexcept
+    template< Matrix Mat >
+    Mat conv( Mat const& A, Mat const& B, std::string const& mode ) noexcept
     {
-        //if ( A.size() > B.size() )
-        //    return conv( B, A, mode );
-
         auto const& default_conv = conv( A, B );
 
         auto const [ra, ca] = A.shape();
@@ -6651,12 +6650,14 @@ namespace feng
         return {ans};
     }
 
-    template< typename T, Allocator A>
-    auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim_r, std::uint_least64_t dim_c, std::string const& pooling_action = "mean" )
+    template< Matrix Mat >
+    auto pooling( Mat const& mat, std::uint_least64_t dim_r, std::uint_least64_t dim_c, std::string const& pooling_action = "mean" )
     {
-        if (dim_r == 0 || dim_c == 0) return matrix<T,A>{};
+        if (dim_r == 0 || dim_c == 0) return Mat{};
 
         if (dim_r==1 && dim_c==1) return mat;
+
+        typedef typename Mat::value_type T;
 
         std::map< std::string, std::pair<T, std::function< T(T, T) > > > function_list =
         {
@@ -6705,7 +6706,7 @@ namespace feng
         auto const& the_function =(*iterator).second.second;
         auto const [row, col] = mat.shape();
         auto const [new_row, new_col] = std::make_pair( row/dim_r, col/dim_c );
-        matrix< T, A > ans{ new_row, new_col, T{0} };
+        Mat ans{ new_row, new_col, T{0} };
 
         auto const& make_pooling = [&ans, &mat, &the_function, new_col=new_col, dim_r, dim_c, init_value]( std::uint_least64_t r )
         {
@@ -6722,14 +6723,14 @@ namespace feng
         return ans;
     }
 
-    template< typename T, Allocator A>
-    auto pooling( matrix<T,A> const& mat, std::uint_least64_t dim, std::string const& pooling_action = "mean"  )
+    template< Matrix Mat >
+    auto pooling( Mat const& mat, std::uint_least64_t dim, std::string const& pooling_action = "mean"  )
     {
         return pooling( mat, dim, dim, pooling_action );
     }
 
-    template< typename T, Allocator A>
-    void save_as_bmp( std::string const& file_name, matrix<T,A> const& red_channel, matrix<T,A> const& green_channel, matrix<T,A> const& blue_channel )
+    template< Matrix Mat >
+    void save_as_bmp( std::string const& file_name, Mat const& red_channel, Mat const& green_channel, Mat const& blue_channel )
     {
         better_assert( red_channel.row()==green_channel.row(), "Row not match for red and green matrix! The row for red is ", red_channel.row(), " but for green is ", green_channel.row() );
         better_assert( red_channel.row()==blue_channel.row(), "Row not match for red and blue matrix! The row for red is ", red_channel.row(), " but for blue is ", blue_channel.row() );
@@ -6767,8 +6768,8 @@ namespace feng
         stream.write( reinterpret_cast<char const*>((*encoding).data()), (*encoding).size() );
     }
 
-    template< typename T, Allocator A>
-    void save_as_bmp( std::string const& file_name, matrix<T,A> const& mat, std::string const& colormap = std::string{"parula"} )
+    template< Matrix Mat >
+    void save_as_bmp( std::string const& file_name, Mat const& mat, std::string const& colormap = std::string{"parula"} )
     {
         mat.save_as_bmp( file_name, colormap );
     }
@@ -6795,6 +6796,9 @@ namespace feng
 
         return std::make_pair( mat_y, mat_x );
     }
+
+    //template< Matrix M >
+
 
     static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
 
