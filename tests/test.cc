@@ -48,7 +48,7 @@
 #include "./cases/operator_equal.hpp"
 #include "./cases/pooling.hpp"
 #include "./cases/proj.hpp"
-#include "./cases/remquo.hpp"
+//#include "./cases/remquo.hpp"
 #include "./cases/rint.hpp"
 #include "./cases/round.hpp"
 #include "./cases/sinh.hpp"

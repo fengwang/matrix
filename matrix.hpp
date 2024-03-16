@@ -7190,95 +7190,495 @@ namespace feng
     //
 
 
-
-
-    static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
-
-    static auto const& ldexp = matrix_details::map( []( auto const& val, auto const& wal ){ return std::ldexp(val, wal); } );
-
-    static auto const& scalbn = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbn(val, wal); } );
-
-    static auto const& scalbln = matrix_details::map( []( auto const& val, auto const& wal ){ return std::scalbln(val, wal); } );
-
-    static auto const& pow = matrix_details::map( []( auto const& val, auto const& wal ){ return std::pow(val, wal); } );
-
-    static auto const& hypot = matrix_details::map( []( auto const& val, auto const& wal ){ return std::hypot(val, wal); } );
-
-    static auto const& fmod = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmod(val, wal); } );
-
-    static auto const& remainder = matrix_details::map( []( auto const& val, auto const& wal ){ return std::remainder(val, wal); } );
-
-    static auto const& copysign = matrix_details::map( []( auto const& val, auto const& wal ){ return std::copysign(val, wal); } );
-
-    static auto const& nextafter = matrix_details::map( []( auto const& val, auto const& wal ){ return std::nextafter(val, wal); } );
-
-    static auto const& fdim = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fdim(val, wal); } );
-
-    static auto const& fmax = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmax(val, wal); } );
-
-    static auto const& fmin = matrix_details::map( []( auto const& val, auto const& wal ){ return std::fmin(val, wal); } );
-
-    static auto const& atan2 = matrix_details::map( []( auto const& val, auto const& wal ){ return std::atan2(val, wal); } );
-
-
-    // special
-    static auto const& remquo = matrix_details::map( []( auto const& num, auto const& den ){ int quo; auto const ans = std::remquo(num, den, &quo); return std::make_tuple(ans, quo); } );
-
     //
-    // Complex Functions
-    //
-    static auto const& real = matrix_details::map( []( auto const& val ){ return std::real(val); } );
-
-    static auto const& imag = matrix_details::map( []( auto const& val ){ return std::imag(val); } );
-
-    static auto const& arg = matrix_details::map( []( auto const& val ){ return std::arg(val); } );
-
-    static auto const& norm = matrix_details::map( []( auto const& val ){ return std::norm(val); } );
-
-    static auto const& conj = matrix_details::map( []( auto const& val ){ return std::conj(val); } );
-
-    static auto const& polar = matrix_details::map( []( auto const& val ){ return std::polar(val); } );
-
-    static auto const& proj = matrix_details::map( []( auto const& val ){ return std::proj(val); } );
-
-    // already previously defined
-    // abs
-    // sin
-    // cos
-    // ...
+    // - begin of trinary functions
     //
 
-    // reduce functions
-    //
-    static auto const& sum = matrix_details::reduce( []( auto x, auto y ) noexcept { return x+y; }, 0.0 );
-
-    static auto const& mean = []( auto const& mat ) noexcept { return sum(mat) / mat.size(); };
-
-    static auto const& variance = []( auto const& mat ) noexcept { return sum( pow( mat - mean( mat ), 2.0 ) ) / mat.size(); };
-
-    static auto const& standard_deviation = []( auto const& mat ) noexcept
+    template< Matrix Mat >
+    auto fma( Mat const& m1, Mat const& m2, Mat const& m3 )
     {
-        if ( mat.size() <= 1 )
-            return 0.0;
-        return std::sqrt( sum( pow( mat-mean( mat ), 2.0 ) ) / ( mat.size() - 1 ) );
-    };
+        auto ans = zeros_like( m1 );
+        matrix_details::for_each( m1.begin(), m1.end(), m2.begin(), m3.begin(),  ans.begin(), []( auto const x1, auto const x2, auto const x3,  auto& v ){ v = std::fma(x1, x2, x3); } );
+        return ans;
+    }
 
-    static auto const& clip = []( auto lower, auto upper ) noexcept
+    //
+    // - end of trinary functions
+    //
+
+    //
+    // - begin of binary functions
+    //
+
+    template< Matrix Mat, Matrix Nat >
+    auto ldexp( Mat const& m, Nat const& n )
     {
-        better_assert( lower < upper, "Error in clip(lower, upper): lower ", lower, " is supposed to be smaller than upper ", upper );
-        return [=]( auto const& mat ) noexcept
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::ldexp(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto ldexp( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::ldexp(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto ldexp( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::ldexp(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto scalbn( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::scalbn(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto scalbn( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::scalbn(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto scalbn( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::scalbn(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto scalbln( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::scalbln(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto scalbln( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::scalbln(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto scalbln( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::scalbln(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto pow( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::pow(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto pow( Mat const& m, std::integral auto xn ) // <- pow accept integral as the second argument
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::pow(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto pow( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::pow(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto pow( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::pow(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto hypot( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::hypot(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto hypot( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::hypot(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto hypot( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::hypot(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto fmod( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::fmod(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmod( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmod(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmod( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmod(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto remainder( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::remainder(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto remainder( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::remainder(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto remainder( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::remainder(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto copysign( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::copysign(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto copysign( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::copysign(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto copysign( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::copysign(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto nextafter( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::nextafter(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto nextafter( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::nextafter(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto nextafter( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::nextafter(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto fdim( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::fdim(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fdim( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fdim(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fdim( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fdim(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto fmax( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::fmax(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmax( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmax(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmax( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmax(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto fmin( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::fmin(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmin( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmin(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto fmin( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::fmin(xn, xm); } );
+        return ans;
+    }
+
+    template< Matrix Mat, Matrix Nat >
+    auto atan2( Mat const& m, Nat const& n )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), n.begin(), ans.begin(), []( auto const xm, auto const xn, auto& v ){ v = std::atan2(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto atan2( Mat const& m, std::floating_point auto xn )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::atan2(xm, xn); } );
+        return ans;
+    }
+
+    template< Matrix Mat>
+    auto atan2( std::floating_point auto xn, Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), [xn]( auto const xm, auto& v ){ v = std::atan2(xn, xm); } );
+        return ans;
+    }
+
+
+    //
+    // - end of binary functions
+    //
+
+
+
+
+    //
+    // - begin of Complex Functions
+    //
+
+    template< ComplexMatrix CMat >
+    auto real( CMat const& cm )
+    {
+        typedef typename CMat::value_type complex_type;
+        typedef typename complex_type::value_type value_type;
+        typedef typename CMat::allocator_type Alloc;
+        matrix<value_type, typename std::allocator_traits<Alloc>:: template rebind_alloc<value_type> > ans{ cm.row(), cm.col() };
+        matrix_details::for_each( cm.begin(), cm.end(), ans.begin(), []( auto const& val, auto& v ){ v = std::real(val); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto imag( CMat const& cm )
+    {
+        typedef typename CMat::value_type complex_type;
+        typedef typename complex_type::value_type value_type;
+        typedef typename CMat::allocator_type Alloc;
+        matrix<value_type, typename std::allocator_traits<Alloc>:: template rebind_alloc<value_type> > ans{ cm.row(), cm.col() };
+        matrix_details::for_each( cm.begin(), cm.end(), ans.begin(), []( auto const& val, auto& v ){ v = std::imag(val); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto abs( CMat const& cm )
+    {
+        typedef typename CMat::value_type complex_type;
+        typedef typename complex_type::value_type value_type;
+        typedef typename CMat::allocator_type Alloc;
+        matrix<value_type, typename std::allocator_traits<Alloc>:: template rebind_alloc<value_type> > ans{ cm.row(), cm.col() };
+        matrix_details::for_each( cm.begin(), cm.end(), ans.begin(), []( auto const& val, auto& v ){ v = std::abs(val); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto arg( CMat const& cm )
+    {
+        typedef typename CMat::value_type complex_type;
+        typedef typename complex_type::value_type value_type;
+        typedef typename CMat::allocator_type Alloc;
+        matrix<value_type, typename std::allocator_traits<Alloc>:: template rebind_alloc<value_type> > ans{ cm.row(), cm.col() };
+        matrix_details::for_each( cm.begin(), cm.end(), ans.begin(), []( auto const& val, auto& v ){ v = std::arg(val); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto norm( CMat const& cm )
+    {
+        typedef typename CMat::value_type complex_type;
+        typedef typename complex_type::value_type value_type;
+        typedef typename CMat::allocator_type Alloc;
+        matrix<value_type, typename std::allocator_traits<Alloc>:: template rebind_alloc<value_type> > ans{ cm.row(), cm.col() };
+        matrix_details::for_each( cm.begin(), cm.end(), ans.begin(), []( auto const& val, auto& v ){ v = std::norm(val); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto conj( CMat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::conj(x); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto proj( CMat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::proj(x); } );
+        return ans;
+    }
+
+    template< ComplexMatrix CMat >
+    auto polar( CMat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::polar(x); } );
+        return ans;
+    }
+
+    //
+    // - end of Complex Functions
+    //
+
+
+    ///
+    /// - begin of reduce functions
+    ///
+
+    template< Matrix Mat >
+    auto sum( Mat const& m )
+    {
+        return matrix_details::reduce( m.begin(), m.end(), typename Mat::value_type{}, []( auto const x, auto const y ){ return x+y; } );
+    }
+
+    template< Matrix Mat >
+    auto mean( Mat const& m )
+    {
+        return sum( m ) / m.size();
+    }
+
+    template< Matrix Mat >
+    auto variance( Mat const& m )
+    {
+        return mean( pow( m-mean(m), 2.0 ) );
+    }
+
+    template< Matrix Mat >
+    auto standard_deviation( Mat const& m )
+    {
+        if ( m.size() <= 1 )
+            return typename Mat::value_type{};
+        return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+    }
+
+    ///
+    /// - end of reduce functions
+    ///
+
+
+    ///
+    /// - begin of misc functions
+    ///
+
+    template< typename T >
+    auto clip( T const lower, T const upper )
+    {
+        return [lower, upper]<Matrix Mat>( Mat const& m )
         {
-            auto ans{ mat };
-            auto&& impl = [=]( auto & v ) noexcept
-            {
-                v = v < lower ? lower :
-                    v > upper ? upper :
-                                v;
-            };
-            ans.map( impl );
+            auto ans{ m };
+            matrix_details::for_each( ans.begin(), ans.end(), [lower, upper]( auto & v ){ v = v < lower ? lower : v > upper ? upper : v; } );
             return ans;
         };
-    };
+    }
+
+    ///
+    /// - end of misc functions
+    ///
 
 } //namespace feng
 
