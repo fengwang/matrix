@@ -4289,27 +4289,6 @@ namespace feng
         return ans;
     }
 
-    //
-    // zeros: creating matrix of all zeros.
-    //
-    template< typename T = double >
-    auto const zeros( std::integral auto r, std::integral auto c )
-    {
-        return matrix<T>{ static_cast<unsigned long>(r), static_cast<unsigned long>(c) };
-    }
-
-    template< typename T, Allocator A >
-    auto const zeros( A const& alloc, std::integral auto r, std::integral auto c )
-    {
-        return matrix<T, A>{ alloc, static_cast<unsigned long>(r), static_cast<unsigned long>(c) };
-    }
-
-    template< typename T = double >
-    auto const zeros( std::integral auto n )
-    {
-        return zeros( n, n );
-    }
-
     template < typename T1, Allocator A1, typename T2, Allocator A2 >
     matrix< T1, A1 > const blkdiag( const matrix< T1, A1 >& m1, const matrix< T2, A2 >& m2 )
     {
@@ -6857,6 +6836,90 @@ namespace feng
         return std::make_pair( mat_y, mat_x );
     }
 
+    //
+    // - begin of unary functions
+    //
+
+    template< Matrix Mat >
+    auto abs( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::abs(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto exp( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::exp(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto exp2( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::exp2(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto expm1( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::expm1(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto log( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::log(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto log10( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::log10(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto log1p( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::log1p(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto log2( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::log2(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto sqrt( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::sqrt(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto cbrt( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::cbrt(x); } );
+        return ans;
+    }
+
     template< Matrix Mat >
     auto sin( Mat const& m )
     {
@@ -6864,6 +6927,267 @@ namespace feng
         matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::sin(x); } );
         return ans;
     }
+
+    template< Matrix Mat >
+    auto cos( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::cos(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto tan( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::tan(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto asin( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::asin(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto acos( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::acos(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto atan( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::atan(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto sinh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::sinh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto cosh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::cosh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto tanh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::tanh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto asinh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::asinh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto acosh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::acosh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto atanh( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::atanh(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto erf( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::erf(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto erfc( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::erfc(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto tgamma( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::tgamma(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto lgamma( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::lgamma(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto trunc( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::trunc(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto round( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::round(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto ceil( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::ceil(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto floor( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::floor(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto rint( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::rint(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto logb( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::logb(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto comp_ellint_1( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::comp_ellint_1(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto comp_ellint_2( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::comp_ellint_2(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto comp_ellint_3( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::comp_ellint_3(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto expint( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::expint(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto riemann_zeta( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::riemann_zeta(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto nearbyint( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::nearbyint(x); } );
+        return ans;
+    }
+
+    template< Matrix Mat >
+    auto ilogb( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::ilogb(x); } );
+        return ans.template astype<int>(); // <- in cmath, ilogb returns an int
+    }
+
+    template< Matrix Mat >
+    auto lrint( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::lrint(x); } );
+        return ans.template astype<long>(); // <- in cmath, lrint returns a long
+    }
+
+    template< Matrix Mat >
+    auto llrint( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::llrint(x); } );
+        return ans.template astype<long long>(); // <- in cmath, llrint returns a long long
+    }
+
+    template< Matrix Mat >
+    auto lround( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::lround(x); } );
+        return ans.template astype<long>(); // <- in cmath, lround returns a long
+    }
+
+    template< Matrix Mat >
+    auto llround( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::llround(x); } );
+        return ans.template astype<long long>(); // <- in cmath, llround returns a long long
+    }
+
+
+    //
+    // - end of unary functions
+    //
 
 
 
@@ -6896,83 +7220,6 @@ namespace feng
 
     static auto const& atan2 = matrix_details::map( []( auto const& val, auto const& wal ){ return std::atan2(val, wal); } );
 
-    static auto const& cos = matrix_details::map( []( auto const& val ){ return std::cos(val); } );
-
-    //static auto const& sin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
-
-    static auto const& tan = matrix_details::map( []( auto const& val ){ return std::tan(val); } );
-
-    static auto const& acos = matrix_details::map( []( auto const& val ){ return std::acos(val); } );
-
-    static auto const& asin = matrix_details::map( []( auto const& val ){ return std::asin(val); } );
-
-    static auto const& atan = matrix_details::map( []( auto const& val ){ return std::atan(val); } );
-
-    static auto const& cosh = matrix_details::map( []( auto const& val ){ return std::cosh(val); } );
-
-    static auto const& sinh = matrix_details::map( []( auto const& val ){ return std::sinh(val); } );
-
-    static auto const& tanh = matrix_details::map( []( auto const& val ){ return std::tanh(val); } );
-
-    static auto const& acosh = matrix_details::map( []( auto const& val ){ return std::acosh(val); } );
-
-    static auto const& asinh = matrix_details::map( []( auto const& val ){ return std::asinh(val); } );
-
-    static auto const& atanh = matrix_details::map( []( auto const& val ){ return std::atanh(val); } );
-
-    static auto const& exp = matrix_details::map( []( auto const& val ){ return std::exp(val); } );
-
-    static auto const& log = matrix_details::map( []( auto const& val ){ return std::log(val); } );
-
-    static auto const& log10 = matrix_details::map( []( auto const& val ){ return std::log10(val); } );
-
-    static auto const& exp2 = matrix_details::map( []( auto const& val ){ return std::exp2(val); } );
-
-    static auto const& expm1 = matrix_details::map( []( auto const& val ){ return std::expm1(val); } );
-
-    static auto const& log1p = matrix_details::map( []( auto const& val ){ return std::log1p(val); } );
-
-    static auto const& log2 = matrix_details::map( []( auto const& val ){ return std::log2(val); } );
-
-    static auto const& logb = matrix_details::map( []( auto const& val ){ return std::logb(val); } );
-
-    static auto const& sqrt = matrix_details::map( []( auto const& val ){ return std::sqrt(val); } );
-
-    static auto const& cbrt = matrix_details::map( []( auto const& val ){ return std::cbrt(val); } );
-
-    static auto const& erf = matrix_details::map( []( auto const& val ){ return std::erf(val); } );
-
-    static auto const& erfc = matrix_details::map( []( auto const& val ){ return std::erfc(val); } );
-
-    static auto const& tgamma = matrix_details::map( []( auto const& val ){ return std::tgamma(val); } );
-
-    static auto const& lgamma = matrix_details::map( []( auto const& val ){ return std::lgamma(val); } );
-
-    static auto const& ceil = matrix_details::map( []( auto const& val ){ return std::ceil(val); } );
-
-    static auto const& floor = matrix_details::map( []( auto const& val ){ return std::floor(val); } );
-
-    static auto const& trunc = matrix_details::map( []( auto const& val ){ return std::trunc(val); } );
-
-    static auto const& round = matrix_details::map( []( auto const& val ){ return std::round(val); } );
-
-    static auto const& rint = matrix_details::map( []( auto const& val ){ return std::rint(val); } );
-
-    static auto const& nearbyint = matrix_details::map( []( auto const& val ){ return std::nearbyint(val); } );
-
-    static auto const& fabs = matrix_details::map( []( auto const& val ){ return std::fabs(val); } );
-
-    static auto const& abs = matrix_details::map( []( auto const& val ){ return std::abs(val); } );
-
-    static auto const& ilogb = matrix_details::map( []( auto const& val ){ return std::ilogb(val); } );
-
-    static auto const& lround = matrix_details::map( []( auto const& val ){ return std::lround(val); } );
-
-    static auto const& llround = matrix_details::map( []( auto const& val ){ return std::llround(val); } );
-
-    static auto const& lrint = matrix_details::map( []( auto const& val ){ return std::lrint(val); } );
-
-    static auto const& llrint = matrix_details::map( []( auto const& val ){ return std::llrint(val); } );
 
     // special
     static auto const& remquo = matrix_details::map( []( auto const& num, auto const& den ){ int quo; auto const ans = std::remquo(num, den, &quo); return std::make_tuple(ans, quo); } );
