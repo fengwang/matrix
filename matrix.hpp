@@ -1098,39 +1098,34 @@ namespace feng
             {
                 typedef typename extract_type_forward< Index, Types... >::result_type result_type;
             };
+
             template < typename Function, typename InputIterator1, typename... InputIteratorn >
             Function _for_each_n( Function f, std::uint_least64_t n, InputIterator1 begin1, InputIteratorn... beginn )
             {
-                auto const& func = [&]( std::uint_least64_t idx )
-                {
-                    f( *(begin1+idx), *(beginn+idx)... );
-                };
+                auto const& func = [&]( std::uint_least64_t idx ) { f( *(begin1+idx), *(beginn+idx)... ); };
                 parallel( func, 0UL, n );
                 return f;
             }
+
             template < typename Function, typename InputIterator1, typename... InputIteratorn >
             Function _for_each( Function f, InputIterator1 begin1, InputIterator1 end1, InputIteratorn... beginn )
             {
                 return _for_each_n( f, std::distance( begin1, end1 ), begin1, beginn... );
-                /*
-                while ( begin1 != end1 )
-                    f( *begin1++, *beginn++... );
-                return f;
-                */
             }
 
-            struct dummy
-            {
-            };
+            struct dummy { };
+
             template < typename... Types_N >
             struct for_each_impl_with_dummy
             {
                 typedef typename extract_type_backward< 1, Types_N... >::result_type return_type;
+
                 template < typename Predict, typename... Types >
                 Predict impl( Predict p, dummy, Types... types ) const
                 {
                     return _for_each( p, types... );
                 }
+
                 template < typename S, typename... Types >
                 return_type impl( S s, Types... types ) const
                 {
@@ -3910,6 +3905,10 @@ namespace feng
 
     };//struct matrix
 
+    //
+    // - begin of Matrix and ComplexMatrix concepts
+    //
+
     template< typename T >
     struct is_matrix : std::false_type{};
 
@@ -3921,6 +3920,23 @@ namespace feng
 
     template< typename M >
     concept Matrix = is_matrix_v<M>;
+
+
+    template< typename T >
+    struct is_complex_matrix : std::false_type{};
+
+    template< typename T, Allocator A >
+    struct is_complex_matrix< matrix<std::complex<T>,A> > : std::true_type{};
+
+    template< typename M >
+    inline constexpr bool is_complex_matrix_v = is_complex_matrix<M>::value;
+
+    template< typename M >
+    concept ComplexMatrix = is_complex_matrix_v<M>;
+
+    //
+    // - end of Matrix and ComplexMatrix concepts
+    //
 
     namespace matrix_details
     {
@@ -4700,6 +4716,7 @@ namespace feng
 
         return true;
     }
+
     template < typename T, Allocator A>
     bool is_symmetric( const matrix< T, A >& m )
     {
@@ -4708,6 +4725,7 @@ namespace feng
             return v1 == v2;
         } );
     }
+
     inline matrix< std::uint_least64_t > const magic( const std::uint_least64_t n ) noexcept
     {
         matrix< std::uint_least64_t > ans{ n, n };
@@ -4790,20 +4808,21 @@ namespace feng
         std::swap_ranges( ans.upper_anti_diag_begin( n >> 1 ), ans.upper_anti_diag_end( n >> 1 ), ans.lower_anti_diag_rbegin( n >> 1 ) );
         return ans;
     }
-    template < typename T, Allocator A>
-    T const
-    max( const matrix< T, A >& m )
+
+    template< Matrix Mat >
+    auto const max( Mat const& m )
     {
         better_assert( m.size() );
         return *std::max_element( m.begin(), m.end() );
     }
-    template < typename T, Allocator A>
-    T const
-    min( const matrix< T, A >& m )
+
+    template< Matrix Mat >
+    auto const min( Mat const& m )
     {
         better_assert( m.size() );
         return *std::min_element( m.begin(), m.end() );
     }
+
     template < typename T >
     matrix<T> arange( std::uint_least64_t start, const std::uint_least64_t stop, const std::uint_least64_t step = 1ULL )
     {
@@ -4815,6 +4834,7 @@ namespace feng
         }
         return ans;
     }
+
     template < typename T >
     matrix<T> arange( const std::uint_least64_t length )
     {
@@ -4822,6 +4842,7 @@ namespace feng
         std::iota( ans.begin(), ans.end(), T{0} );
         return ans;
     }
+
     template < typename T >
     matrix<T> linspace( T start, T stop, const std::uint_least64_t num = 50ULL, bool end_point=true )
     {
@@ -4839,32 +4860,71 @@ namespace feng
         }
         return ans;
     }
-    template < typename T, Allocator A>
-    matrix< T, A > const ones_like( matrix<T, A> const& mat ) noexcept
+
+    template < Matrix Mat >
+    Mat const ones_like( Mat const& mat ) noexcept
     {
-        return matrix<T, A>{ mat.get_allocator(), mat.row(), mat.col(), T{1} };
+        return Mat{ mat.get_allocator(), mat.row(), mat.col(), typename Mat::value_type{1} };
     }
+
     template < typename T >
     matrix<T, std::allocator<T>> const ones( std::integral auto r, std::integral auto c ) noexcept
     {
         matrix< T > ans{ static_cast<unsigned long>(r), static_cast<unsigned long>(c), T{ 1 } };
         return ans;
     }
+
     template < typename T >
     matrix<T, std::allocator<T>> const ones( std::integral auto n ) noexcept
     {
         return ones< T >( n, n );
     }
+
     template < typename T, Allocator A>
     matrix< T, A > const ones( A const& alloc, std::integral auto r, std::integral auto c ) noexcept
     {
         return { alloc, static_cast<unsigned long>(r) , static_cast<unsigned long>(c), T{1} };
     }
+
     template < typename T, Allocator A>
     matrix< T, A > const ones( A const& alloc, std::integral auto n ) noexcept
     {
         return { alloc, static_cast<unsigned long>(n) , static_cast<unsigned long>(n), T{1} };
     }
+
+
+    template < Matrix Mat >
+    Mat const zeros_like( Mat const& mat ) noexcept
+    {
+        return Mat{ mat.get_allocator(), mat.row(), mat.col(), typename Mat::value_type{} };
+    }
+
+    template < typename T >
+    matrix<T, std::allocator<T>> const zeros( std::integral auto r, std::integral auto c ) noexcept
+    {
+        matrix< T > ans{ static_cast<unsigned long>(r), static_cast<unsigned long>(c), T{} };
+        return ans;
+    }
+
+    template < typename T >
+    matrix<T, std::allocator<T>> const zeros( std::integral auto n ) noexcept
+    {
+        return zeros< T >( n, n );
+    }
+
+    template < typename T, Allocator A>
+    matrix< T, A > const zeros( A const& alloc, std::integral auto r, std::integral auto c ) noexcept
+    {
+        return { alloc, static_cast<unsigned long>(r) , static_cast<unsigned long>(c), T{} };
+    }
+
+    template < typename T, Allocator A>
+    matrix< T, A > const zeros( A const& alloc, std::integral auto n ) noexcept
+    {
+        return { alloc, static_cast<unsigned long>(n) , static_cast<unsigned long>(n), T{} };
+    }
+
+
 
     template < typename T >
     auto const empty( const std::integral auto r, const std::integral auto c ) noexcept
@@ -6797,7 +6857,15 @@ namespace feng
         return std::make_pair( mat_y, mat_x );
     }
 
-    //template< Matrix M >
+    template< Matrix Mat >
+    auto sin( Mat const& m )
+    {
+        auto ans = zeros_like( m );
+        matrix_details::for_each( m.begin(), m.end(), ans.begin(), []( auto const x, auto& v ){ v = std::sin(x); } );
+        return ans;
+    }
+
+
 
 
     static auto const& fma = matrix_details::map( []( auto const& val, auto const& wal, auto const& xal ){ return std::fma(val, wal, xal); } );
@@ -6830,7 +6898,7 @@ namespace feng
 
     static auto const& cos = matrix_details::map( []( auto const& val ){ return std::cos(val); } );
 
-    static auto const& sin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
+    //static auto const& sin = matrix_details::map( []( auto const& val ){ return std::sin(val); } );
 
     static auto const& tan = matrix_details::map( []( auto const& val ){ return std::tan(val); } );
 
