@@ -41,6 +41,7 @@
 #include "./cases/log.hpp"
 #include "./cases/lrint.hpp"
 #include "./cases/lround.hpp"
+#include "./cases/lu_pivoting.hpp"
 #include "./cases/mean.hpp"
 #include "./cases/minmax.hpp"
 #include "./cases/misc_range.hpp"

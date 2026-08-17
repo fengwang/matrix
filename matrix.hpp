@@ -6580,12 +6580,17 @@ namespace feng
     }
 
     template< Matrix Mat >
-    int lu_decomposition( Mat const& A, Mat& L, Mat& U )
+    int lu_decomposition( Mat const& A, Mat& L, Mat& U, int& sign, std::vector< std::uint_least64_t >& perm )
     {
         typedef typename Mat::value_type value_type;
         better_assert( A.row() == A.col() && "Square Matrix Requred!" );
 
         const std::uint_least64_t n = A.row();
+
+        // Working copy of A: partial pivoting reorders rows, and later steps read the
+        // not-yet-processed entries of the source, so the source rows must be swappable.
+        Mat M{ A };
+
         L.resize( n, n );
         std::fill( L.begin(), L.end(), value_type{0} );
         std::fill( L.diag_begin(), L.diag_end(), value_type( 1 ) );
@@ -6593,16 +6598,38 @@ namespace feng
         U.resize( n, n );
         std::fill( U.begin(), U.end(), value_type{0} );
 
+        perm.resize( n );
+        for ( std::uint_least64_t i = 0; i < n; ++i )
+            perm[i] = i;
+        sign = 1;
+
         for ( std::uint_least64_t j = 0; j < n; ++j )
         {
+            // Partial pivoting: largest-magnitude entry of column j among rows j..n-1.
+            std::uint_least64_t p = j;
+            for ( std::uint_least64_t i = j + 1; i < n; ++i )
+                if ( std::abs( M[i][j] ) > std::abs( M[p][j] ) )
+                    p = i;
+
+            if ( p != j )
+            {
+                // Rows 0..j-1 of M are still needed unswapped (their entries right of
+                // column j feed later U columns), so only rows j and p are exchanged.
+                std::swap_ranges( M.row_begin( j ), M.row_end( j ), M.row_begin( p ) );
+                for ( std::uint_least64_t k = 0; k < j; ++k )
+                    std::swap( L[j][k], L[p][k] );
+                std::swap( perm[j], perm[p] );
+                sign = -sign;
+            }
+
             for ( std::uint_least64_t i = 0; i < j + 1; ++i )
             {
-                U[i][j] = A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() );
+                U[i][j] = M[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() );
             }
 
             for ( std::uint_least64_t i = j + 1; i < n; ++i )
             {
-                L[i][j] = ( A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j];
+                L[i][j] = ( M[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j];
 
                 if ( std::isinf( L[i][j] ) || std::isnan( L[i][j] ) )
                     return 1;
@@ -6610,6 +6637,14 @@ namespace feng
         }
 
         return 0;
+    }
+
+    template< Matrix Mat >
+    int lu_decomposition( Mat const& A, Mat& L, Mat& U )
+    {
+        int sign{ 1 };
+        std::vector< std::uint_least64_t > perm;
+        return lu_decomposition( A, L, U, sign, perm );
     }
 
     template< Matrix Mat >
@@ -6629,13 +6664,23 @@ namespace feng
         better_assert( A.row() == b.row() );
         better_assert( b.col() == 1 );
         matrix_type L, U;
+        int sign{ 1 };
+        std::vector< std::uint_least64_t > perm;
 
-        if ( lu_decomposition( A, L, U ) )
+        if ( lu_decomposition( A, L, U, sign, perm ) != 0 )
             return 1;
+
+        // Apply the pivot permutation to b (P b): perm[i] is the original row index of
+        // permuted row i, so (P b)[i] = b[perm[i]].
+        matrix_type Pb;
+        Pb.resize( b.row(), b.col() );
+        for ( std::uint_least64_t i = 0; i < b.row(); ++i )
+            for ( std::uint_least64_t j = 0; j < b.col(); ++j )
+                Pb[i][j] = b[ perm[i] ][ j ];
 
         matrix_type Y;
 
-        if ( forward_substitution( L, Y, b ) )
+        if ( forward_substitution( L, Y, Pb ) )
             return 1;
 
         if ( backward_substitution( U, x, Y ) )
