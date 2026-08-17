@@ -5647,7 +5647,14 @@ namespace feng
             return lhs;
 
         if ( n & 1 )
-            return lhs ^ ( n - 1 ) * lhs;
+        {
+            // Odd power: (lhs^(n>>1))^2 * lhs. Pre-fix this branch read
+            // "lhs ^ ( n - 1 ) * lhs" — "( n - 1 ) * lhs" is ill-formed (integer times
+            // matrix), which made the entire function fail to instantiate for ANY call
+            // site (n is a runtime value, not a template parameter).
+            auto const half = lhs ^ ( n >> 1 );
+            return half * half * lhs;
+        }
 
         auto const& lhs_2 = lhs ^ ( n >> 1 );
         return lhs_2 * lhs_2;
