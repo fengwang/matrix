@@ -1,0 +1,2 @@
+FAIL e03_vf8: native-endian 'Vf8' into matrix<double> -> ok=1
+FAIL: 1 case(s) not as expected

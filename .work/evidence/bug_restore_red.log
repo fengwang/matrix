@@ -1,0 +1,20 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_test is a Catch v2.0.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+load_npy rejects an overflowing header_length (0xFFFFFFFF)
+-------------------------------------------------------------------------------
+tests/./cases/load_npy.hpp:160
+...............................................................................
+
+tests/./cases/load_npy.hpp:160: FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 2 | 1 passed | 1 failed
+

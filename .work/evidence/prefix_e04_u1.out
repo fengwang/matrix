@@ -1,0 +1,2 @@
+FAIL e04_u1: uint8 2x3 into matrix<double> -> ok=1
+FAIL: 1 case(s) not as expected

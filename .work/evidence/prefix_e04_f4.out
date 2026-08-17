@@ -1,0 +1,2 @@
+FAIL e04_f4: float32 1x2 into matrix<double> -> ok=1
+FAIL: 1 case(s) not as expected

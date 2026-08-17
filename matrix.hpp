@@ -2509,58 +2509,144 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name, std::ios::binary );
-            better_assert( ifs, "matrix::load_npy -- failed to open file ", file_name );
 
             if ( !ifs )
                 return false;
 
-            std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
-
-            //get version
-            std::size_t const version = *(reinterpret_cast< std::uint8_t* >( buffer.data()+6 ));
-
-            //get header length and header
-            std::uint32_t header_length;
-            std::string header;
-            if ( version == 1 ) //version 1 using 2 bytes
+            try
             {
-                std::uint32_t const _l0 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 8 ));
-                std::uint32_t const _l1 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 9 ));
-                header_length = (_l1 << 8) + _l0;
-                header = std::string{ buffer.data() + 10, buffer.data() + 10 + header_length };
+                std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
+
+                // R-V1: minimum size and NPY magic, checked before any byte is dereferenced
+                if ( buffer.size() < 12 )
+                    return false;
+                constexpr std::uint8_t const magic[ 6 ] = { 0x93, 'N', 'U', 'M', 'P', 'Y' };
+                for ( int i = 0 ; i < 6 ; ++i )
+                    if ( static_cast< std::uint8_t >( buffer[ i ] ) != magic[ i ] )
+                        return false;
+
+                // R-V2: version in {1, 2}; v1: 2-byte LE header length, data prefix 10;
+                // v2 (library convention): 4-byte LE header length, data prefix 12
+                std::uint8_t const version = static_cast< std::uint8_t >( buffer[ 6 ] );
+                if ( version != 1 && version != 2 )
+                    return false;
+                std::size_t const data_prefix = ( version == 1 ) ? 10 : 12;
+
+                // R-V3: header_length from the version-appropriate bytes, non-wrapping bound
+                std::size_t header_length = static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 8 ] ) )
+                    | ( static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 9 ] ) ) << 8 );
+                if ( version == 2 )
+                    header_length |= static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 10 ] ) ) << 16;
+                if ( version == 2 )
+                    header_length |= static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 11 ] ) ) << 24;
+                if ( header_length > buffer.size() - data_prefix )
+                    return false;
+
+                // R-V4: the NPY header is a python dict literal
+                std::string const header{ buffer.data() + data_prefix, header_length };
+                if ( header.empty() || header[ 0 ] != '{' )
+                    return false;
+
+                // R-V5: dtype must be the canonical little-endian descriptor of value_type
+                char const* expected_dtype = nullptr;
+                if constexpr ( std::is_same_v< value_type, std::uint8_t > )
+                    expected_dtype = "|u1";
+                else if constexpr ( std::is_same_v< value_type, std::int8_t > )
+                    expected_dtype = "|i1";
+                else if constexpr ( std::is_same_v< value_type, std::int16_t > )
+                    expected_dtype = "<i2";
+                else if constexpr ( std::is_same_v< value_type, std::uint16_t > )
+                    expected_dtype = "<u2";
+                else if constexpr ( std::is_same_v< value_type, std::int32_t > )
+                    expected_dtype = "<i4";
+                else if constexpr ( std::is_same_v< value_type, std::uint32_t > )
+                    expected_dtype = "<u4";
+                else if constexpr ( std::is_same_v< value_type, std::int64_t > )
+                    expected_dtype = "<i8";
+                else if constexpr ( std::is_same_v< value_type, std::uint64_t > )
+                    expected_dtype = "<u8";
+                else if constexpr ( std::is_same_v< value_type, float > )
+                    expected_dtype = "<f4";
+                else if constexpr ( std::is_same_v< value_type, double > )
+                    expected_dtype = "<f8";
+                if ( expected_dtype == nullptr )
+                    return false;
+                std::size_t const descr_pos = header.find( "'descr': '" );
+                if ( descr_pos == std::string::npos )
+                    return false;
+                std::size_t const descr_end = header.find( "'", descr_pos + 10 );
+                if ( descr_end == std::string::npos )
+                    return false;
+                if ( header.substr( descr_pos + 10, descr_end - descr_pos - 10 ) != expected_dtype )
+                    return false;
+
+                // R-V6: shape token, every lookup npos-guarded
+                std::size_t const shape_pos = header.find( "'shape': (" );
+                if ( shape_pos == std::string::npos )
+                    return false;
+                std::size_t const row_pos = shape_pos + 10; //start of row
+                std::size_t const row_pos_end = header.find( ",", row_pos ); //end of row
+                if ( row_pos_end == std::string::npos )
+                    return false;
+                std::size_t const col_pos_end = header.find( ")", row_pos_end ); //end of col
+                if ( col_pos_end == std::string::npos )
+                    return false;
+
+                // R-V7: digit-bounded parse (no sign, no overflow, no trailing junk), non-zero dims
+                auto parse_dim = []( std::string const& s, std::size_t& out ) -> bool
+                {
+                    std::size_t i = 0;
+                    while ( i < s.size() && ( s[ i ] == ' ' || s[ i ] == '\t' ) )
+                        ++i;
+                    if ( i == s.size() )
+                        return false;
+                    std::size_t v = 0;
+                    for ( ; i < s.size() ; ++i )
+                    {
+                        char const c = s[ i ];
+                        if ( c < '0' || c > '9' )
+                            return false;
+                        std::size_t const d = static_cast< std::size_t >( c - '0' );
+                        if ( v > ( std::numeric_limits< std::size_t >::max() - d ) / 10 )
+                            return false;
+                        v = v * 10 + d;
+                    }
+                    out = v;
+                    return true;
+                };
+                std::size_t row = 0;
+                std::size_t col = 0;
+                if ( !parse_dim( header.substr( row_pos, row_pos_end - row_pos ), row ) )
+                    return false;
+                if ( !parse_dim( header.substr( row_pos_end + 1, col_pos_end - row_pos_end - 1 ), col ) )
+                    return false;
+                if ( row == 0 || col == 0 )
+                    return false;
+
+                // R-V8: overflow-checked payload bound (inclusive: the payload may end at the file tail)
+                if ( row > std::numeric_limits< std::size_t >::max() / col )
+                    return false;
+                std::size_t const elements = row * col;
+                if ( elements > std::numeric_limits< std::size_t >::max() / sizeof( value_type ) )
+                    return false;
+                std::size_t const payload = elements * sizeof( value_type );
+                std::size_t const data_offset = data_prefix + header_length;
+                if ( payload > buffer.size() - data_offset )
+                    return false;
+
+                // R-V9: resize only after every check above passed
+                bool const row_major = ( header.find( "T" ) != std::string::npos ) ? false : true;
+                zen.resize( row, col );
+                if ( !row_major )
+                    zen.reshape( col, row );
+
+                //copy binary value (byte-level: payload is exactly row*col*sizeof(value_type) bytes)
+                std::copy_n( reinterpret_cast< std::uint8_t* >( buffer.data() + data_offset ), payload, reinterpret_cast< std::uint8_t* >( zen.data() ) );
             }
-            else //version 2/3 using 4 bytes
+            catch ( ... )
             {
-                std::uint32_t const _l0 = *(reinterpret_cast<unsigned char*>( buffer.data() + 8 ));
-                std::uint32_t const _l1 = *(reinterpret_cast<unsigned char*>( buffer.data() + 9 ));
-                std::uint32_t const _l2 = *(reinterpret_cast<unsigned char*>( buffer.data() + 10 ));
-                std::uint32_t const _l3 = *(reinterpret_cast<unsigned char*>( buffer.data() + 11 ));
-                header_length = (_l3 << 24) + (_l2 << 16) + (_l1 << 8) + _l0;
-                header = std::string{ buffer.data() + 12, buffer.data() + 12 + header_length };
+                return false;
             }
-
-            // fortran format or not
-            bool const row_major = ( header.find("T") != std::string::npos ) ? false : true;
-
-            //extract row and column
-            std::size_t const shape_pos = header.find("'shape': (");
-            std::size_t const row_pos = shape_pos + 10; //start of row
-            std::size_t const row_pos_end = header.find( ",", row_pos ); //end of row
-            std::string const row_string = header.substr( row_pos, row_pos_end - row_pos );
-            std::size_t const row = std::stoul( row_string );
-            std::size_t const col_pos = row_pos_end + 1; //start of col
-            std::size_t const col_pos_end = header.find( ")", col_pos ); //end of col
-            std::string const col_string = header.substr( col_pos, col_pos_end - col_pos );
-            std::size_t const col = std::stoul( col_string );
-
-            //resize matrix
-            zen.resize( row, col );
-            if (!row_major)
-                zen.reshape( col, row );
-
-            //copy binary value
-            std::size_t const data_offset = (version==1) ? (10 + header_length) : (12 +header_length);
-            std::copy_n( reinterpret_cast<value_type*>(buffer.data()+data_offset), row*col, zen.data() );
 
             return true;
         }

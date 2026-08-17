@@ -1,0 +1,20 @@
+ok   e03_3b: 3-byte file (truncated magic) -> ok=0
+ok   e03_11b: 11-byte file -> ok=0
+ok   e03_12b: 12-byte file, no shape token -> ok=0
+ok   e03_ffff: v2 header_length 0xFFFFFFFF -> ok=0
+ok   e03_trunchdr: truncated header (claims 80B) -> ok=0
+ok   e03_noshape: missing 'shape' token -> ok=0
+ok   e03_1d: 1-D shape (2,) -> ok=0
+ok   e03_negshape: negative shape (-1, 2) -> ok=0
+ok   e03_16digit: 30-digit shape (stoul overflow) -> ok=0
+ok   e04_f4: float32 1x2 into matrix<double> -> ok=0
+ok   e04_u1: uint8 2x3 into matrix<double> -> ok=0
+ok   e03_be: big-endian '>f8' into matrix<double> -> ok=0
+ok   e03_vf8: native-endian 'Vf8' into matrix<double> -> ok=0
+ok   e03_missing: missing file -> ok=0
+ok   e03_exact: payload ends exactly at file tail -> ok=1 content=1
+ok   e03_short: payload 1 byte short -> ok=0
+ok   e03_fortran: fortran_order True 2x3 (transpose pin) -> ok=1 content=1
+ok   e03_v2: v2-convention 1x2 f8 (convention pin) -> ok=1 content=1
+PASS E03
+PASS E04
