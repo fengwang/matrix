@@ -5304,16 +5304,14 @@ namespace feng
         matrix<T, A> u;
         matrix<T, A> w;
         matrix<T, A> v;
-        singular_value_decomposition( a, u, v, w );
-        matrix_details::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
-        return w * v.transpose() * u.transpose();
+        singular_value_decomposition( a, u, w, v );
+        matrix_details::for_each( w.begin(), w.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
+        return v * w * u.transpose();
     }
     template < typename Matrix >
     Matrix const pinverse( const Matrix& m )
     {
-        Matrix u, w, v;
-        singular_value_decomposition( m, u, w, v );
-        return v * w * u.transpose();
+        return svd_inverse( m );
     }
     template < typename Matrix >
     Matrix const pinv( const Matrix& m )

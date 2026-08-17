@@ -48,6 +48,7 @@
 #include "./cases/norm.hpp"
 #include "./cases/ones.hpp"
 #include "./cases/operator_equal.hpp"
+#include "./cases/pinv.hpp"
 #include "./cases/pooling.hpp"
 #include "./cases/proj.hpp"
 //#include "./cases/remquo.hpp"
