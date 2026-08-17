@@ -1,0 +1,77 @@
+session_contract:
+  id: S5
+  objective: "Close the robustness findings: rand on a per-call local mt19937 (thread-safe, explicit-seed deterministic) (C11), guard both unguarded hardware_concurrency() sites against 0 (C12), save_png survives failed fopen + stray ;; removed (S2-finding/R3-slice), and author the NDEBUG policy doc delta (C7, no code change)."
+  risk_level: medium
+  routing: worker_plus_reviewers
+  in_scope:
+    - "C11: rand (anchor 5240) -> local std::mt19937 + std::uniform_real_distribution<T>(0.0,1.0); seed 0 => non-deterministic time-based seed, explicit seed => deterministic stream (hard invariant); noexcept dropped (allocation can throw); rand_like (anchor 5272) semantics preserved"
+    - "C12: guard total_cores < 1 => 1 at reduce (~1152) and the second site (~4036), mirroring the existing guarded pattern (~276)"
+    - "S2-finding: save_png (anchor 3096) -> if (!fp) return; after fopen; stray ;; (~3105) removed; failure = documented silent no-op (policy P3)"
+    - "C7: no code change; author exact policy text as doc delta for S6 (better_assert debug-only + documented; I/O boundaries hard checks, never asserts)"
+    - "New test tests/cases/rand.hpp (E14 determinism/inequality/range); registration in tests/test.cc"
+    - "Eval probes E14/E15 in .work/probes/"
+  out_of_scope:
+    - "The better_assert macro (no conversion — decision C-04); the parallel helper (~276, already guarded)"
+    - "random/random_like aliases (anchors 5262/5267/5278) — S6 territory (A2); read-only here"
+    - "magic (the n & 1 at ~4721 is magic, not operator^); ReadMe.md (delta emitted, P4); examples/**"
+    - "rand value-stream guarantees beyond the engine swap (stream change sanctioned, PRD row 13)"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/test.cc
+      - tests/cases/rand.hpp
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+    forbidden_files:
+      - ReadMe.md
+      - Makefile
+      - examples/**
+      - docs/prd.md
+      - docs/project_contract.md
+  invariants:
+    - "make test green"
+    - "rand(r, c, seed) with identical explicit seed => identical matrices (invariant; examples 0012/0019/0020/0021 depend on it)"
+    - "rand values in [0, 1); rand(r, c, 0) non-deterministic across runs"
+    - "no global mutable state in the rand path (no srand/rand calls remain — grep-verified)"
+    - "save_png: failed fopen => silent no-op, process exit 0 (no UB)"
+    - "tests/cases/inverse.hpp (seed 0) still green after the engine swap (value-agnostic)"
+  acceptance_criteria:
+    - "E14: rand(4,4,7) twice equal; seed 7 vs 8 differ; all values in [0,1)"
+    - "E15: save to a guaranteed-unwritable path => exit 0, no crash (pre-fix UB recorded where triggerable)"
+    - "grep -c 'srand\\|std::rand' matrix.hpp == 0 (only the C11 site existed; verified at pre-flight)"
+    - "grep -c 'total_cores < 1' matrix.hpp >= 3 (existing guard at ~276 + two new)"
+    - "rand.hpp passes: determinism, cross-seed inequality, range bounds"
+  deterministic_checks:
+    - "make test"
+    - "g++ -std=c++20 -DPARALLEL -O1 -o .work/probe_s5 .work/probes/E14_E15.cc && .work/probe_s5  # prints PASS"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/test.cc|tests/cases/rand\\.hpp|\\.work/|docs/(eval_seed_cases|risk_register)\\.md)$'  # empty"
+    - "grep -n 'mt19937' matrix.hpp  # new engine present in rand body"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "Two threads filling matrices concurrently with rand (data-race check under TSan if available; otherwise reasoning + no-global-state grep)"
+    - "uniform_real_distribution<T> with T = float vs double (precision of the [0,1) bound); T = int instantiation (sane or documented-unsupported)"
+    - "seed values 0, 1, RAND_MAX-era large seeds (mt19937 seed_type range)"
+    - "hardware_concurrency()==0 simulated by reading the guard logic (not executable on this host — R-14; acceptance is code presence)"
+    - "save_png: fopen succeeds but disk full mid-write (out of scope — document as known limitation, no fake handling)"
+  failure_modes_to_watch:
+    - "Explicit-seed determinism broken (the examples' reproducibility contract) — E14 is the pin"
+    - "Missed second hardware_concurrency site (~4036; the ~276 one is ALREADY guarded — do not 'fix' it twice)"
+    - "Editing random/random_like aliases while inside the rand region (S6 territory)"
+    - "Leaving noexcept on rand after the engine swap (body still throws bad_alloc)"
+  done_condition: "All acceptance_criteria pass with cited output; make test green; git audit clean; sharded review + adversarial verifier PASS; C7 policy text + all doc deltas delivered for S6."
+  handoff_requirements:
+    - ".work/handoff_session_5.md: state snapshot incl. compiler version; checks run / checks not run"
+    - "Decision log: pre-fix correlation demo; seed-semantics restatement; inverse.hpp before/after note; contract refinements"
+    - "Eval seeds E14/E15 marked live"
+    - "C7 policy text (final wording for S6's ReadMe) + doc deltas for C11/C12/S2-finding"
+    - "Warning for S6: random/random_like aliases read-but-untouched; their rand delegation now sits on the mt19937 engine"
+  eval_seed_candidates:
+    - E14
+    - E15

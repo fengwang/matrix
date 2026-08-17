@@ -1,0 +1,85 @@
+session_contract:
+  id: S3
+  objective: "Fix the numerical-contract violations: fliplr/flipud alias swap (C3), pseudoinverse actually inverts singular values (C4), det via pivoted LU with zero-pivot==0 (C5/P7), operator^ compiles and computes for odd n (C6), svd_inverse argument order (R1), lu_decomposition partial pivoting (P2); each with content-asserting tests."
+  risk_level: medium
+  routing: worker_plus_reviewers
+  in_scope:
+    - "C3: fliplr -> flipdim(m,2), flipud -> flipdim(m,1) (anchors 4491/4496)"
+    - "C4: pinverse (anchor 5226) delegates to the single correct SVD-inversion core (1e-10 threshold); pinv (anchor 5233) shares the same core"
+    - "R1: svd_inverse (anchor 5216) calls singular_value_decomposition(a, u, w, v) per signature (anchor 4921); names follow the signature"
+    - "C5+P2: crtp_det (anchor 2048) rewritten as pivoted-LU product det = +/-prod(U_ii); lu_decomposition (anchors 6499/6532) gains partial pivoting with permutation sign available to det; det precondition message typo (~2056) fixed in the same rewrite"
+    - "C6: operator^ odd branch (anchor 5566) -> half = lhs^(n>>1); return half*half*lhs"
+    - "New tests: tests/cases/flip_aliases.hpp, pinv.hpp, det.hpp, matrix_power.hpp, lu_pivoting.hpp; registered in tests/test.cc"
+    - "Eval probes E05-E09 in .work/probes/"
+  out_of_scope:
+    - "Name retirements of pinverse/svd_inverse/free det(m) — S6 (A2); all names keep compiling after S3"
+    - "flipdim bodies (S1's — verify via E02, do not re-edit); cholesky guard (S4); ReadMe.md (delta emitted, P4); examples/** values (print-only, no edits)"
+    - "svd public behavior beyond the inversion core; det epsilon thresholds (P7: exact zero pivot only)"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/test.cc
+      - tests/cases/flip_aliases.hpp
+      - tests/cases/pinv.hpp
+      - tests/cases/det.hpp
+      - tests/cases/matrix_power.hpp
+      - tests/cases/lu_pivoting.hpp
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+    forbidden_files:
+      - ReadMe.md
+      - Makefile
+      - examples/**
+      - docs/prd.md
+      - docs/project_contract.md
+  invariants:
+    - "make test green; make example green (compile check)"
+    - "fliplr = left-right (column) flip; flipud = up-down (row) flip — MATLAB/NumPy convention, documented in handoff"
+    - "pinv is the Moore-Penrose pseudoinverse with the 1e-10 singular-value threshold; pinverse and pinv return equal matrices for identical input"
+    - "det == 0 (exactly) when a pivot is exactly zero; no epsilon introduced for near-singular inputs (P7)"
+    - "lu_solver solutions invariant: ||x_before - x_after||_inf < 1e-9 for the E09 system (factors may differ)"
+    - "m^n for n=0..5 equals repeated multiplication"
+  acceptance_criteria:
+    - "E05: fliplr({2,3,1..6}) = 3 2 1 / 6 5 4; flipud = 4 5 6 / 1 2 3"
+    - "E06: pinv(diag(1,2)) ~ diag(1, 0.5) within 1e-8"
+    - "E07: det of the review's singular-P block matrix == 0 exactly (pre-fix: -nan); known-nonsingular 4x4 det matches an independent product"
+    - "E08: m^3 compiles (pre-fix: hard compile error — recorded) and equals m*m*m"
+    - "E09: 6x6 system solved before/after pivoting: ||dx||_inf < 1e-9"
+    - "5 new test cases pass; would fail if C3/C4/C5/C6 bugs were reintroduced"
+  deterministic_checks:
+    - "make test"
+    - "make example"
+    - "g++ -std=c++20 -DPARALLEL -O1 -o .work/probe_s3 .work/probes/E05_E09.cc && .work/probe_s3  # prints PASS (E08 probe compiled in the same TU proves the compile fix)"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/test.cc|tests/cases/(flip_aliases|pinv|det|matrix_power|lu_pivoting)\\.hpp|\\.work/|docs/(eval_seed_cases|risk_register)\\.md)$'  # empty"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "det: 1x1 {0}; 2x2 requiring an ODD number of row swaps (sign bookkeeping); near-singular diag(1, 1e-14) (must be tiny nonzero, NOT 0 — P7)"
+    - "pinv: rank-deficient rectangular (2x4), all-zero matrix (expect all-zero pseudoinverse), threshold boundary singular value == 1e-10 (document included/excluded)"
+    - "operator^: n=0,1,2,3,5 on 1x1 and 3x3; non-square lhs (better_assert path — debug abort, release no-op per documented policy)"
+    - "LU: already-pivoted-trivial input (identity); a matrix where the first pivot is zero but a swap rescues it (pre-pivoting code would have produced garbage/NaN)"
+  failure_modes_to_watch:
+    - "Permutation sign error: even vs odd swap count (test a 3x3 needing exactly one swap)"
+    - "pinverse and pinv diverging (two implementations again — R1/C4 recurrence)"
+    - "det epsilon creeping in (violates P7)"
+    - "Editing flipdim bodies or S1's changed lines (verify via E02 instead)"
+    - "lu_solver regression masked because tests only use well-conditioned inputs"
+  done_condition: "All acceptance_criteria pass with cited output; make test + make example green; git audit clean; sharded review + adversarial verifier PASS; doc deltas for S6 complete."
+  handoff_requirements:
+    - ".work/handoff_session_3.md: state snapshot incl. compiler version; checks run / checks not run; note on changed example printed values (0005/0019/0021)"
+    - "Decision log: pre-fix probe outputs (incl. the C6 compile error); C3 convention choice + NumPy citation; P7 rule restated; contract refinements"
+    - "Eval seeds E05-E09 marked live"
+    - "Doc deltas for S6: exact wording for ReadMe flip section, §pinv semantics+threshold, §det zero-pivot rule, lu_decomposition pivoting note, §operator^ domain"
+    - "Warning for S6: pinverse/svd_inverse/free det are behavior-fixed and ready for name retirement (A2) — retire names, do not re-implement"
+  eval_seed_candidates:
+    - E05
+    - E06
+    - E07
+    - E08
+    - E09

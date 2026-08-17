@@ -1,0 +1,71 @@
+session_contract:
+  id: S2
+  objective: "Make load_npy a validated input boundary (finding S1): no dereference before size/shape/dtype validation, no throw-out-of-noexcept, no UB on truncated/malformed/foreign-dtype files; happy path behaviorally unchanged."
+  risk_level: high
+  routing: branch_and_compare
+  in_scope:
+    - "crtp_load_npy (anchors ~2499-2570): add P3 validation — magic/version, buffer.size() >= 12, version in {1,2}, header_length within remaining bytes BEFORE offset arithmetic (no 10+header_length overflow), header bounds, shape-token presence (npos-guarded), dtype string matching value_type, payload size >= row*col*sizeof(value_type)"
+    - "std::stoul wrapped (catch) -> return false; body stays throw-free so noexcept remains honest"
+    - "Negative-path tests appended to tests/cases/load_npy.hpp: truncated magic (3B), truncated header, malformed/missing shape token, header_length=0xFFFFFFFF, float32 file into matrix<double>; crafted bytes written at runtime into tmp/ and cleaned up"
+    - "Eval probes E03/E04 in .work/probes/, ASan-clean"
+  out_of_scope:
+    - "Happy-path semantics: the 4 existing load_npy cases pass unchanged (fixture files ./images/{u8,8,32,64}.npy untouched)"
+    - "load_bmp / save_as_bmp / save_png (S5 owns save_png); any other finding; ReadMe.md (delta emitted, P4); examples/**; Makefile"
+    - "New dependencies for npy parsing"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/cases/load_npy.hpp
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+      - tmp/
+    forbidden_files:
+      - ReadMe.md
+      - Makefile
+      - examples/**
+      - images/*.npy
+      - docs/prd.md
+      - docs/project_contract.md
+  invariants:
+    - "make test green: existing load_npy cases byte-for-byte unchanged in test.cc registration and assertions"
+    - "load_npy returns false (never throws, never aborts, never UBs) for: missing file, 3B file, 11B file, bad version, bad header_length, missing shape token, foreign dtype, truncated payload"
+    - "valid files (all 4 fixtures) load to the same values as before the change"
+    - "no production dependency added"
+  acceptance_criteria:
+    - "E03: 3-byte .npy -> ok=false, ASan-clean (pre-fix: ASan heap-buffer-overflow read at ~2520; record both)"
+    - "E04: minimal valid float32 1x2 .npy into matrix<double> -> ok=false (dtype rejected)"
+    - "5 new negative test cases pass; 4 existing cases pass unchanged"
+    - "ASan variant over {3B, 11B, 12B, 0xFFFFFFFF-length, missing-shape} files: no report, no terminate, exit 0"
+  deterministic_checks:
+    - "make test"
+    - "g++ -std=c++20 -DNDEBUG -DPARALLEL -fsanitize=address -O1 -o .work/probe_s2 .work/probes/E03_E04.cc && .work/probe_s2  # prints PASS"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/cases/load_npy\\.hpp|\\.work/|docs/(eval_seed_cases|risk_register)\\.md|tmp/)$'  # empty"
+    - "grep -c 'return false' matrix.hpp region 2499-2590  # validation returns present (count > 6)"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "Attacker bytes: 3B, 11B, 12B files; header_length = 0xFFFFFFFF (overflow of offset arithmetic); header_length = buffer.size() exactly (boundary, must pass or reject cleanly — document which)"
+    - "Missing 'shape' token (npos + 10 overflow); single-element shape tuple; negative-looking shape digits"
+    - "dtype '<f4' into matrix<double>, '>f8' big-endian into matrix<double>, 'V' fortran-order header (row_major path)"
+    - "payload row*col*sizeof(T) == buffer tail exactly (boundary pass) and -1 (boundary reject)"
+  failure_modes_to_watch:
+    - "Validation added after the first dereference (buffer.data()+6) — too late"
+    - "Overflow check written as buffer.size() < 10 + header_length (wraps on 0xFFFFFFFF) instead of header_length <= buffer.size() - 10 style"
+    - "stoul exception path returns true by accident (resize already applied) — reject before zen.resize"
+    - "Happy-path regression: version-1 vs version-2 offset (10 vs 12) mixed up in the new checks"
+  done_condition: "All acceptance_criteria pass with cited output; git audit clean; independent test-writer (P3 checklist, implementation-blind) concurs; sharded review + adversarial verifier PASS; human decision gate (user) signed off in the handoff."
+  handoff_requirements:
+    - ".work/handoff_session_2.md: state snapshot incl. compiler version; checks run / checks not run"
+    - "Decision log: pre-fix ASan reproduction vs review claim; the two extra hazards (header_length overflow, npos parse) and chosen handling; contract refinements"
+    - "Eval seeds E03/E04 marked live"
+    - "Doc deltas for S6: exact ReadMe §'load npy' (~line 1055) replacement wording — reject semantics + dtype-match requirement"
+    - "Warning for S5: save_png is the other I/O boundary; apply the same P3 discipline (hard checks, no asserts, documented no-op on failure)"
+  eval_seed_candidates:
+    - E03
+    - E04

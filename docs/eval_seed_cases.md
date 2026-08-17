@@ -1,0 +1,41 @@
+# Eval Seed Cases — Matrix Library Upgrade
+
+**Purpose:** the standing, deterministic smoke set for the eval loop (`docs/prompts/eval_harvest.md` promotion target "add eval seed case"). Each seed is a minimal probe with a reproducible recipe and a machine-checkable expectation. Seeds are **fast** (compile < 30s, run < 5s), **deterministic** (fixed inputs, fixed seeds), and independent of the full suite — run them before/after changes to get seconds-level signal.
+
+**Recipe format:** probes live in `.work/probes/` (session-local; the owner session promotes a seed's probe into `tests/cases/` where a permanent home exists). Standard compile:
+
+```sh
+cd /workspace/github.repo/matrix
+g++ -std=c++20 -DPARALLEL -O1 -o .work/probe .work/probes/<id>.cc && .work/probe
+# ASan variant (S1/S2 seeds): add -DNDEBUG -fsanitize=address   (NDEBUG on purpose: better_assert silent, real OOB observable)
+```
+
+Each probe `main()` prints `PASS <id>` on success, `FAIL <id>: <detail>` otherwise; exit code 0 iff pass. Status: **seeded** (defined here, probe written by owner session) / **live** (probe exists in `.work/probes/` and passes) / **promoted** (also in `tests/cases/`).
+
+| ID | Finding | Probe (sketch) | Expected | Owner | Status |
+|---|---|---|---|---|---|
+| E01 | C1 | `matrix<double> m{5,5,1.0}; m.shrink_to_size(5,3);` print shape + all values; plus grow case `m2{1,1,7.0}.shrink_to_size(4,4)` | 5×3; rows = `1 1 1 0 0`-pattern (first 3 cols preserved, rest 0); grow case zero-pads | S1 | seeded |
+| E02 | C2 | `matrix<double> m{3,5,{1..15}}; auto f = flipdim(m,2);` print `f`; plus `flipdim(m,1)` | `f` equals hand-written left-right flip of `m` (rows reversed element order); `flipdim(m,1)` = up-down flip; ASan-clean on 3×5 | S1 | seeded |
+| E03 | S1 (report) | write a 3-byte file `x.npy` to `.work/`; `matrix<double> m; bool ok = m.load_npy(".work/x.npy");` print `ok`; plus a 21-byte file with valid magic but truncated header | prints `ok=0`; **no** ASan report, no abort, no `terminate` | S2 | seeded |
+| E04 | S1 (report) | hand-write a minimal valid float32 `.npy` (64-bit, shape 1×2) into `.work/`; load into `matrix<double>` | returns `false` (dtype mismatch rejected), no misinterpretation of bytes | S2 | seeded |
+| E05 | C3 | `matrix<double> m{2,3,{1,2,3,4,5,6}};` print `fliplr(m)`, `flipud(m)` | `fliplr` = `3 2 1 / 6 5 4`; `flipud` = `4 5 6 / 1 2 3` | S3 | seeded |
+| E06 | C4 | `auto p = pinv(diag(1.0, 2.0));` print `p` | ≈ `diag(1.0, 0.5)` within 1e-8 | S3 | seeded |
+| E07 | C5 | block matrix with singular P: `[[1,2,0,0],[2,4,0,0],[0,0,1,1],[0,0,1,2]]`; print `det` | `0` (exactly), not `nan`; plus a known-nonsingular 4×4 det matches `std::accumulate` over a reference LU product | S3 | seeded |
+| E08 | C6 | `matrix<double> m{2,2,{1,1,0,1}}; auto p3 = m ^ 3;` print `p3` | **compiles** (pre-fix: hard error) and `p3 == m*m*m` exactly | S3 | seeded |
+| E09 | P2 (LU) | solve the same 6×6 system before/after pivoting via `lu_solver`; print both x | `‖x_before − x_after‖∞ < 1e-9` (solutions invariant; factors may differ) | S3 | seeded |
+| E10 | C8 | `matrix<int> m{1,2,{1,2}};` print `mean(m)`, `variance(m)`, `standard_deviation(m)` with types | `1.5`, `0.25`, `0.70711…` (all `double`); **note:** `standard_deviation` uses the existing `n−1` sample formula — `√(0.5/1) = √0.5 ≈ 0.70711`, **not** `0.5` (population value; the formula is preserved by design, PRD §5 row 8) | S4 | seeded |
+| E11 | C9 | `conv(A{2,2}, kernel{1,1,{0.5}}, "same")` in a debug (asserting) build | returns the scaled A without abort (pre-fix: debug abort on 1×1 kernel) | S4 | seeded |
+| E12 | C10 | `rref(matrix<double>{2,2,{2,0,0,3}})` in a debug build | returns `nullopt`-free option ≈ `eye(2)`; square system accepted (pre-fix: debug abort) | S4 | seeded |
+| E13 | P2 (cholesky) | `cholesky_decomposition(m, a)` with `m = [[1,2],[2,1]]` (eigenvalues −1, 3 → not PD) | returns `false`; `a` left in a defined state; PD case returns `true` | S4 | seeded |
+| E14 | C11 | `auto a = rand<double>(4,4,7); auto b = rand<double>(4,4,7); auto c = rand<double>(4,4,8);` print `a==b`, `a==c`, range | `a==b` true (explicit-seed determinism), `a==c` false, all values in `[0,1)` | S5 | seeded |
+| E15 | S2 (report) | `save_png` (or the member that calls it) with a guaranteed-unwritable path (e.g. `/nonexistent_dir/x.png` or a mode-000 dir) | no crash/UB; silent no-op; process exits 0 | S5 | seeded |
+| E16 | P1 | `fft` of 8×8 delta at (0,0) → all ones; round-trip `ifft(fft(x)) ≈ x` on a fixed 8×8 input (e.g. all-`3.0` matrix + that delta — no RNG, no wall clock); the differential test vs the embedded naive-DFT oracle lives in `tests/cases/fft.hpp` (permanent home), not as a seed | all-ones within 1e-9; round-trip `‖·‖∞ < 1e-9` (pre-fix: `ifft(fft(x)) == R·C·x` — record the baseline first). **No timing assertion** (seeds never encode wall clock; the speed claim is stated in the ReadMe, verified ad hoc) | S6 | seeded |
+| E17 | C13 | 3×1 column `[0,1,2]`: record the pre-fix row order (predicted `(2,1,0)` from the swap block — measured wins), then post-fix compare to the pinned NumPy convention: roll by `(n+1)/2` = 2, so **both** `fftshift` and `ifftshift` return the spectrum rows in order `(1,2,0)` (NumPy: 1-D shifts are equal; the library's fused design applies the same roll to the transform output); even case n=4: both rotate by 2 | post-fix: `fftshift` row order = `ifftshift` row order = `(1,2,0)` on the 3×1 spectrum; n=4 = `(2,3,0,1)`; pre-fix record shows the divergence | S6 | seeded |
+| E18 | A2 | compile probe: `#include "matrix.hpp"` + a line calling `feng::random<double>(2,2)`, and separately `feng::pinverse`, free `feng::det(m)`, `feng::random_like` | **compile fails** for all four names post-S6 (names retired); `feng::rand`, `feng::rand_like`, `feng::pinv`, `m.det()` still compile | S6 | seeded |
+
+## Usage rules
+
+- **Run the whole set** (all `live` seeds) at the start and end of every session: minutes of compile time buys a regression net that doesn't depend on the suite.
+- A seed that fails before its owner session runs is **expected** (it encodes the bug) — mark it `red-expected` in the handoff until the owner session flips it green. After the owner session, a red seed is a **blocking failure** (classify per `failure_arbiter.md` before fixing).
+- **New seeds:** any session that discovers a bug not covered by E01–E18 adds a seed row + probe and registers it here (this is the standing promotion target in `eval_harvest.md`).
+- Seeds never encode environment-dependent values (wall-clock, addresses, thread counts). Fixed seeds only.

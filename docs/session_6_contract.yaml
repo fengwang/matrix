@@ -1,0 +1,84 @@
+session_contract:
+  id: S6
+  objective: "Modernization terminal session: fast separable radix-2 fft/ifft with naive-DFT fallback and 1/(R*C) ifft normalization (P1); probe-first fftshift/ifftshift odd-dim fix pinned to NumPy roll (C13); alias retirement random/random_like/pinverse/svd_inverse/free det (A2); A3 verification + policy note (no code change expected); ReadMe sweep landing all S2-S5 doc deltas plus FFT/alias/NDEBUG content."
+  risk_level: medium
+  routing: worker_plus_reviewers
+  in_scope:
+    - "P1: fft (6313) / ifft (6446) -> separable 1D radix-2 (power-of-2 dims) with the existing naive O(n^4) DFT loops kept as fft_private fallback for non-power-of-2 dims; ifft gains 1/(R*C) normalization; add_complex promotion rule preserved (float in => complex<float> out)"
+    - "C13: fftshift (6349) / ifftshift (6480) -> circular roll by (n+1)/2 per axis, replacing the swap-based remap; fused transform+shift design KEPT and documented; probe-first with recorded pre-fix outputs (n=4 expected match, n=5 expected mismatch)"
+    - "A2: delete random (5262), random_like (5267), pinverse (5226), svd_inverse (5216 -> core moved to matrix_details::pinv_core), free det(m) (4319); update examples/cases/0013_prefix.hpp:3 feng::random -> feng::rand"
+    - "A3: pre-flight verification grep (feng::elem / namespace elem / qualified cross-namespace calls; expected none) + namespace-hygiene policy note in handoff; code change ONLY if the grep finds a real instance (then that instance only, reported)"
+    - "ReadMe.md sweep (sole editor): land S2-S5 doc deltas verbatim; update ~117 and ~1277 random examples to rand; add FFT section (radix-2 + fallback + ifft normalization + fftshift convention + fused-design note); add alias-retirement table; land C7 NDEBUG policy text from S5"
+    - "New test tests/cases/fft.hpp (differential vs embedded naive-DFT oracle; E16/E17; fftshift even/odd pinned values); registration in tests/test.cc"
+    - "Eval probes E16/E17 in .work/probes/"
+  out_of_scope:
+    - "fftshift signature redesign to NumPy pure-reindex (fused design kept — documented, not changed)"
+    - "add_complex type-promotion changes (P7); DLPack/interop (parked R-17); CRTP restructure (deferred C-03); svd/eigen/other numerics"
+    - "TODO comments at 1997/2368/2431/2439/3884/3894 (unrelated); examples/ value outputs (print-only); any other session's findings (S1-S5 must be closed and green or STOP)"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/test.cc
+      - tests/cases/fft.hpp
+      - examples/cases/0013_prefix.hpp
+      - ReadMe.md
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+    forbidden_files:
+      - Makefile
+      - AGENTS.md
+      - docs/prd.md
+      - docs/project_contract.md
+      - examples/** (except examples/cases/0013_prefix.hpp)
+  invariants:
+    - "make test green; make example green"
+    - "fft results identical (within 1e-9 double / 1e-4 float) to the pre-change naive DFT for all tested shapes (the old code is the oracle)"
+    - "ifft(fft(x)) == x within 1e-9 (double, 8x8) after normalization"
+    - "fftshift/ifftshift even-dim behavior bit-identical to pre-change (regression pin); odd-dim behavior now equals NumPy roll by (n+1)/2"
+    - "pinv behavior unchanged from S3 (E06 still passes); pinverse/random/random_like/svd_inverse/free det(m) no longer exist; 0013_prefix.hpp compiles with feng::rand"
+    - "ReadMe claims verified true against final code (no stale alias references: grep random -> only prose/random_device)"
+  acceptance_criteria:
+    - "E16: fft of 8x8 delta(0,0) all ones within 1e-9 AND ||ifft(fft(x)) - x||_inf < 1e-9 on a fixed 8x8 input (pre-fix baseline R*C*x recorded first)"
+    - "E17: fftshift/ifftshift row orders match pinned NumPy roll (n+1)/2: 3x1 => both (1,2,0); 4x1 => both rotate by 2; pre-fix 3x1 record (predicted (2,1,0)) attached"
+    - "differential test in fft.hpp: new fft/ifft vs frozen naive-DFT oracle < 1e-9 on 8x8 (radix-2 path) and 6x8 (fallback path); oracle copied from HEAD baseline, frozen after S6 (R-18)"
+    - "fft.hpp passes: differential oracle, round-trip, fftshift n=4/n=5 pinned values, even-dim regression pin"
+    - "grep -c 'random' matrix.hpp == 0 or only comments (documented); grep -c 'pinverse\\|svd_inverse' matrix.hpp == 0"
+    - "ReadMe sweep complete against the S2-S5 delta lists (line-by-line diff in handoff)"
+  deterministic_checks:
+    - "make test"
+    - "make example"
+    - "g++ -std=c++20 -DPARALLEL -O1 -o .work/probe_s6 .work/probes/E16_E17.cc && .work/probe_s6  # prints PASS"
+    - "grep -nE 'random|pinverse|svd_inverse' matrix.hpp  # expect only comments/none (documented)"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/test.cc|tests/cases/fft\\.hpp|examples/cases/0013_prefix\\.hpp|ReadMe\\.md|\\.work/|docs/(eval_seed_cases|risk_register)\\.md)$'  # empty"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "FFT shapes: 1x8, 8x1, 2x4, 4x2 (stride handling); 1x1; 3x5 (fallback both dims); 128x128 (scale, power-of-2); 126x128 (one dim fallback)"
+    - "fftshift on 4x4 (must be bit-identical to pre-change) and 5x5 (must equal NumPy roll(3) order)"
+    - "ifft normalization: applied exactly once (probe ifft(ifft(x)) scaling = 1/(R*C)^2, not 1/(R*C))"
+    - "A2: any lingering feng::random/pinverse/svd_inverse/free-det reference in matrix.hpp, tests, examples, ReadMe (grep sweep)"
+    - "float matrix FFT (complex<float> path, 1e-4 tolerance); complex-input FFT (add_complex identity case)"
+    - "ReadMe factual audit: every numeric claim in the FFT section and retirement table checked against the code"
+  failure_modes_to_watch:
+    - "Bit-reversal or column-stride bug in the radix-2 path (oracle differential is the pin — if it fails, the implementation is wrong, not the oracle)"
+    - "Normalization accidentally added to fft instead of / in addition to ifft"
+    - "fftshift even-dim regression (starter = n/2 for even must stay identical)"
+    - "A2 deletion breaking the ReadMe sweep ordering (delete and update in one session — one diff)"
+    - "Float tolerance slip (1e-9 applied to complex<float> comparisons — use 1e-4)"
+  done_condition: "All acceptance_criteria pass with cited output; make test + make example green; git audit clean; sharded review + adversarial verifier PASS; ReadMe sweep diff against S2-S5 delta lists attached; project-closing findings table (22 rows) in the handoff."
+  handoff_requirements:
+    - ".work/handoff_session_6.md: state snapshot incl. compiler version; checks run / checks not run"
+    - "Decision log: A3 grep result; C13 pre-fix probe outputs vs NumPy; P1 baseline ifft(fft(x))==R*C*x demo; fused-design deviation note; contract refinements"
+    - "Eval seeds E16/E17 marked live; full seed table (E01-E18) live-status"
+    - "Namespace-hygiene policy note (A3) for future sessions"
+    - "PROJECT-CLOSING FINDINGS TABLE: all 22 findings -> fixed (session, evidence) or deferred (register row)"
+    - "Final make test + make example output evidence"
+  eval_seed_candidates:
+    - E16
+    - E17
