@@ -38,6 +38,12 @@ input in this table, in any build mode (with or without `NDEBUG`):
   0xFFFFFFFF-length, and missing-shape files
 - THEN no ASan report is emitted, no `terminate` occurs, and the process exits 0
 
+#### Scenario: missing file rejected without abort in a debug (assert-enabled) build
+
+- WHEN an unopenable path is loaded in the suite build (no `-DNDEBUG`, `debug_mode` = 1)
+- THEN `load_npy` returns `false` and the process does not abort (pre-fix: `better_assert` →
+  `print_assertion` → `abort()` — SIGABRT, evidence `tdd_red_run.log`)
+
 #### Scenario: reject leaves no partial state (no resize before rejection)
 
 - WHEN a file passes magic/version/bounds but fails the dtype check (E04: `<f4` into

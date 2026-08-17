@@ -54,6 +54,7 @@
 | D9 | Copy form | `std::copy_n(reinterpret_cast<std::int8_t*>(…), payload, reinterpret_cast<std::int8_t*>(zen.data()))` | Keep `copy_n<value_type>` | Identical bytes (payload = row·col·sizeof(T)); removes unaligned strict-typed loads; in-repo pattern (`load_binary` ~2496). |
 | D10 | `row_major` detection | Preserved verbatim (`header.find("T") != npos`) | Rewrite as proper `'fortran_order': True` search | Happy-path invariance; with D7 (dtype set) + D3 (digit shapes) the `'T'` source is uniquely the fortran value; pinned by the `e03_fortran` probe case. |
 | D11 | Failure-time matrix state | `resize` strictly after all checks; negative tests assert row/col unchanged | — | Contract failure mode "stoul exception path returns true by accident (resize already applied) — reject before zen.resize". |
+| D12 | Open-failure handling | Remove `better_assert( ifs, … )` from `load_npy`; hard `if ( !ifs ) return false;` only | Keep the assert as the debug-message layer | `better_assert` = `print_assertion` = print + **`abort()`** when `debug_mode` (i.e. without `-DNDEBUG`) — confirmed by the TDD red run: the pre-fix suite build (asserts enabled) **SIGABRTs** on a missing file (evidence `tdd_red_run.log`). The contract invariant "unopenable path → clean `false`" carries no build-mode qualifier; an assert-abort on attacker input is the S1 hazard class (process death), so the I/O boundary keeps the hard check only. Diagnostics for a failed open are not worth a process death. |
 
 ## Risks / Trade-offs
 
@@ -70,6 +71,9 @@
 - [`catch(…)` swallows a genuine bug inside the parse region] → masking at the I/O shell is the
   designed behavior (P2/P3); the suite + probes + bug-restoration check (plan §5.3) prove the
   rejection logic, not the catch, does the work.
+- [Removal of `better_assert` loses the debug open-failure message] → accepted: the message's
+  only channel was an `abort()` (D12); the hard check returns `false` in every mode, which is
+  what callers (and the new tests) can rely on.
 - [`resize` partial state on `bad_alloc`] → the invariant only requires false/throw-free/UB-free;
   `resize`'s own exception safety is out of scope (pre-existing library property).
 - [Crafted test files left in `tmp/` on a crashing run] → each case removes its own file; `tmp/`

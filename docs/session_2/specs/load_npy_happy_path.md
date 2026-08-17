@@ -3,7 +3,8 @@
 Delta: **MODIFIED Requirements** — the full updated content of the requirement is given below.
 Behavior of valid files is **unchanged** (PRD §5 row 18: "valid files load exactly as before");
 what changes is that the requirement is now explicit, and that it coexists with the new
-validation capability. The 4 existing `TEST_CASE` blocks in `tests/cases/load_npy.hpp` and their
+validation capability. The existing happy-path `TEST_CASE( "Loading npy files" )` in
+`tests/cases/load_npy.hpp` (one case, four scoped sub-blocks, one per fixture) and its
 registration at `tests/test.cc:35` MUST remain byte-for-byte unchanged.
 
 ## MODIFIED Requirements
@@ -32,8 +33,8 @@ fixture types and the probe-pinned variants:
 #### Scenario: fixture u8 unchanged
 
 - WHEN `./images/u8.npy` is loaded into `matrix<std::uint8_t>` after the change
-- THEN the 6 element assertions of the existing case pass unmodified (byte-identical TEST_CASE
-  block, green in the full suite)
+- THEN the 6 element assertions of the existing sub-block pass unmodified (byte-identical
+  TEST_CASE block, green in the full suite)
 
 #### Scenario: fixture 8 / 32 / 64 unchanged
 

@@ -31,8 +31,8 @@ instead of OOB/terminate/misinterpretation; valid files load exactly as before.
    member is genuinely throw-free. Signatures unchanged.
 2. **`tests/cases/load_npy.hpp`** — append exactly 5 negative `TEST_CASE`s (contract list), each
    crafting bytes at runtime into `tmp/`, asserting `ok==false` **and** matrix state unchanged;
-   existing 4 happy cases byte-for-byte untouched; no `tests/test.cc` change (already registered
-   at line 35).
+   the existing happy-path `TEST_CASE( "Loading npy files" )` (four scoped sub-blocks) untouched
+   byte-for-byte; no `tests/test.cc` change (already registered at line 35).
 3. **`.work/probes/E03_E04.cc`** — 18-case ASan probe (reject/dtype/boundary-pin classes),
    compiled by the contract's deterministic check.
 4. **`docs/eval_seed_cases.md`** — E03/E04 status `seeded` → `promoted` (probe + permanent home in

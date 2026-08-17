@@ -34,16 +34,20 @@ fixture header hexdumps (session transcript), phase docs `docs/session_2/**`, pr
      `FF FF FF FF`, 4 header bytes + 2 payload bytes.
   5. `load_npy rejects a foreign dtype` — well-formed 1×2 `<f4` file (8-byte payload) into
      `matrix<double>` (E04 acceptance) + `>f8` file into `matrix<double>`.
-- New includes for the append block: `<cstdint>`, `<filesystem>`, `<fstream>`, `<vector>`.
+- New includes for the append block: `<cstdint>`, `<filesystem>`, `<fstream>`, `<string>`,
+  `<vector>`.
+- Each new case first loads `./images/64.npy` (valid 2×3 baseline) and re-checks row/col and
+  sampled values after the rejected loads — pinning "no resize before rejection" on a
+  non-trivial state.
 
 **2.2** Red run:
 ```sh
 make test 2>&1 | tail -2
 ./test_test "[load_npy]" 2>&1 | tee .work/evidence/tdd_red_run.log | tail -30
 ```
-Expect: the 4 happy cases pass; the 5 new cases fail or crash (record which mode: terminate /
-garbage-`true` / clean-false-that-doesn't-exist-yet). Verify `git diff tests/cases/load_npy.hpp`
-is append-only (existing block byte-identical).
+Expect: the existing happy case passes; the 5 new cases fail or crash (record which mode:
+terminate / garbage-`true` / clean-false-that-doesn't-exist-yet). Verify
+`git diff tests/cases/load_npy.hpp` is append-only (existing block byte-identical).
 
 **Commit after 2.2:** `S2 task 2: 5 negative load_npy cases (TDD red pre-fix; happy path untouched)`.
 
@@ -53,7 +57,9 @@ is append-only (existing block byte-identical).
 (`matrix.hpp` ~2508–2566; keep the `std::string` overload and both signatures; no other hunk).
 Validate-then-act sequence per specs R-V1…R-V9 and design D1–D11, in order:
 
-1. keep `better_assert( ifs, … )` (debug message) + hard `if ( !ifs ) return false;`
+1. keep the open attempt; hard `if ( !ifs ) return false;` **only** — `better_assert( ifs, … )`
+   is removed (D12: it prints + `abort()` in debug builds; contract requires clean `false` in
+   every mode)
 2. read whole buffer (existing pattern)
 3. `buffer.size() < 12 → false`; magic compare via `std::uint8_t` (6 bytes)
 4. `version = buffer[6]`; `version != 1 && version != 2 → false`;

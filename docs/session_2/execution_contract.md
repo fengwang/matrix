@@ -92,8 +92,8 @@ If any focus item fails: classify via `docs/prompts/failure_arbiter.md` before f
 `make test` green AND `.work/probe_s2` (ASan, release) exits 0 on the E03 + E04 cases AND the
 full test suite is green AND `grep -c 'return false'` on lines 2499–2590 of `matrix.hpp` > 6.
 
-Operational additions (this file): the 4 existing happy-path cases pass byte-unchanged; the
-5 negative cases assert `ok == false` and matrix state unchanged; the diff is confined to the
+Operational additions (this file): the existing happy-path `TEST_CASE` passes byte-unchanged;
+the 5 negative cases assert `ok == false` and matrix state unchanged; the diff is confined to the
 allowed set (audit vs `ad6fa79`); sharded review + adversarial verification recorded with no
 open High/Critical; seeds E03/E04 promoted; handoff written with S6 doc delta + S5 warning;
 compiler version recorded; checks run and not run both stated; human decision gate presented.

@@ -32,7 +32,7 @@ Ordered by dependency. Each task is verifiable (done = its check passes; checks 
       double + `>f8`). Crafted bytes → `tmp/`, removed per case; each case also asserts matrix
       state unchanged.
 - [ ] 2.2 TDD red evidence: `make test` + run `./test_test "[load_npy]"` on the pre-fix tree →
-      the 4 happy cases pass, the 5 new cases fail/crash (record output); existing blocks
+      the happy case passes, the 5 new cases fail/crash (record output); existing block
       byte-unchanged (`git diff` on the test file = append only).
 
 ## 3. Fix: `crtp_load_npy` validated boundary
@@ -53,8 +53,8 @@ Ordered by dependency. Each task is verifiable (done = its check passes; checks 
       exactly the `load_npy` body region (no other hunk); test file diff = append only.
 - [ ] 4.3 Contract deterministic check `grep -c 'return false'` on `matrix.hpp` lines 2499–2590
       > 6.
-- [ ] 4.4 Happy-path invariance: `git diff` of `tests/cases/load_npy.hpp` shows the 4 existing
-      blocks untouched.
+- [ ] 4.4 Happy-path invariance: `git diff` of `tests/cases/load_npy.hpp` shows the existing
+      `TEST_CASE( "Loading npy files" )` block untouched (append-only diff).
 
 ## 5. Independent derivation + bug-restoration (branch_and_compare)
 
