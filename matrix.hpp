@@ -3529,7 +3529,7 @@ namespace feng
             size_type const the_cols_to_copy = std::min( zen.col(), new_col );
 
             for ( size_type r = 0; r != the_rows_to_copy; ++r )
-                std::copy( zen.row_begin( r ), zen.row_begin( r ) + the_rows_to_copy, other.row_begin( r ) );
+                std::copy( zen.row_begin( r ), zen.row_begin( r ) + the_cols_to_copy, other.row_begin( r ) );
 
             zen.swap( other );
             return zen;
