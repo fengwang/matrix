@@ -23,6 +23,7 @@
 #include "./cases/expm1.hpp"
 #include "./cases/fabs.hpp"
 #include "./cases/flip.hpp"
+#include "./cases/flip_aliases.hpp"
 #include "./cases/floor.hpp"
 #include "./cases/fma.hpp"
 #include "./cases/fmin.hpp"

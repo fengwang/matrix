@@ -4576,12 +4576,12 @@ namespace feng
     template < typename T, Allocator A>
     matrix< T, A > const fliplr( const matrix< T, A >& m )
     {
-        return flipdim( m, 1 );
+        return flipdim( m, 2 );
     }
     template < typename T, Allocator A>
     matrix< T, A > const flipud( const matrix< T, A >& m )
     {
-        return flipdim( m, 2 );
+        return flipdim( m, 1 );
     }
     template < typename T,
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
