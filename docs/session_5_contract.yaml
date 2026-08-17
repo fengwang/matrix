@@ -23,6 +23,7 @@ session_contract:
       - .work/
       - docs/eval_seed_cases.md
       - docs/risk_register.md
+      - "docs/session_5/**"
     forbidden_files:
       - ReadMe.md
       - Makefile
