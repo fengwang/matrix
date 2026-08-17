@@ -4476,7 +4476,7 @@ namespace feng
 
             while ( index_right > index_left )
             {
-                std::swap_ranges( ans.col_begin( index_left ), ans.col_end( index_left ), ans.row_begin( index_right ) );
+                std::swap_ranges( ans.col_begin( index_left ), ans.col_end( index_left ), ans.col_begin( index_right ) );
                 --index_right;
                 ++index_left;
             }
