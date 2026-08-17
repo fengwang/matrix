@@ -2052,35 +2052,34 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
-        value_type det() const noexcept
+        value_type det() const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            better_assert( zen.row()==zen.col(), " matrix::det(), the row and matrix are supposed to be same, but now row is ", zen.row(), " and col is ", zen.col() );
+            better_assert( zen.row()==zen.col(), " matrix::det(), the row and col are supposed to be the same, but now row is ", zen.row(), " and col is ", zen.col() );
 
             if ( 0 == zen.size() )
             {
                 return value_type{};
             }
 
-            if ( 1 == zen.size() )
+            // Pivoted LU product: det = sign * prod(U_ii). Single code path for all
+            // sizes (1x1 degenerates to the lone pivot). An exact zero pivot yields
+            // exactly 0 (P7: no epsilon threshold); the lu_decomposition failure
+            // signal (inf/nan from a zero pivot in an off-last column) also yields 0.
+            // Note: noexcept dropped — the body allocates (L, U, perm, working copy).
+            zen_type L, U;
+            int sign{ 1 };
+            std::vector< std::uint_least64_t > perm;
+            if ( 0 != lu_decomposition( zen, L, U, sign, perm ) )
+                return value_type{};
+            value_type d = value_type( sign );
+            for ( size_type i = 0; i < zen.row(); ++i )
             {
-                return *( zen.begin() );
+                if ( 0 == U[i][i] )
+                    return value_type{};
+                d *= U[i][i];
             }
-
-            if ( 4 == zen.size() )
-            {
-                return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1];
-            }
-
-            size_type const n = zen.row();
-            size_type const m = n >> 1;
-            zen_type const P( zen, range_type( 0, m ), range_type( 0, m ) );
-            zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
-            zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
-            zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
-            zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
-
-            return P.det() * tmp.det();
+            return d;
         }
     };
     template < typename Matrix, typename Type, Allocator Alloc >
