@@ -10,3 +10,11 @@ images/mandelbrot_5/*
 images/julia_set/*
 tmp/*
 .omo/
+adversarial_verifier.md
+docs/prompts/
+docs/templates/
+AGENTS.md
+CLAUDE.md
+ENVIRONMENTS.md
+REVIEW.md
+.work/
