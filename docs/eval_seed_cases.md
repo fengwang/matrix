@@ -14,8 +14,8 @@ Each probe `main()` prints `PASS <id>` on success, `FAIL <id>: <detail>` otherwi
 
 | ID | Finding | Probe (sketch) | Expected | Owner | Status |
 |---|---|---|---|---|---|
-| E01 | C1 | `matrix<double> m{5,5,1.0}; m.shrink_to_size(5,3);` print shape + all values; plus grow case `m2{1,1,7.0}.shrink_to_size(4,4)` | 5×3; rows = `1 1 1 0 0`-pattern (first 3 cols preserved, rest 0); grow case zero-pads | S1 | seeded |
-| E02 | C2 | `matrix<double> m{3,5,{1..15}}; auto f = flipdim(m,2);` print `f`; plus `flipdim(m,1)` | `f` equals hand-written left-right flip of `m` (rows reversed element order); `flipdim(m,1)` = up-down flip; ASan-clean on 3×5 | S1 | seeded |
+| E01 | C1 | `matrix<double> m{5,5,1.0}; m.shrink_to_size(5,3);` print shape + all values; plus grow case `m2{1,1,7.0}.shrink_to_size(4,4)` | 5×3; rows = `1 1 1 0 0`-pattern (first 3 cols preserved, rest 0); grow case zero-pads | S1 | promoted (probe `.work/probes/E01_E02.cc` case e01; permanent home `tests/cases/shrink_to_size.hpp`; PASS post-fix 2026-08-17, runId b356840) |
+| E02 | C2 | `matrix<double> m{3,5,{1..15}}; auto f = flipdim(m,2);` print `f`; plus `flipdim(m,1)` | `f` equals hand-written left-right flip of `m` (rows reversed element order); `flipdim(m,1)` = up-down flip; ASan-clean on 3×5 | S1 | promoted (probe `.work/probes/E01_E02.cc` case e02; permanent home `tests/cases/flip.hpp`; PASS post-fix 2026-08-17, runId b356840) |
 | E03 | S1 (report) | write a 3-byte file `x.npy` to `.work/`; `matrix<double> m; bool ok = m.load_npy(".work/x.npy");` print `ok`; plus a 21-byte file with valid magic but truncated header | prints `ok=0`; **no** ASan report, no abort, no `terminate` | S2 | seeded |
 | E04 | S1 (report) | hand-write a minimal valid float32 `.npy` (64-bit, shape 1×2) into `.work/`; load into `matrix<double>` | returns `false` (dtype mismatch rejected), no misinterpretation of bytes | S2 | seeded |
 | E05 | C3 | `matrix<double> m{2,3,{1,2,3,4,5,6}};` print `fliplr(m)`, `flipud(m)` | `fliplr` = `3 2 1 / 6 5 4`; `flipud` = `4 5 6 / 1 2 3` | S3 | seeded |
