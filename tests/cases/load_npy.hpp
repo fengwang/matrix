@@ -73,6 +73,8 @@ TEST_CASE( "load_npy rejects an unopenable or truncated (3-byte) file", "[load_n
     std::filesystem::create_directories( "tmp" );
     std::string const path_3b = "tmp/s2_neg_trunc3b.npy";
     write_bytes( path_3b.c_str(), { 0x93, 'N', 'U' } );
+    std::string const path_badmag = "tmp/s2_neg_badmag.npy";
+    write_bytes( path_badmag.c_str(), std::vector< std::uint8_t >( 16, 0xAA ) );
 
     feng::matrix< double > m;
     REQUIRE( m.load_npy( "./images/64.npy" ) );              // valid baseline state (2x3)
@@ -82,12 +84,14 @@ TEST_CASE( "load_npy rejects an unopenable or truncated (3-byte) file", "[load_n
 
     REQUIRE( !m.load_npy( "tmp/s2_neg_missing.npy" ) );      // unopenable file
     REQUIRE( !m.load_npy( path_3b.c_str() ) );               // 3 bytes: below the 12-byte minimum
+    REQUIRE( !m.load_npy( path_badmag.c_str() ) );           // 16 bytes of 0xAA: bad magic
 
     REQUIRE( m.row() == r0 );                                // no partial state
     REQUIRE( m.col() == c0 );
     REQUIRE( m[0][0] == v00 );
 
     std::filesystem::remove( path_3b );
+    std::filesystem::remove( path_badmag );
 }
 
 TEST_CASE( "load_npy rejects a truncated header", "[load_npy]" )
@@ -134,7 +138,8 @@ TEST_CASE( "load_npy rejects a missing or malformed shape token", "[load_npy]" )
         { "tmp/s2_neg_1d.npy",      dict_header( "<f8", "(2,)" ) },
         { "tmp/s2_neg_neg.npy",     dict_header( "<f8", "(-1, 2)" ) },
         { "tmp/s2_neg_alpha.npy",   dict_header( "<f8", "(a, b)" ) },
-        { "tmp/s2_neg_big.npy",     dict_header( "<f8", "(999999999999999999999999999999, 2)" ) }
+        { "tmp/s2_neg_big.npy",     dict_header( "<f8", "(999999999999999999999999999999, 2)" ) },
+        { "tmp/s2_neg_zerodim.npy", dict_header( "<f8", "(0, 2)" ) }
     };
 
     feng::matrix< double > m;
