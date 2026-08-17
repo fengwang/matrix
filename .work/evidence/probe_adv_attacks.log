@@ -1,0 +1,11 @@
+ok   a1_v2_12b_len0
+ok   a1_v2_12b_len1
+ok   a2_v1_hlen0
+ok   a3_1mb_junk_header
+ok   a4_directory_name
+ok   a5_state_unchanged
+ok   a6_giant_shape_no_oom
+ok   a6_shape_unchanged
+ok   a7_wrapping_product_rejected
+ok   a7_shape_unchanged
+PASS EXTRA-ATTACKS
