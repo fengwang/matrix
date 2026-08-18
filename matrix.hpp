@@ -4153,6 +4153,20 @@ namespace feng
             };
         }
 
+        // SVD-based pseudoinverse core (A2: was the body of the retired SVD-alias
+        // free function; moved here as-is — threshold, argument order, and return
+        // expression unchanged). Exposed only through feng::pinv.
+        template < typename T, Allocator A>
+        matrix<T,A> const pinv_core( matrix<T,A> const& a )
+        {
+            matrix<T, A> u;
+            matrix<T, A> w;
+            matrix<T, A> v;
+            singular_value_decomposition( a, u, w, v );
+            for_each( w.begin(), w.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
+            return v * w * u.transpose();
+        }
+
     }
 
     /*
@@ -4405,11 +4419,6 @@ namespace feng
     matrix< std::complex< T >, A> const ctranspose( const matrix< std::complex< T >, A>& m )
     {
         return conj( m.transpose() );
-    }
-    template < typename T, Allocator A>
-    T const det( const matrix< T, A >& m )
-    {
-        return m.det();
     }
     template < typename T, Allocator A>
     matrix< T, A > const diag( const matrix< T, A >& m, const std::ptrdiff_t offset = 0 )
@@ -5303,25 +5312,12 @@ namespace feng
         return singular_value_decomposition( a );
     }
 
-    template < typename T, Allocator A>
-    matrix<T,A> const svd_inverse( matrix<T, A> const& a )
+    // A2: the retired SVD/pinv alias free functions are gone — the SVD core lives
+    // as-is in matrix_details::pinv_core; pinv is the canonical name.
+    template < typename T, typename A = std::allocator< T > >
+    matrix< T, A > const pinv( matrix< T, A > const& m )
     {
-        matrix<T, A> u;
-        matrix<T, A> w;
-        matrix<T, A> v;
-        singular_value_decomposition( a, u, w, v );
-        matrix_details::for_each( w.begin(), w.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
-        return v * w * u.transpose();
-    }
-    template < typename Matrix >
-    Matrix const pinverse( const Matrix& m )
-    {
-        return svd_inverse( m );
-    }
-    template < typename Matrix >
-    Matrix const pinv( const Matrix& m )
-    {
-        return pinverse( m );
+        return matrix_details::pinv_core< T, A >( m );
     }
 
     //generating a matrix uniformly in [0, 1)
@@ -5349,31 +5345,17 @@ namespace feng
         return rand< T, A >( n, n );
     }
 
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( std::integral auto r, std::integral auto c )
-    {
-        return rand< T, A >( r, c );
-    }
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::integral auto n )
-    {
-        return rand< T, A >( n );
-    }
     template < typename T, Allocator A>
     matrix< T, A > const rand_like( matrix<T, A> const& mat )
     {
-        auto const[row, col] = mat.shape();
-        return random<T, A>( row, col );
-    }
-    template < typename T, Allocator A>
-    matrix< T, A > const random_like( matrix<T, A> const& mat )
-    {
-        return rand_like<T,A>(mat);
+        auto const[ row, col ] = mat.shape();
+        return rand< T, A >( row, col );
     }
     template < typename T, Allocator A> //pytorch style
-    matrix< T, A > const randn_like( matrix<T, A> const& mat )
+    matrix< T, A > const randn_like( matrix< T, A> const& mat )
     {
-        return rand_like<T,A>(mat);
+        auto const[ row, col ] = mat.shape();
+        return rand< T, A >( row, col );
     }
     template < typename T, Allocator A>
     const matrix< T, A >

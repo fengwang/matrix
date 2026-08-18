@@ -1,10 +1,11 @@
 #include <cmath>
-TEST_CASE( "Matrix pinv/pinverse", "[pinv]" )
+TEST_CASE( "Matrix pinv", "[pinv]" )
 {
     // C4 + R1 regression (spec: docs/session_3/specs/pseudoinverse.md).
-    // pinverse/pinv compute the Moore-Penrose pseudoinverse through the single
-    // SVD-inversion core (svd_inverse). Threshold: a singular value sigma is inverted
-    // iff |sigma| > 1.0e-10 (inherited svd_inverse rule; strict — P7: no new epsilon).
+    // pinv computes the Moore-Penrose pseudoinverse through the single
+    // SVD-inversion core (matrix_details::pinv_core, moved as-is from the retired
+    // svd_inverse, A2). Threshold: a singular value sigma is inverted
+    // iff |sigma| > 1.0e-10 (inherited rule; strict — P7: no new epsilon).
     // Domain note (D4): the SVD core is numerically valid for tall/square matrices;
     // no MP assertions are made on m < n matrices (wide-SVD gap, S6 candidate).
 
@@ -46,11 +47,11 @@ TEST_CASE( "Matrix pinv/pinverse", "[pinv]" )
         REQUIRE( std::abs( p[1][1] - 0.5 ) < 1.0e-8 );
     }
 
-    // Scenario: pinv == pinverse (same core, bitwise).
+    // Scenario: pinv is deterministic (two calls, bitwise equal).
     {
         feng::matrix<double> const m{ 3, 3, { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 } };
         feng::matrix<double> const p1 = feng::pinv( m );
-        feng::matrix<double> const p2 = feng::pinverse( m );
+        feng::matrix<double> const p2 = feng::pinv( m );
         for ( unsigned long i = 0; i != 3; ++i )
             for ( unsigned long j = 0; j != 3; ++j )
                 REQUIRE( p1[i][j] == p2[i][j] );
