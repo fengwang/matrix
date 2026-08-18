@@ -5763,7 +5763,7 @@ namespace feng
         return biconjugate_gradient_stablized_method( A, x, b, max_loops, eps );
     }
     template < typename Matrix1, typename Matrix2 >
-    void cholesky_decomposition( const Matrix1& m, Matrix2& a )
+    bool cholesky_decomposition( const Matrix1& m, Matrix2& a )
     {
         typedef typename Matrix1::value_type value_type;
         better_assert( m.row() == m.col() );
@@ -5774,11 +5774,24 @@ namespace feng
             for ( std::uint_least64_t j = i; j < n; ++j )
             {
                 const value_type sum = a[i][j] - std::inner_product( a.row_begin( i ), a.row_begin( i ) + i, a.row_begin( j ), value_type( 0 ) );
-                a[j][i]              = ( i == j ) ? std::sqrt( sum ) : ( sum / a[i][i] );
+                if ( i == j )
+                {
+                    // positive-definiteness guard: the diagonal step must be strictly
+                    // positive, else the sqrt below is of a non-positive (real) value and
+                    // the factor silently contains NaN. complex has no ordering — legacy
+                    // path (no in-repo complex callers).
+                    if constexpr ( ! ComplexMatrix< Matrix1 > )
+                        if ( sum <= value_type( 0 ) )
+                            return false;
+                    a[i][i] = std::sqrt( sum );
+                }
+                else
+                    a[j][i] = sum / a[i][i];
             }
 
         for ( std::uint_least64_t i = 1; i < n; ++i )
             std::fill( a.upper_diag_begin( i ), a.upper_diag_end( i ), value_type() );
+        return true;
     }
     template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int conjugate_gradient_squared( const matrix< T1, A1 >& A,

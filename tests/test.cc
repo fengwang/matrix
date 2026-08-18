@@ -14,6 +14,7 @@
 #include "./cases/atan.hpp"
 #include "./cases/cbrt.hpp"
 #include "./cases/ceil.hpp"
+#include "./cases/cholesky.hpp"
 #include "./cases/cosh.hpp"
 #include "./cases/cos.hpp"
 #include "./cases/conv_same.hpp"
