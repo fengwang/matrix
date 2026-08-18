@@ -23,9 +23,9 @@ tolerances on finite values only; exact pins live in the `-O1` probe.
 - When `make test` runs
 - Then an 8×8 differential case (fast path) and a 6×8 differential case
   (fallback path) both match the embedded corrected-naive oracle within
-  tolerance (1e-9 double; 1e-4 float)
-- And a 126×128 case exercises the fallback at the contract's adversarial
-  size
+  tolerance (1e-9 double; 1e-3 float vs the double-math oracle, R-19)
+- And a 126×128 float case (tolerance 1e-2, magnitudes ~2.4e4) exercises the
+  fallback at the contract's adversarial size
 - And the embedded oracle is a self-contained copy of the corrected naive
   DFT, frozen after S6 (R-18), with a header comment recording the F1
   provenance (pre-fix loop had the `x[r][c]` data-index bug)

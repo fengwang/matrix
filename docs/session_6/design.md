@@ -104,15 +104,19 @@ with `double`-theta twiddles, exactly the structure frozen in `fft_private`.
 
 Scenarios (fixed finite inputs only):
 1. **Differential, fast path:** 8×8 `x[r][c] = sin(r·c) + 0.5·cos(0.3·r − 0.7·c)`
-   (float and double): `‖fft(x) − ref(x, fwd)‖∞ < 1e-9` (double) / `< 1e-4`
-   (float).
+   (float and double): `‖fft(x) − ref(x, fwd)‖∞ < 1e-9` (double) / `< 1e-3`
+   (float, vs the double-math oracle; float accumulation, R-19).
 2. **Differential, fallback path:** 6×8 (row 6 = not PoT) same check, plus a
-   126×128 float quick case (`‖·‖∞ < 1e-3` after scaling; asserts the fallback
-   ran by comparing against the ref — no path introspection needed).
+   126×128 float quick case (`‖·‖∞ < 1e-2`, magnitudes ~2.4e4 make the float
+   ULP dominate; asserts the fallback ran by comparing against the ref — no
+   path introspection needed).
 3. **E16 (in-suite mirror of the probe):** 8×8 delta at (0,0) → `fft` all ones
    within 1e-9; `‖ifft(fft(x)) − x‖∞ < 1e-9` for the 3·ones+δ input.
-4. **Normalization exactly once:** `‖ifft(ifft(x)) − x/(R·C)²‖∞ < 1e-9`
-   (catches double application on one call and missing application).
+4. **Normalization exactly once:** `ifft(ifft(x)) == flip2d(x)/(R·C)` within
+   1e-9 — with the unscaled inverse kernel `G`, `G∘G = (R·C)·flip2d(x)` (both
+   axes flip), so with per-call scale `s` the composition is `flip2d(x)·(R·C)·s²`,
+   which equals the expected value only for `s = 1/(R·C)` exactly (catches
+   double application on one call and missing application).
 5. **E17 pins:** `fftshift`/`ifftshift` of a 1×3 row `[1 2 3]` and 3×1 column:
    value order `(1,2,0)` for both functions; 4×1/1×4 order `(2,3,0,1)` for both.
 6. **Even-dim regression (C13 note):** 4×8 `fftshift` matches the pre-fix
