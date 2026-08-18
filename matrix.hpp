@@ -6752,8 +6752,8 @@ namespace feng
 
         if ( mode == std::string{"same"} )
         {
-            better_assert( rb > 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
-            better_assert( rb > 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
+            better_assert( rb >= 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
+            better_assert( cb >= 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
             return { default_conv, { (rb-1)>>1, ra + ((rb-1)>>1) }, { (cb-1)>>1, ca + ((cb-1)>>1) } };
         }
 

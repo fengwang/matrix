@@ -16,6 +16,7 @@
 #include "./cases/ceil.hpp"
 #include "./cases/cosh.hpp"
 #include "./cases/cos.hpp"
+#include "./cases/conv_same.hpp"
 #include "./cases/det.hpp"
 #include "./cases/erfc.hpp"
 #include "./cases/erf.hpp"
