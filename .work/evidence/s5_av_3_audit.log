@@ -1,0 +1,16 @@
+=== AV-7: full-session matrix.hpp diff audit ===
+@@ -1149,7 +1149,9 @@ namespace feng
+@@ -3183,9 +3185,11 @@ namespace feng
+@@ -4119,6 +4123,8 @@ namespace feng
+@@ -5318,19 +5324,21 @@ namespace feng
+@@ -5352,18 +5360,18 @@ namespace feng
+
+=== AV-8: line 279 guard untouched ===
+0
+0 (untouched)
+
+=== AV-9: working tree clean ===
+clean
+
+=== AV-10: contract deterministic check #3 ===
+0

@@ -1,0 +1,25 @@
+=== T2 green (retry after const-distribution fix) ===
+  • ‘std::integral_constant<bool, false>::value’ evaluates to false
+compilation terminated due to -fmax-errors=1.
+make: *** [Makefile:26: test] Error 1
+All tests passed (49217182 assertions in 73 test cases)
+
+--- P0 probe (post-fix) ---
+time before seed-0 loop: 1787042789
+time after  seed-0 loop: 1787042789
+same-site seed-0 first-element distinct values over 100 calls: 1 (correlation confirmed if <= 2)
+cross-site (different &ans salts) equal: 0
+explicit seed 7 == 7: 1
+seed 7 != 8: 1
+rand(2,5,7):
+0.22733907496470684 0.31897222781086315 0.97822289621420422 0.45558490783988154 0.30801276722410448 0.26387084078474338 0.086743435240611538 0.41937221076154407 0.015910359162008152 0.52776479127348463 
+rand(1,4,1) [examples use seed 1]:
+0.99718480823026556 0.93255736136816547 0.128124447772306 0.99904051546527362 
+--- TSan post-fix ---
+T SAN CLEAN (no race reported before this line)
+exit: 0
+=== T2 green (final) ===
+g++ -c -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL  -o ./test.o tests/test.cc
+g++ -o ./test_test ./test.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto
+All tests passed (49217191 assertions in 74 test cases)
+

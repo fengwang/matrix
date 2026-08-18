@@ -1,0 +1,5 @@
+=== T5 check ===
+NDEBUG mentions in design.md: 8
+NDEBUG mentions in spec: 6
+?? test_example
+?? test_test

@@ -1,0 +1,17 @@
+=== AV-3: adversarial seed probe ===
+PASS AV-SEEDS
+exit: 0
+
+=== AV-4: int instantiation compile attempt (expect FAIL — documented-unsupported) ===
+/usr/include/c++/16/bits/random.h:2494:56: error: static assertion failed: result_type must be a floating point type
+int compile exit: 2 (nonzero = documented-unsupported confirmed)
+
+=== AV-5: complex instantiation compile attempt (expect FAIL) ===
+/usr/include/c++/16/bits/random.h:2494:56: error: static assertion failed: result_type must be a floating point type
+complex compile exit: 1
+
+=== AV-6: cross-run seed-1 determinism (P0 binary, two launches) ===
+rand(1,4,1) [examples use seed 1]:
+0.99718480823026556 0.93255736136816547 0.128124447772306 0.99904051546527362 
+rand(1,4,1) [examples use seed 1]:
+0.99718480823026556 0.93255736136816547 0.128124447772306 0.99904051546527362 
