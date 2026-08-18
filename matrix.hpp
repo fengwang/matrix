@@ -6418,6 +6418,117 @@ namespace feng
         {
             typedef std::complex< T > result_type;
         };
+
+        // Arithmetic base of a (possibly complex) element type.
+        template < typename T >
+        struct base_real
+        {
+            typedef T type;
+        };
+        template < typename T >
+        struct base_real< std::complex< T >>
+        {
+            typedef T type;
+        };
+
+        // True only for powers of two; n = 0 -> false (empty inputs are guarded at the callers).
+        bool is_power_of_two( std::uint_least64_t n )
+        {
+            return n != 0 && ( n & ( n - 1 ) ) == 0;
+        }
+
+        // Twiddle table w[k] = exp(+- 2*pi*i*k/n), k = 0..n/2-1 (n a power of two, >= 2).
+        // The direction is encoded in the table itself, so the kernel never takes a flag.
+        template < typename T >
+        std::vector< std::complex< T > > twiddle_table( std::uint_least64_t n, bool inverse )
+        {
+            double const pi = 3.1415926535897932384626433;
+            std::vector< std::complex< T > > w( n / 2 );
+            for ( std::uint_least64_t k = 0; k != n / 2; ++k )
+            {
+                double const theta = ( inverse ? 1.0 : -1.0 ) * pi * 2.0 * double( k ) / double( n );
+                w[k] = std::complex< T >( std::complex< double >( std::cos( theta ), std::sin( theta ) ) );
+            }
+            return w;
+        }
+
+        // In-place iterative DIT radix-2 on buf[start + i*stride], i < n (n a power of two).
+        // Only the buffer is mutated; the input matrix is never written.
+        template < typename T >
+        void radix2_fft_1d( std::vector< std::complex< T > >& buf, std::uint_least64_t start, std::uint_least64_t stride, std::uint_least64_t n, std::vector< std::complex< T > > const& w )
+        {
+            if ( n < 2 )
+                return;
+            std::uint_least64_t m = 0;
+            while ( ( std::uint_least64_t( 1 ) << m ) < n )
+                ++m;
+
+            // Bit-reversal permutation.
+            for ( std::uint_least64_t i = 0; i != n; ++i )
+            {
+                std::uint_least64_t rev = 0;
+                for ( std::uint_least64_t b = 0; b != m; ++b )
+                    if ( ( ( i >> b ) & 1 ) != 0 )
+                        rev |= std::uint_least64_t( 1 ) << ( m - 1 - b );
+                if ( rev > i )
+                    std::swap( buf[ start + i * stride ], buf[ start + rev * stride ] );
+            }
+
+            for ( std::uint_least64_t len = 2; len <= n; len <<= 1 )
+            {
+                std::uint_least64_t const half     = len >> 1;
+                std::uint_least64_t const w_stride = n / len;
+                for ( std::uint_least64_t b = 0; b != n; b += len )
+                    for ( std::uint_least64_t k = 0; k != half; ++k )
+                    {
+                        std::complex< T > const u = buf[ start + ( b + k ) * stride ];
+                        std::complex< T > const v = buf[ start + ( b + k + half ) * stride ] * w[ k * w_stride ];
+                        buf[ start + ( b + k ) * stride ]         = u + v;
+                        buf[ start + ( b + k + half ) * stride ]  = u - v;
+                    }
+            }
+        }
+
+        // O(n^4) reference transform: the pre-fix loop structure with the data index
+        // corrected to x[r_][c_] (the pre-fix x[r][c] read the OUTPUT indices and
+        // computed R*C*x[0][0] at (0,0) and zero elsewhere -- not a DFT;
+        // docs/session_6/failure_arbiter.md F1, pre-fix baseline in
+        // .work/evidence/s6_prefix_probe.log). Kept as the fallback path and frozen
+        // after S6 as the differential oracle's provenance (R-18).
+        template < Matrix Mat >
+        matrix< typename add_complex< typename Mat::value_type >::result_type > naive_dft( Mat const& x, bool inverse )
+        {
+            typedef typename add_complex< typename Mat::value_type >::result_type complex_type;
+            auto make_omege = [ & inverse ]( auto k, auto n, auto N )
+            {
+                double const pi    = 3.1415926535897932384626433;
+                double const theta = ( inverse ? 1.0 : -1.0 ) * pi * 2.0 * double( k ) * double( n ) / static_cast< double >( N );
+                return complex_type{ std::cos( theta ), std::sin( theta ) };
+            };
+            std::uint_least64_t const R = x.row();
+            std::uint_least64_t const C = x.col();
+            matrix< complex_type > X( R, C );
+
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                {
+                    complex_type X_rc{ 0.0, 0.0 };
+
+                    for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
+                    {
+                        complex_type tmp{ 0.0, 0.0 };
+
+                        for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
+                            tmp += x[ r_ ][ c_ ] * make_omege( c, c_, C );
+
+                        X_rc += tmp * make_omege( r, r_, R );
+                    }
+
+                    X[r][c] = X_rc;
+                }
+
+            return X;
+        }
     }
 
     template < Matrix Mat >
@@ -6425,33 +6536,43 @@ namespace feng
     {
         typedef typename Mat::value_type value_type;
         typedef typename fft_private::add_complex< value_type >::result_type complex_type;
-        matrix< complex_type > X( x.row(), x.col() );
-        auto make_omege = []( auto k, auto n, auto N )
-        {
-            double const pi    = 3.1415926535897932384626433;
-            double const theta = -pi * 2.0 * k * n / static_cast< double >( N );
-            return complex_type{ std::cos( theta ), std::sin( theta ) };
-        };
-        std::uint_least64_t const R = X.row();
-        std::uint_least64_t const C = X.col();
 
-        for ( std::uint_least64_t r = 0; r != R; ++r )
+        std::uint_least64_t const R = x.row();
+        std::uint_least64_t const C = x.col();
+        matrix< complex_type > X( R, C );
+        if ( R == 0 || C == 0 )
+            return X;
+
+        // Whole-matrix selection: both dims power-of-two -> separable in-place
+        // radix-2 (rows, then columns); otherwise the O(n^4) corrected naive DFT.
+        if ( fft_private::is_power_of_two( R ) && fft_private::is_power_of_two( C ) )
+        {
+            typedef typename fft_private::base_real< value_type >::type base;
+            auto const w_r = fft_private::twiddle_table< base >( R, false );
+            auto const w_c = fft_private::twiddle_table< base >( C, false );
+
+            std::vector< complex_type > row_buf( C );
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+            {
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    row_buf[c] = complex_type( x[r][c] );
+                fft_private::radix2_fft_1d( row_buf, 0, 1, C, w_c );
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    X[r][c] = row_buf[c];
+            }
+
+            std::vector< complex_type > col_buf( R );
             for ( std::uint_least64_t c = 0; c != C; ++c )
             {
-                complex_type X_rc{ 0.0, 0.0 };
-
-                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
-                {
-                    complex_type tmp{ 0.0, 0.0 };
-
-                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
-                        tmp += x[r][c] * make_omege( c, c_, C );
-
-                    X_rc += tmp * make_omege( r, r_, R );
-                }
-
-                X[r][c] = X_rc;
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    col_buf[r] = X[r][c];
+                fft_private::radix2_fft_1d( col_buf, 0, 1, R, w_r );
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    X[r][c] = col_buf[r];
             }
+        }
+        else
+            return fft_private::naive_dft( x, false );
 
         return X;
     }
@@ -6540,50 +6661,54 @@ namespace feng
         return gauss_jordan_elimination( m );
     }
 
-    namespace ifft_private
-    {
-        template < typename T >
-        struct add_complex
-        {
-            typedef std::complex< T > result_type;
-        };
-        template < typename T >
-        struct add_complex< std::complex< T >>
-        {
-            typedef std::complex< T > result_type;
-        };
-    }
     template < typename T, Allocator A >
-    auto ifft( matrix<T, A> const& x )
+    auto ifft( matrix< T, A > const& x )
     {
-        typedef typename ifft_private::add_complex< T >::result_type complex_type;
-        matrix< complex_type > X( x.row(), x.col() );
-        auto make_omege = []( auto k, auto n, auto N )
-        {
-            double const pi    = 3.1415926535897932384626433;
-            double const theta = pi * 2.0 * k * n / static_cast< double >( N );
-            return complex_type{ std::cos( theta ), std::sin( theta ) };
-        };
-        std::uint_least64_t const R = X.row();
-        std::uint_least64_t const C = X.col();
+        // Conjugate-kernel transform (inverse twiddles) plus the single 1/(R*C)
+        // normalization applied exactly once (NumPy ifft2 convention). R-19:
+        // no asserts; 0x0 returns an empty matrix (pre-fix guard preserved).
+        typedef typename fft_private::add_complex< T >::result_type complex_type;
 
-        for ( std::uint_least64_t r = 0; r != R; ++r )
+        std::uint_least64_t const R = x.row();
+        std::uint_least64_t const C = x.col();
+        matrix< complex_type > X( R, C );
+        if ( R == 0 || C == 0 )
+            return X;
+
+        if ( fft_private::is_power_of_two( R ) && fft_private::is_power_of_two( C ) )
+        {
+            typedef typename fft_private::base_real< T >::type base;
+            auto const w_r = fft_private::twiddle_table< base >( R, true );
+            auto const w_c = fft_private::twiddle_table< base >( C, true );
+
+            std::vector< complex_type > row_buf( C );
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+            {
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    row_buf[c] = complex_type( x[r][c] );
+                fft_private::radix2_fft_1d( row_buf, 0, 1, C, w_c );
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    X[r][c] = row_buf[c];
+            }
+
+            std::vector< complex_type > col_buf( R );
             for ( std::uint_least64_t c = 0; c != C; ++c )
             {
-                complex_type X_rc{ 0.0, 0.0 };
-
-                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
-                {
-                    complex_type tmp{ 0.0, 0.0 };
-
-                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
-                        tmp += x[r][c] * make_omege( c, c_, C );
-
-                    X_rc += tmp * make_omege( r, r_, R );
-                }
-
-                X[r][c] = X_rc;
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    col_buf[r] = X[r][c];
+                fft_private::radix2_fft_1d( col_buf, 0, 1, R, w_r );
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    X[r][c] = col_buf[r];
             }
+        }
+        else
+            X = fft_private::naive_dft( x, true );
+
+        // The one and only normalization (P1; applied after either path).
+        double const scale = 1.0 / static_cast< double >( R ) / static_cast< double >( C );
+        for ( std::uint_least64_t r = 0; r != R; ++r )
+            for ( std::uint_least64_t c = 0; c != C; ++c )
+                X[r][c] *= complex_type( scale, 0.0 );
 
         return X;
     }

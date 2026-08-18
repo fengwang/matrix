@@ -99,7 +99,9 @@ TEST_CASE( "Matrix fft", "[fft]" )
                 x[r][c] = std::sin( double( r * c ) ) + 0.5 * std::cos( 0.3 * double( r ) - 0.7 * double( c ) );
 
         REQUIRE( fft_max_diff( fft( x ), fft_ref( x, false ) ) < 1.0e-9 );
-        auto const ifft_x = ifft( fft( x ) );
+        // ifft applies exactly the single 1/(R*C) scale to the unscaled
+        // inverse kernel: ifft(x)*(R*C) == ref_inverse(x).
+        auto const ifft_x = ifft( x );
         auto const ref_inv = fft_ref( x, true );
         for ( std::uint_least64_t r = 0; r != 8; ++r )
             for ( std::uint_least64_t c = 0; c != 8; ++c )
@@ -121,10 +123,10 @@ TEST_CASE( "Matrix fft", "[fft]" )
         matrix< double > x( 6, 8 );
         for ( std::uint_least64_t r = 0; r != 6; ++r )
             for ( std::uint_least64_t c = 0; c != 8; ++c )
-                x[r][c] = 0.25 * std::cos( 0.5 * double( r ) + 0.3 * double( c ) ) + double( r - c ) / 8.0;
+                x[r][c] = 0.25 * std::cos( 0.5 * double( r ) + 0.3 * double( c ) ) + 0.125 * double( int( r ) - int( c ) );
 
         REQUIRE( fft_max_diff( fft( x ), fft_ref( x, false ) ) < 1.0e-9 );
-        auto const ifft_x = ifft( fft( x ) );
+        auto const ifft_x = ifft( x );
         auto const ref_inv = fft_ref( x, true );
         for ( std::uint_least64_t r = 0; r != 6; ++r )
             for ( std::uint_least64_t c = 0; c != 8; ++c )
@@ -169,9 +171,10 @@ TEST_CASE( "Matrix fft", "[fft]" )
                 REQUIRE( std::abs( y[r][c] - cd( x[r][c], 0.0 ) ) < 1.0e-9 );
     }
 
-    // Scenario: normalization applied exactly once, on ifft only —
-    // ifft(ifft(x)) carries 1/(R*C)^2 (catches a factor on fft, or a
-    // doubled/missing factor on ifft).
+    // Scenario: normalization applied exactly once, on ifft only. With the
+    // unscaled inverse kernel I, I∘I = (R*C)·flip2d(x) (both axes flip), so
+    // ifft∘ifft = flip2d(x)/(R*C): scale s per call would give flip2d(x)·(R*C)·s^2,
+    // which equals the expected value only for s = 1/(R*C) exactly.
     {
         matrix< double > x( 8, 8 );
         std::fill( x.begin(), x.end(), 3.0 );
@@ -180,7 +183,7 @@ TEST_CASE( "Matrix fft", "[fft]" )
         auto const y = ifft( ifft( x ) );
         for ( std::uint_least64_t r = 0; r != 8; ++r )
             for ( std::uint_least64_t c = 0; c != 8; ++c )
-                REQUIRE( std::abs( y[r][c] - cd( x[r][c] / 4096.0, 0.0 ) ) < 1.0e-9 ); // (R*C)^2 = 64^2
+                REQUIRE( std::abs( y[r][c] - cd( x[( 8 - r ) % 8 ][( 8 - c ) % 8 ] / 64.0, 0.0 ) ) < 1.0e-9 ); // R*C = 64
     }
 
     // Scenario: complex round-trip (fast path, 8x8).
@@ -198,10 +201,14 @@ TEST_CASE( "Matrix fft", "[fft]" )
 
     // Scenario: E17 odd-3 pins — both fftshift and ifftshift roll by (3+1)/2 = 2,
     // i.e. old positions (1,2,0). The 1x3/3x1 shapes hit the fallback transform
-    // (3 is not a power of two). fft([1,2,3]) = [6, -1.5+0.866025i, -1.5-0.866025i].
+    // (3 is not a power of two). fftshift shifts the FORWARD transform
+    // fft([1,2,3]) = [6, -1.5+0.866025i, -1.5-0.866025i]; ifftshift shifts the
+    // INVERSE transform ifft([1,2,3]) = [2, -0.5-0.288675i, -0.5+0.288675i]
+    // (unscaled inverse [6, -1.5-0.866025i, -1.5+0.866025i] divided by 3).
     {
         cd const F[3] = { cd( 6.0, 0.0 ), cd( -1.5, 0.8660254037844386 ), cd( -1.5, -0.8660254037844386 ) };
-        cd const expect[3] = { F[1], F[2], F[0] };
+        cd const F_expect[3] = { F[1], F[2], F[0] };
+        cd const I_expect[3] = { cd( -0.5, -0.2886751345948129 ), cd( -0.5, 0.2886751345948129 ), cd( 2.0, 0.0 ) };
 
         matrix< double > row( 1, 3 );
         row[0][0] = 1.0; row[0][1] = 2.0; row[0][2] = 3.0;
@@ -209,8 +216,8 @@ TEST_CASE( "Matrix fft", "[fft]" )
         auto const ir = ifftshift( row );
         for ( int k = 0; k < 3; ++k )
         {
-            REQUIRE( std::abs( fr[0][k] - expect[k] ) < 1.0e-9 );
-            REQUIRE( std::abs( ir[0][k] - expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( fr[0][k] - F_expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( ir[0][k] - I_expect[k] ) < 1.0e-9 );
         }
 
         matrix< double > col( 3, 1 );
@@ -219,17 +226,20 @@ TEST_CASE( "Matrix fft", "[fft]" )
         auto const ic = ifftshift( col );
         for ( int k = 0; k < 3; ++k )
         {
-            REQUIRE( std::abs( fc[k][0] - expect[k] ) < 1.0e-9 );
-            REQUIRE( std::abs( ic[k][0] - expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( fc[k][0] - F_expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( ic[k][0] - I_expect[k] ) < 1.0e-9 );
         }
     }
 
     // Scenario: E17 even-4 pins — both functions keep the historical swap-of-halves
     // order (2,3,0,1) (fast path; 4 is a power of two).
-    // fft([1,2,3,4]) = [10, -2+2i, -2, -2-2i]; after the roll: [F2, F3, F0, F1].
+    // fftshift: fft([1,2,3,4]) = [10, -2+2i, -2, -2-2i] -> after the roll [F2, F3, F0, F1].
+    // ifftshift: ifft([1,2,3,4]) = [2.5, -0.5-0.5i, -0.5, -0.5+0.5i]
+    // (unscaled inverse [10, -2-2i, -2, -2+2i] divided by 4) -> [I2/4, I3/4, I0/4, I1/4].
     {
         cd const F[4] = { cd( 10.0, 0.0 ), cd( -2.0, 2.0 ), cd( -2.0, 0.0 ), cd( -2.0, -2.0 ) };
-        cd const expect[4] = { F[2], F[3], F[0], F[1] };
+        cd const F_expect[4] = { F[2], F[3], F[0], F[1] };
+        cd const I_expect[4] = { cd( -0.5, 0.0 ), cd( -0.5, 0.5 ), cd( 2.5, 0.0 ), cd( -0.5, -0.5 ) };
 
         matrix< double > row( 1, 4 );
         row[0][0] = 1.0; row[0][1] = 2.0; row[0][2] = 3.0; row[0][3] = 4.0;
@@ -237,8 +247,8 @@ TEST_CASE( "Matrix fft", "[fft]" )
         auto const ir = ifftshift( row );
         for ( int k = 0; k < 4; ++k )
         {
-            REQUIRE( std::abs( fr[0][k] - expect[k] ) < 1.0e-9 );
-            REQUIRE( std::abs( ir[0][k] - expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( fr[0][k] - F_expect[k] ) < 1.0e-9 );
+            REQUIRE( std::abs( ir[0][k] - I_expect[k] ) < 1.0e-9 );
         }
     }
 
@@ -250,6 +260,7 @@ TEST_CASE( "Matrix fft", "[fft]" )
             x[r][0] = double( r + 1 );
 
         auto const F = fft_ref( x, false );
+        auto const I = fft_ref( x, true ); // unscaled inverse
         int const perm[5] = { 2, 3, 4, 0, 1 };
 
         auto const fs = fftshift( x );
@@ -257,7 +268,7 @@ TEST_CASE( "Matrix fft", "[fft]" )
         for ( int k = 0; k < 5; ++k )
         {
             REQUIRE( std::abs( fs[k][0] - F[perm[k]][0] ) < 1.0e-9 );
-            REQUIRE( std::abs( is_[k][0] - F[perm[k]][0] ) < 1.0e-9 );
+            REQUIRE( std::abs( is_[k][0] - I[perm[k]][0] * 0.2 ) < 1.0e-9 ); // 1/(5*1) = 0.2
         }
         // and the transform itself is pinned: F[0] = sum = 15.
         REQUIRE( std::abs( F[0][0] - cd( 15.0, 0.0 ) ) < 1.0e-9 );
@@ -270,7 +281,7 @@ TEST_CASE( "Matrix fft", "[fft]" )
         matrix< double > x( 4, 8 );
         for ( std::uint_least64_t r = 0; r != 4; ++r )
             for ( std::uint_least64_t c = 0; c != 8; ++c )
-                x[r][c] = std::sin( 0.3 * double( r ) ) * std::cos( 0.5 * double( c ) ) + 0.25 * double( r - c );
+                x[r][c] = std::sin( 0.3 * double( r ) ) * std::cos( 0.5 * double( c ) ) + 0.25 * double( int( r ) - int( c ) );
 
         matrix< cd > const X = fft( x );
         matrix< cd > swapped = X;
@@ -301,7 +312,7 @@ TEST_CASE( "Matrix fft", "[fft]" )
         for ( std::uint_least64_t r = 0; r != 8; ++r )
             col[r][0] = double( r + 1 );
         REQUIRE( fft_max_diff( fft( col ), fft_ref( col, false ) ) < 1.0e-9 );
-        auto const ifft_col = ifft( fft( col ) );
+        auto const ifft_col = ifft( col );
         auto const ref_col = fft_ref( col, true );
         for ( std::uint_least64_t r = 0; r != 8; ++r )
             REQUIRE( std::abs( ifft_col[r][0] * 8.0 - ref_col[r][0] ) < 1.0e-9 );
