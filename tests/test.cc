@@ -57,6 +57,7 @@
 #include "./cases/proj.hpp"
 //#include "./cases/remquo.hpp"
 #include "./cases/rint.hpp"
+#include "./cases/rref.hpp"
 #include "./cases/round.hpp"
 #include "./cases/shrink_to_size.hpp"
 #include "./cases/sinh.hpp"

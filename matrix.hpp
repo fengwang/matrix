@@ -6483,7 +6483,7 @@ namespace feng
     std::optional<Mat> gauss_jordan_elimination( Mat const& m ) noexcept
     {
         auto const& [row, col] = m.shape();
-        better_assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
+        better_assert( row > 0 && col > 0 && "matrix must have at least one row and one column to execute a Gauss-Jordan Elimination" );
 
         auto a = m;
 
