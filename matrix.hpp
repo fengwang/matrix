@@ -6577,23 +6577,35 @@ namespace feng
         return X;
     }
 
+    namespace fftshift_private
+    {
+        // NumPy fftshift/ifftshift circular roll per axis: new[i] = old[(i - s) mod n],
+        // s = (n+1)/2. For even n, s = n/2 and the roll reproduces the historical
+        // swap-of-halves remap bit-for-bit; for odd n the swap produced
+        // (3,4,2,0,1) at n=5 where NumPy rolls to (2,3,4,0,1) (C13). A fresh
+        // matrix is returned; the input is never mutated.
+        template < typename Mat >
+        Mat shift_roll( Mat const& X )
+        {
+            std::uint_least64_t const R = X.row();
+            std::uint_least64_t const C = X.col();
+            Mat Y( R, C );
+            std::uint_least64_t const sr = ( R + 1 ) / 2;
+            std::uint_least64_t const sc = ( C + 1 ) / 2;
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    Y[r][c] = X[( r + R - sr ) % R][( c + C - sc ) % C ];
+            return Y;
+        }
+    }
+
     template < Matrix Mat >
     auto fftshift( Mat const& x )
     {
-        auto X                          = fft( x );
-        std::uint_least64_t const R           = X.row();
-        std::uint_least64_t const C           = X.col();
-        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
-
-        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
-            std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
-
-        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
-
-        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
-            std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
-
-        return X;
+        // Fused design kept (documented intentional deviation from NumPy's pure
+        // reindexing): fftshift(x) = shift(fft(x)).
+        auto const X = fft( x );
+        return fftshift_private::shift_roll( X );
     }
 
     template < Matrix Mat >
@@ -6715,20 +6727,10 @@ namespace feng
     template < Matrix Mat >
     auto ifftshift( Mat const& x )
     {
-        auto X                          = ifft( x );
-        std::uint_least64_t const R           = X.row();
-        std::uint_least64_t const C           = X.col();
-        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
-
-        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
-            std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
-
-        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
-
-        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
-            std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
-
-        return X;
+        // Fused design kept (documented intentional deviation from NumPy's pure
+        // reindexing): ifftshift(x) = shift(ifft(x)).
+        auto const X = ifft( x );
+        return fftshift_private::shift_roll( X );
     }
 
     template< Matrix Mat >
