@@ -25,6 +25,7 @@
 #include "./cases/exp.hpp"
 #include "./cases/expm1.hpp"
 #include "./cases/fabs.hpp"
+#include "./cases/fft.hpp"
 #include "./cases/flip.hpp"
 #include "./cases/flip_aliases.hpp"
 #include "./cases/floor.hpp"
