@@ -16,7 +16,7 @@ what will change, what will not, and what evidence proves it.
 | 5 | `matrix.hpp` | 3183–3184 (`save_png`) | `if ( ! fp ) return;` after the `fopen` (silent no-op, `noexcept` kept) |
 | 6 | `matrix.hpp` | 3190 | stray `;;` → `;` (R3-slice) |
 | 7 | `tests/test.cc` | 59 (include block) | +1 line: `#include "./cases/rand.hpp"` (after `proj.hpp`) |
-| 8 | `tests/cases/rand.hpp` | new | E14 case (design §5): determinism, seed inequality, [0,1) double+float, int all-zeros, type pins, noexcept pin |
+| 8 | `tests/cases/rand.hpp` | new | E14 case (design §5): determinism, seed inequality, [0,1) double+float, type pins, noexcept pin; int/complex-T compile impact documented in comments |
 | 9 | `docs/eval_seed_cases.md` | E14 row | `seeded` → `promoted` (suite case + probe refs); E15 stays `live` with post-fix result |
 | 10 | `docs/risk_register.md` | tail | S5 watch items (4121 discrepancy, R-07 stream change, complex-T compile impact, noexcept-chain extension, `load_binary` adjacent warning, residual seed-0 correlation) |
 | 11 | `docs/session_5/**`, `.work/**` | — | phase docs, probes, evidence, adversarial + review reports, handoff |
@@ -29,7 +29,9 @@ All within the contract's `allowed_files`. Nothing else.
 - `load_binary` (S2's adjacent `fopen` warning — risk-register watch item only).
 - Thread-pool sizing heuristics, the `mat.size() < 32` threshold, line 279's guard.
 - Examples, Makefile, `images/` (checkout policy), production dependencies.
-- Complex-T `rand` support (documented consequence, no in-repo consumers).
+- Complex-T / int-T `rand` support (documented compile impact: the
+  contract-prescribed `uniform_real_distribution<T>` requires a floating-point
+  `result_type` per [uniform.real]; no in-repo consumers).
 - No new public API beyond the sanctioned changes; no behavior change beyond the
   contract's four findings.
 

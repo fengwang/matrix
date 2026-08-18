@@ -18,7 +18,7 @@
 
 | Task | Red | Evidence |
 |------|-----|----------|
-| T1 | none by design (invariant pin; determinism/range hold pre-fix) | P9 |
+| T1 | **executable**: the `(f)` pin `static_assert(!noexcept(rand<double>(1,1,7)))` fails to compile (pre-fix `noexcept` declaration); pins (a)–(e) green pre-fix (invariants, P9) | `s5_t1_red.log` |
 | T2 (C11) | **structural**: grep = 3 global-state lines; TSan blind to the libc-internal race (documented); per-call-site seed-0 correlation | P1/P8/P10 |
 | T3 (C12) | structural: both grep counts = 0 (0-core not forceable in-env) | P3 |
 | T4 (png) | **executable**: E15 probe SIGSEGV, exit 139 | P7 |

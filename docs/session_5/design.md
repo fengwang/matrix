@@ -41,7 +41,7 @@ design content except `tests/cases/rand.hpp` (§5).
             ? static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) )
             : seed;
         std::mt19937 engine{ effective_seed }; // per-call local engine: no global state, thread-safe by construction
-        std::uniform_real_distribution< T > const distribution{ 0.0, 1.0 };
+        std::uniform_real_distribution< T > distribution{ 0.0, 1.0 }; // non-const: operator() is non-const
         auto const& generator = [ & ]()
         {
             return static_cast< T >( distribution( engine ) ); // in [0, 1)
@@ -78,8 +78,8 @@ Changes, exactly:
 | seed 0, same call site, same second | same matrix (residual correlation — inherent to the time+&ans seed, D2; engine change does not alter it) |
 | seed 0, different call sites | usually different (`&ans` salt, P8) |
 | any seed, `T = double`/`float` | all elements in [0,1) |
-| `T = int` | all elements 0 (`static_cast<int>` of [0,1) — **unchanged from pre-fix**: `(rand()+1)/(RAND_MAX+2)` integer-divided to 0 as well) |
-| `T = complex` | does not compile (`uniform_real_distribution<complex>` invalid); zero in-repo consumers; documented (D4) |
+| `T = int` | does not compile — the contract-prescribed `uniform_real_distribution<T>` requires a floating-point `result_type` ([uniform.real]); libstdc++ enforces it (static_assert, verified post-fix); pre-fix int gave all zeros. No in-repo consumers (audited) — documented |
+| `T = complex` | does not compile (same standard requirement as int — non-floating-point `result_type`); zero in-repo consumers; documented (D4) |
 | 0×0 / 1×1 shape | shape preserved (generate over empty/single range) |
 | two threads calling `rand` concurrently | no data race — no shared mutable state in user code (D1); TSan post-fix clean |
 | allocation failure (throw) | propagates (no longer `terminate`) — `noexcept` removed |
@@ -239,14 +239,10 @@ TEST_CASE( "rand: explicit-seed determinism, [0,1) range, and engine pins (C11/E
     REQUIRE( f_ge_zero );
     REQUIRE( f_lt_one );
 
-    // (d) int instantiation: static_cast<int>([0,1)) is always 0 (documented consequence;
-    //     unchanged from the pre-fix integer division, which also yielded 0)
-    feng::matrix< int > const ia = feng::rand< int >( 16, 16, 7 );
-    bool all_zero = true;
-    for ( unsigned long r = 0; r < ia.row(); ++r )
-        for ( unsigned long col = 0; col < ia.col(); ++col )
-            all_zero = ( all_zero && ( ia[r][col] == 0 ) );
-    REQUIRE( all_zero );
+    // (d) non-floating-point instantiations (int, complex) do NOT compile: the contract-prescribed
+    //     std::uniform_real_distribution<T> requires a floating-point result_type ([uniform.real]);
+    //     libstdc++ enforces it (static_assert). No in-repo int/complex consumers (audited) —
+    //     documented consequence, same class as the complex-T note.
 
     // (e) type pins (return type is the const value type, house style)
     static_assert( std::is_same_v< decltype( feng::rand< double >( 4, 4, 7 ) ), feng::matrix< double > const > );

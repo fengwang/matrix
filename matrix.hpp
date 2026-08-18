@@ -5318,19 +5318,21 @@ namespace feng
         return pinverse( m );
     }
 
-    //generating a matrix uniformly in (0, 1)
+    //generating a matrix uniformly in [0, 1)
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 ) noexcept
+    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 )
     {
         matrix< T, A > ans{ r, c };
-        if ( 0 == seed )
-            std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
-        else
-            std::srand( seed );
-
-        auto const& generator = []() noexcept
+        // seed 0 keeps the documented time-based mix (time + &ans address salt, low entropy; the
+        // residual same-call-site/same-second correlation is inherent to this seed — documented, not a violation)
+        unsigned int const effective_seed = ( 0 == seed )
+            ? static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) )
+            : seed;
+        std::mt19937 engine{ effective_seed }; // per-call local engine: no global state, thread-safe by construction
+        std::uniform_real_distribution< T > distribution{ 0.0, 1.0 };
+        auto const& generator = [ & ]()
         {
-            return ( static_cast<T>( std::rand() ) + 1 ) / ( static_cast<T>( RAND_MAX ) + 2 ); // make sure in open bounds range (0, 1)
+            return static_cast< T >( distribution( engine ) ); // in [0, 1)
         };
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
@@ -5352,18 +5354,18 @@ namespace feng
         return rand< T, A >( n );
     }
     template < typename T, Allocator A>
-    matrix< T, A > const rand_like( matrix<T, A> const& mat ) noexcept
+    matrix< T, A > const rand_like( matrix<T, A> const& mat )
     {
         auto const[row, col] = mat.shape();
         return random<T, A>( row, col );
     }
     template < typename T, Allocator A>
-    matrix< T, A > const random_like( matrix<T, A> const& mat ) noexcept
+    matrix< T, A > const random_like( matrix<T, A> const& mat )
     {
         return rand_like<T,A>(mat);
     }
     template < typename T, Allocator A> //pytorch style
-    matrix< T, A > const randn_like( matrix<T, A> const& mat ) noexcept
+    matrix< T, A > const randn_like( matrix<T, A> const& mat )
     {
         return rand_like<T,A>(mat);
     }

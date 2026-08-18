@@ -6,19 +6,23 @@ C11's red is **structural** (grep 3→0 + TSan + the pre-fix P7/P8 evidence) —
 suite case is an invariant pin, green both sides (interview Q2).
 
 ## T1 — `rand-regression-tests` (E14)
-- **Red:** N/A by design (invariant pin; P9 proves determinism/range hold pre-fix).
+- **Red (executable, pre-fix verified):** `static_assert( !noexcept( feng::rand< double >( 1, 1, 7 ) ) )`
+  fails to compile against the pre-fix `noexcept` declaration (`s5_t1_red.log`).
+  Pins (a)–(e) are green pre-fix by design (invariant net; P9).
 - **Change:** new `tests/cases/rand.hpp` (design §5) + `#include "./cases/rand.hpp"`
   in `tests/test.cc` (after `proj.hpp`).
-- **Targeted check:** `make test` → 74 cases, all pass (pre-fix engine).
-- **Self-critique:** local bools (Catch quirk); int pin documents the all-zeros
-  consequence; noexcept static_assert; no NaN asserts (fast-math).
+- **Targeted check:** `make test` → the sole compile error is the (f) pin (red state).
+- **Self-critique:** local bools (Catch quirk); int/complex-T compile impact
+  documented (no in-repo consumers); no NaN asserts (fast-math); house style (no
+  matrix/catch includes in the case file — test.cc provides both).
 
 ## T2 — `rand-engine` (C11)
 - **Red (structural, pre-fix verified):** `grep -cE 'srand\(|std::rand\(' matrix.hpp`
-  = 3; pre-fix E15-class evidence: global-state data race (libc-internal, TSan
+  = 3; T1's compile red (the (f) pin); global-state data race (libc-internal, TSan
   blind — documented) + per-call-site seed-0 correlation (P8).
 - **Green:** body swap to `std::mt19937` + `std::uniform_real_distribution<T>`
   (design §1) + `noexcept` removals (5323/5355/5361/5366) + comment `(0, 1)` → `[0, 1)`.
+  Turns T1's (f) pin green.
 - **Targeted check:** grep = 0; `make test` green (74); E14 probe half green;
   TSan probe clean post-fix; P0 probe re-run (explicit-seed determinism still holds;
   value stream now differs — R-07 expected).

@@ -73,14 +73,15 @@ state they inherit is correct after S5. Boundary recorded in handoff + risk regi
 
 **Ambiguity.** The contract pins "int instantiation: sane **or documented**".
 
-**Resolution.** With `uniform_real_distribution<T>` + `static_cast<T>(…)`:
-- `int`: `(rand()+1)/(RAND_MAX+2)` was *already* always 0 pre-fix for int (integer
-  division: `rand()+1 ≤ RAND_MAX+1 < RAND_MAX+2`), and `static_cast<int>([0,1))` is
-  always 0 post-fix. Behavior **unchanged**, documented as such (suite pins it).
-- `complex`: `uniform_real_distribution<std::complex<…>>` is not a valid
-  distribution → complex-T `rand` **no longer compiles**. In-repo consumers: **none**
-  (all call sites use `double`/`float`). The contract prescribes the distribution
-  type, so this is sanctioned by construction; documented in handoff + risk register.
+**Resolution (refined post-fix, verified).** With `uniform_real_distribution<T>` +
+`static_cast<T>(…)`, the distribution's `result_type` must be a floating-point type
+per [uniform.real]; libstdc++ enforces this with a static_assert (verified in the
+post-fix build): non-floating-point T (**int, complex**) **no longer compiles**.
+In-repo consumers for both: **none** (all call sites use `double`/`float`; audited).
+The contract prescribes the distribution type, so this is sanctioned by
+construction; documented in handoff + risk register. (Pre-fix int gave all zeros via
+integer division; the "sane or documented" adversarial clause is satisfied by
+documenting the compile impact.)
 **Confidence: 97%.**
 
 ### Q5 — C12: the plan says "unguarded `total_cores` at 1152" — is the second site really unguarded?
@@ -180,7 +181,7 @@ images/` policy, same as S4).
 |---|------|-------------|
 | 1 | Seed-0 per-call-site correlation persists by design (time-based) | Documented (contract permits time-based); risk register |
 | 2 | Explicit-seed streams change (R-07) | Sanctioned; `make example` delta recorded |
-| 3 | Complex-T `rand` no longer compiles | No in-repo consumers; documented (contract-prescribed distribution) |
+| 3 | int/complex-T `rand` no longer compiles ([uniform.real] floating-point `result_type`; libstdc++ static_assert) | No in-repo consumers (audited); documented (contract-prescribed distribution) |
 | 4 | `rand_like`/`random*` noexcept dropped beyond the contract's two named | Same-defect extension, boundary documented; S6 inherits correct state |
 | 5 | Plan's 4121 "unguarded" claim unsupported | Already guarded by short-circuit; explicit clamp added per contract; discrepancy logged |
 | 6 | `load_binary` adjacent `fopen` warning (S2 handoff) | Out of scope (not in contract blast radius); carried to risk register only |

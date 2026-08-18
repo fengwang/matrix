@@ -11,8 +11,9 @@ One capability per finding, plus the test/evidence capability. Each capability m
 - Seed 0 keeps the exact pre-fix `time + &ans` mix (documented residual
   per-call-site correlation; interview Q1, P8).
 - Drop `noexcept` on the whole rand chain (5323/5355/5361/5366; interview Q3).
-- Consequences: int-T → all zeros (unchanged from pre-fix, documented); complex-T →
-  no longer compiles (no in-repo consumers, documented); thread-safe by construction.
+- Consequences: non-floating-point T (int, complex) → no longer compiles
+  (contract-prescribed distribution; [uniform.real]; no in-repo consumers,
+  documented); thread-safe by construction.
 - Acceptance: `grep -cE 'srand\(|std::rand\(' matrix.hpp == 0`; E14 invariant green;
   TSan post-fix clean.
 
@@ -50,7 +51,7 @@ One capability per finding, plus the test/evidence capability. Each capability m
 | R-07 sanctioned stream change (examples 0012/0019/0020/0021 values change) | low | pre-fix streams recorded (P9); `make example` delta recorded; `git checkout -- images/` |
 | Engine quality regression (period/bounds) | low | `mt19937` + `uniform_real_distribution` (contract-prescribed); range pinned in suite |
 | `noexcept` removal changes observable semantics | low | only affects the (documented) allocation-throw path; no caller depends on noexcept |
-| Complex-T consumers break | low | zero in-repo consumers (audited); documented |
+| Complex/int-T consumers break | low | zero in-repo consumers (audited); documented ([uniform.real] floating-point `result_type`) |
 | C12 clamp misfires on valid 1-core machines | low | `< 1` clamps only 0 (hardware_concurrency's "undetermined" sentinel); 1 stays 1 |
 | save_png guard changes happy path | low | E15 positive control (writable path → PNG exists); full suite green |
 

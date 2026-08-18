@@ -27,7 +27,10 @@
 - All elements of `rand<double>(64,64,7)` and `rand<float>(32,32,7)` lie in [0,1).
 
 #### Scenario: instantiation classes
-- `T = int` → all elements 0 (documented; unchanged from pre-fix integer division).
+- `T = int` (and any non-floating-point T) → does not compile (the contract-prescribed
+  `uniform_real_distribution<T>` requires a floating-point `result_type` — [uniform.real];
+  libstdc++ enforces it; verified post-fix); no in-repo int consumers (audited) —
+  documented, not fixed.
 - `T = double`/`float` → return type `matrix<T> const` (static_assert pinned).
 - `rand` is not `noexcept` (static_assert pinned).
 

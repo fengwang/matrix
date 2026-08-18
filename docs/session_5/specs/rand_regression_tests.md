@@ -3,8 +3,10 @@
 ### Requirement
 A permanent suite case `tests/cases/rand.hpp` pins the E14 invariants:
 explicit-seed determinism, seed inequality, the [0,1) range for `double` and
-`float` instantiations, the documented int-T all-zeros behavior, the return-type
-pins, and the `noexcept` removal (the engine is allocation-backed).
+`float` instantiations, the return-type pins, and the `noexcept` removal (the
+engine is allocation-backed). Non-floating-point instantiations (int, complex)
+are documented as no longer compiling (contract-prescribed distribution,
+[uniform.real]).
 
 ### Constraints
 - Full case text: `docs/session_5/design.md §5` (final code).

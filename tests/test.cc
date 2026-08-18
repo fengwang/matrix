@@ -56,6 +56,7 @@
 #include "./cases/pinv.hpp"
 #include "./cases/pooling.hpp"
 #include "./cases/proj.hpp"
+#include "./cases/rand.hpp"
 //#include "./cases/remquo.hpp"
 #include "./cases/rint.hpp"
 #include "./cases/rref.hpp"
