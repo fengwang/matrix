@@ -1,0 +1,2 @@
+g++ -c -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL  -o ./example.o examples/example.cc
+g++ -o ./test_example ./example.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto

@@ -57,5 +57,14 @@ TEST_CASE( "Matrix mean/variance/standard_deviation: double for real value types
     REQUIRE( std::abs( feng::mean( d12 ) - 1.5 ) < 1.0e-12 );
     REQUIRE( std::abs( feng::variance( d12 ) - 0.25 ) < 1.0e-12 );
     REQUIRE( std::abs( feng::standard_deviation( d12 ) - std::sqrt( 0.5 ) ) < 1.0e-12 );
+
+    // L1 (S4 sharded review): negative integer matrix — the pre-fix failure mode was
+    // UNSIGNED integer division (negative sums wrap); positive-only pins cannot
+    // distinguish signed-from from unsigned-from arithmetic.
+    feng::matrix<int> const mneg{ 1, 2, { -1, 2 } };
+    static_assert( std::is_same_v< decltype( feng::mean( mneg ) ), double > );
+    REQUIRE( std::abs( feng::mean( mneg ) - 0.5 ) < 1.0e-12 ); // (−1+2)/2 = 0.5, not a wrapped unsigned
+    REQUIRE( std::abs( feng::variance( mneg ) - 2.25 ) < 1.0e-12 ); // deviations {−1.5, 1.5}, squared {2.25, 2.25}
+    REQUIRE( std::abs( feng::standard_deviation( mneg ) - std::sqrt( 4.5 ) ) < 1.0e-12 ); // n-1: sqrt(sum/1) = sqrt(4.5)
 }
 

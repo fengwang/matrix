@@ -252,3 +252,15 @@ exit=141
 --- p0d: complex value_type behavior (post-T1, design-claim verification) ---
 mean(complex<double> 1x2): compiles OK, returns complex (legacy path)
 variance(complex<double>): compile error (1 error) — pre-fix already ill-formed (operator- takes real T); legacy preserved as designed
+
+=== T5: deterministic check E10_E13 (contract command, verbatim) ===
+PASS
+deterministic_exit=0
+
+=== T5: post-fix ASan rerun of p3 (pre-existing OOB, must match pre-fix in substance) ===
+==2914870==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x7c2f483e1e80 at pc 0x55d5ac0ae58e bp 0x7ffded7d69c0 sp 0x7ffded7d69b0
+READ of size 8 at 0x7c2f483e1e80 thread T0
+    #0 0x55d5ac0ae58d in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&) .work/probes/../../matrix.hpp:6510
+    #3 0x55d5ac0ae2a8 in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&) .work/probes/../../matrix.hpp:6501
+SUMMARY: AddressSanitizer: heap-buffer-overflow .work/probes/../../matrix.hpp:6510 in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&)
+asan_exit=0

@@ -67,4 +67,28 @@ TEST_CASE( "Matrix cholesky_decomposition positive-definite guard (P2)", "[chole
         REQUIRE( ok );
         REQUIRE( std::abs( a[0][0] - 2.0 ) < 1.0e-12 );
     }
+
+    // Scenario (f) — L3 (S4 sharded review): 3x3 SPD pinning the multi-step
+    // inner_product accumulation. m = L * L^T with the exact factor
+    // L = [[2,0,0],[1,2,0],[0.5,0.5,1]] (all values binary-exact).
+    {
+        feng::matrix<double> const m{ 3, 3, { 4.0, 2.0, 1.0, 2.0, 5.0, 1.5, 1.0, 1.5, 1.5 } };
+        feng::matrix<double> a;
+        bool const ok = feng::cholesky_decomposition( m, a );
+        REQUIRE( ok );
+        double const want[3][3] = { { 2.0, 0.0, 0.0 }, { 1.0, 2.0, 0.0 }, { 0.5, 0.5, 1.0 } };
+        for ( unsigned long i = 0; i != 3; ++i )
+            for ( unsigned long j = 0; j != 3; ++j )
+                REQUIRE( std::abs( a[i][j] - want[i][j] ) < 1.0e-12 );
+    }
+
+    // Scenario (g) — L3 (S4 sharded review): float value_type (the guard's
+    // value_type(0) under the non-double type).
+    {
+        feng::matrix<float> const m{ 1, 1, { 4.0f } };
+        feng::matrix<float> a;
+        bool const ok = feng::cholesky_decomposition( m, a );
+        REQUIRE( ok );
+        REQUIRE( std::abs( a[0][0] - 2.0f ) < 1.0e-6f );
+    }
 }

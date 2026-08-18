@@ -24,7 +24,20 @@ TEST_CASE( "Matrix rref square system precondition (C10)", "[rref]" )
                 REQUIRE( std::abs( ( *r )[ i ][ j ] - want[i][j] ) < 1.0e-10 );
     }
 
-    // Scenario (b) — singular square system: the existing 1e-10 pivot exit
+    // Scenario (b) — L4 (S4 sharded review): square system with an off-diagonal
+    // pivot: the row-swap path must be exercised in square geometry (scenario a
+    // has the pivot already on the diagonal).
+    {
+        feng::matrix<double> const m{ 2, 2, { 0.0, 1.0, 1.0, 0.0 } };
+        auto const r = feng::rref( m );
+        REQUIRE( r.has_value() );
+        double const want[2][2] = { { 1.0, 0.0 }, { 0.0, 1.0 } };
+        for ( unsigned long i = 0; i != 2; ++i )
+            for ( unsigned long j = 0; j != 2; ++j )
+                REQUIRE( std::abs( ( *r )[ i ][ j ] - want[i][j] ) < 1.0e-10 );
+    }
+
+    // Scenario (c) — singular square system: the existing 1e-10 pivot exit
     // returns nullopt (finite comparison, fast-math safe); no hang, no abort.
     {
         feng::matrix<double> const m{ 2, 2, { 1.0, 2.0, 2.0, 4.0 } };
@@ -32,7 +45,7 @@ TEST_CASE( "Matrix rref square system precondition (C10)", "[rref]" )
         REQUIRE( !r.has_value() );
     }
 
-    // Scenario (c) — wide regression (row < col, the originally-supported case):
+    // Scenario (d) — wide regression (row < col, the originally-supported case):
     // an already-reduced wide matrix is its own RREF.
     {
         feng::matrix<double> const m{ 2, 3, { 1.0, 0.0, 2.0, 0.0, 1.0, 3.0 } };

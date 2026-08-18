@@ -63,4 +63,23 @@ TEST_CASE( "Matrix conv same-mode kernel preconditions (C9)", "[conv]" )
             for ( unsigned long c = 0; c != 3; ++c )
                 REQUIRE( std::abs( C[r][c] - want[r][c] ) < 1.0e-12 );
     }
+
+    // Scenario (e) — L2 (S4 sharded review): same-mode with a kernel >= 2x2, the
+    // mainstream pre-fix usage — content must be unchanged by the assert relaxation.
+    // Full 4x4 conv (measured; the library correlates with the kernel's
+    // bottom-right element anchored — for 1D kernels this coincides with the
+    // centered convention pinned in (b)/(c)):
+    //   {{1, 3, 5, 3}, {5, 12, 16, 9}, {11, 24, 28, 15}, {7, 15, 17, 9}};
+    // same-mode slice at offset (2-1)>>1 = 0, size 3 -> the top-left 3x3.
+    {
+        feng::matrix<double> const A{ 3, 3, { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 } };
+        feng::matrix<double> const K{ 2, 2, { 1.0, 1.0, 1.0, 1.0 } };
+        feng::matrix<double> const C = feng::conv( A, K, std::string{ "same" } );
+        double const want[3][3] = { { 1.0, 3.0, 5.0 }, { 5.0, 12.0, 16.0 }, { 11.0, 24.0, 28.0 } };
+        REQUIRE( C.row() == 3 );
+        REQUIRE( C.col() == 3 );
+        for ( unsigned long r = 0; r != 3; ++r )
+            for ( unsigned long c = 0; c != 3; ++c )
+                REQUIRE( std::abs( C[r][c] - want[r][c] ) < 1.0e-12 );
+    }
 }
