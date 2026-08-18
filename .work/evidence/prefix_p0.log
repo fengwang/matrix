@@ -248,3 +248,7 @@ READ of size 8 at 0x7b9e691e1e80 thread T0
 allocated by thread T0 here:
     #0 0x7f5e6a92d2a1 in operator new(unsigned long) (/usr/lib/libasan.so.8+0x12d2a1) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
 exit=141
+
+--- p0d: complex value_type behavior (post-T1, design-claim verification) ---
+mean(complex<double> 1x2): compiles OK, returns complex (legacy path)
+variance(complex<double>): compile error (1 error) — pre-fix already ill-formed (operator- takes real T); legacy preserved as designed

@@ -7774,21 +7774,62 @@ namespace feng
     template< Matrix Mat >
     auto mean( Mat const& m )
     {
-        return sum( m ) / m.size();
+        if constexpr ( ComplexMatrix< Mat > )
+            return sum( m ) / m.size();
+        else
+        {
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return sum( m ) / m.size();
+            else
+            {
+                // integer/float matrices: promote before dividing. `sum / size` on an integer
+                // sum is unsigned integer division (truncating; negative sums wrap), and the
+                // variance/std expressions below need a double mean (operator-(matrix<T>, T)
+                // would otherwise truncate it). double matrices stay copy-free.
+                auto const d = m.template astype< double >();
+                return sum( d ) / d.size();
+            }
+        }
     }
 
     template< Matrix Mat >
     auto variance( Mat const& m )
     {
-        return mean( pow( m-mean(m), 2.0 ) );
+        if constexpr ( ComplexMatrix< Mat > )
+            return mean( pow( m-mean( m ), 2.0 ) );
+        else
+        {
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return mean( pow( m-mean( m ), 2.0 ) );
+            else
+            {
+                auto const d = m.template astype< double >();
+                return mean( pow( d - mean( d ), 2.0 ) );
+            }
+        }
     }
 
     template< Matrix Mat >
     auto standard_deviation( Mat const& m )
     {
-        if ( m.size() <= 1 )
-            return typename Mat::value_type{};
-        return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+        if constexpr ( ComplexMatrix< Mat > )
+        {
+            if ( m.size() <= 1 )
+                return typename Mat::value_type{};
+            return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+        }
+        else
+        {
+            if ( m.size() <= 1 )
+                return double{};
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+            else
+            {
+                auto const d = m.template astype< double >();
+                return std::sqrt( sum( pow( d - mean( d ), 2.0 ) ) / ( d.size() - 1 ) );
+            }
+        }
     }
 
     ///
