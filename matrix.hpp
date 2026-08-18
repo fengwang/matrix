@@ -1149,7 +1149,9 @@ namespace feng
             typedef typename std::iterator_traits<Iterator>::value_type value_type;
             typedef typename std::invoke_result<Function, value_type, value_type>::type result_type;
 
-            unsigned int const total_cores = std::thread::hardware_concurrency();
+            unsigned int total_cores = std::thread::hardware_concurrency();
+            if ( total_cores < 1 )
+                total_cores = 1;
             unsigned long const total_elements = std::distance( begin, end );
 
             // case of small size, reduce inplace
@@ -4119,6 +4121,8 @@ namespace feng
                     };
 
                     std::uint_least64_t parallel_size = std::thread::hardware_concurrency();
+                    if ( parallel_size < 1 )
+                        parallel_size = 1;
 
                     //direct reduce
                     if ( parallel_size<= 1 || mat.size() < 32 )
