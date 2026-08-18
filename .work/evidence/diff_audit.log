@@ -1,0 +1,12 @@
+.work/evidence/final_suite_run.log
+docs/session_2/brainstorming.md
+docs/session_2/design.md
+docs/session_2/execution_contract.md
+docs/session_2/plan.md
+docs/session_2/proposal.md
+docs/session_2/specs/load_npy_happy_path.md
+docs/session_2/specs/load_npy_rejection_semantics.md
+docs/session_2/specs/load_npy_validation.md
+docs/session_2/tasks.md
+matrix.hpp
+tests/cases/load_npy.hpp

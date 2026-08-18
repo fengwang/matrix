@@ -1,0 +1,81 @@
+session_contract:
+  id: S4
+  objective: "Fix the four medium semantics findings: mean/variance/standard_deviation double promotion (C8), conv 'same' assert correction + 1x1 kernel acceptance (C9), rref/gauss_jordan square-system precondition (C10), cholesky_decomposition positive-definiteness guard with bool return (P2b); each with content-asserting tests."
+  risk_level: medium
+  routing: worker_plus_reviewers
+  in_scope:
+    - "C8: mean/variance/standard_deviation (anchors 7640/7646/7652) return double uniformly; divisor/accumulator promoted; size<=1 branch returns double{}; the n-1 sample-variance formula in standard_deviation is UNCHANGED"
+    - "C9: conv 'same' asserts (~6618-6621): second assert checks cb (not rb); condition rb >= 1 && cb >= 1 (was > 1, rejecting the well-defined 1x1 kernel)"
+    - "C10: gauss_jordan_elimination precondition (anchor 6396) row < col -> row > 0 && col > 0; 1e-10 pivot early-exit remains the singularity signal; rref (anchor 6427) inherits via delegation"
+    - "P2b: cholesky_decomposition (anchor 5676) void -> bool; diagonal candidate sum < 0 => false; divisor a[i][i] == 0 (off-diagonal step) => false; true on success (verified: zero in-repo callers)"
+    - "Tests: update tests/cases/mean.hpp (integer promotion cases; resolve the R-15 watch item first); new tests/cases/conv_same.hpp, rref.hpp, cholesky.hpp; registration in tests/test.cc"
+    - "Eval probes E10-E13 in .work/probes/"
+  out_of_scope:
+    - "sum's accumulator (int overflow there is pre-existing, not a C8 row — stays value_type-accumulated; note in handoff)"
+    - "Population-vs-sample statistics (formula kept); conv full/valid paths (review-verified correct); lu_decomposition (S3); ReadMe.md (delta emitted, P4); examples/**"
+    - "rref return type (std::optional<Mat> stays)"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/test.cc
+      - tests/cases/mean.hpp
+      - tests/cases/conv_same.hpp
+      - tests/cases/rref.hpp
+      - tests/cases/cholesky.hpp
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+      - "docs/session_4/**"
+    forbidden_files:
+      - ReadMe.md
+      - Makefile
+      - examples/**
+      - docs/prd.md
+      - docs/project_contract.md
+  invariants:
+    - "make test green (debug configuration: better_assert live for the new abort-path cases)"
+    - "mean({1,2;1,2} as matrix<int>) == 1.5 (double); variance == 0.25; standard_deviation == sqrt(0.5) ~ 0.70711 (n-1 formula preserved)"
+    - "float/double matrix stats results unchanged within rounding (promotion only, no formula change)"
+    - "conv 'same' with a 1x1 kernel equals the scaled input (well-defined; no abort in debug)"
+    - "rref on square and over-determined (row>col) systems behaves as the algorithm defines; singular system -> nullopt via the 1e-10 exit"
+    - "cholesky_decomposition: PD input -> true and the factor reproduces the input (a*a' ~ m); non-PD -> false, no NaN, no div-by-zero"
+  acceptance_criteria:
+    - "E10: mean/variance/std of matrix<int>{1,2,{1,2}} == 1.5 / 0.25 / 0.70711 within 1e-9, each of type double"
+    - "E11: conv(A{2,2}, kernel{1,1,{0.5}}, 'same') returns the scaled A, no abort (pre-fix debug abort recorded in handoff)"
+    - "E12: rref({2,2,{2,0,0,3}}) returns option ~ eye(2), no abort (pre-fix debug abort recorded)"
+    - "E13: cholesky on [[1,2],[2,1]] (not PD) -> false; on [[4,2],[2,3]] (PD) -> true with a*a' ~ m"
+    - "mean.hpp integer cases pass with promoted values; no other test file modified"
+  deterministic_checks:
+    - "make test"
+    - "g++ -std=c++20 -DPARALLEL -O1 -o .work/probe_s4 .work/probes/E10_E13.cc && .work/probe_s4  # prints PASS (asserts live: no NDEBUG)"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/test.cc|tests/cases/(mean|conv_same|rref|cholesky)\\.hpp|\\.work/|docs/(eval_seed_cases|risk_register)\\.md)$'  # empty"
+    - "grep -n 'bool cholesky_decomposition' matrix.hpp  # signature changed"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "C8: matrix<float> and matrix<double> stats (no regression); single-element matrix (size<=1 branch, now double{}); 1x1 and 1xN shapes"
+    - "C9: rb==1,cb>1 and rb>1,cb==1 separately; 'valid' mode untouched (regression case on a 2x3 kernel)"
+    - "C10: row>col over-determined system (must behave as before the relaxation); singular square system -> nullopt, not a hang"
+    - "cholesky: PSD-singular (zero diagonal candidate) -> false cleanly; 1x1 {0} -> false; 1x1 {4} -> true with factor {2}"
+  failure_modes_to_watch:
+    - "E10 expectation slip: standard_deviation is sqrt(0.5)~0.70711 (sample, n-1), NOT 0.5 — the formula is preserved on purpose"
+    - "conv 'valid' path edited while fixing 'same' (review-verified correct — leave it)"
+    - "Relaxing the rref precondition changes over-determined behavior (probe row>col before and after)"
+    - "cholesky guard using <= 0 on diagonals (false-rejects tiny positive values) or missing the zero-divisor case"
+  done_condition: "All acceptance_criteria pass with cited output; make test green; git audit clean; sharded review + adversarial verifier PASS; doc deltas for S6 complete."
+  handoff_requirements:
+    - ".work/handoff_session_4.md: state snapshot incl. compiler version; checks run / checks not run"
+    - "Decision log: debug-abort reproductions (C9, C10); R-15 mean.hpp resolution; contract refinements"
+    - "Eval seeds E10-E13 marked live"
+    - "Doc deltas for S6: ReadMe statistics section (double return), conv 'same' kernel rules, rref domain, cholesky_decomposition signature + failure semantics"
+    - "Watch item forwarded: sum() int-overflow note (pre-existing, out of scope here)"
+  eval_seed_candidates:
+    - E10
+    - E11
+    - E12
+    - E13

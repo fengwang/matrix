@@ -1,0 +1,3 @@
+ok   e03_exact: payload ends exactly at file tail -> ok=1 content=1
+PASS E03
+PASS E04

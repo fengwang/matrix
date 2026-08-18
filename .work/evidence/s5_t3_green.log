@@ -1,0 +1,10 @@
+=== T3 green ===
+total_cores < 1: 1
+parallel_size < 1: 1
+total_cores <= 1 (279, untouched): 1
+279:                if ( (total_cores <= 1) || ((dim_last - dim_first) <= threshold) )
+g++ -c -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL  -o ./test.o tests/test.cc
+g++ -o ./test_test ./test.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto
+
+ matrix.hpp | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)

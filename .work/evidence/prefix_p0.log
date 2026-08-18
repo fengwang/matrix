@@ -1,0 +1,266 @@
+=== S4 pre-flight evidence (pre-fix), 2026-08-18T00:22:21Z ===
+
+--- p0: pre-fix stat types/values + cholesky NaN ---
+In file included from .work/probes/S4_p0_values.cc:7:
+.work/probes/../../matrix.hpp: In instantiation of ‘auto feng::variance(const Mat&) [with Mat = matrix<int>]’:
+.work/probes/S4_p0_values.cc:25:40:   required from here
+   25 |     auto const mi_var  = feng::variance( mi );
+      |                          ~~~~~~~~~~~~~~^~~~~~
+.work/probes/../../matrix.hpp:7783:28: error: no match for ‘operator-’ (operand types are ‘const feng::matrix<int>’ and ‘long unsigned int’)
+ 7783 |         return mean( pow( m-mean(m), 2.0 ) );
+      |                           ~^~~~~~~~
+  • there are 20 candidates
+    • candidate 1: ‘const feng::crtp_prefix_minus<Matrix, Type, Alloc>::zen_type feng::crtp_prefix_minus<Matrix, Type, Alloc>::operator-() const [with Matrix = feng::matrix<int>; Type = int; Alloc = std::allocator<int>; zen_type = feng::matrix<int>]’
+      .work/probes/../../matrix.hpp:2892:24:
+       2892 |         const zen_type operator-() const noexcept
+            |                        ^~~~~~~~
+      • candidate expects 0 arguments, 1 provided
+    • candidate 2: ‘template<class T1, class A1, class T2, class A2>  requires (Allocator<A1>) && (Allocator<A2>) const feng::matrix<Type, Alloc> feng::operator-(const matrix<Type, Alloc>&, const matrix<T2, A2>&)’
+      .work/probes/../../matrix.hpp:4205:5:
+       4205 |     operator-( const matrix< T1, A1 >& lhs, const matrix< T2, A2 >& rhs )
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const feng::matrix<T2, A2>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 3: ‘template<class T, class A>  requires  Allocator<A> const feng::matrix<std::complex<_Tp>, A> feng::operator-(const matrix<std::complex<_Tp>, A>&, const T&)’
+      .work/probes/../../matrix.hpp:5461:5:
+       5461 |     operator-( const matrix< std::complex< T >, A>& lhs, const T& rhs )
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘std::complex<_Tp>’ and ‘int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 4: ‘template<class T, class A>  requires  Allocator<A> const feng::matrix<std::complex<_Tp>, A> feng::operator-(const T&, const matrix<std::complex<_Tp>, A>&)’
+      .work/probes/../../matrix.hpp:5472:5:
+       5472 |     operator-( const T& lhs, const matrix< std::complex< T >, A>& rhs )
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const feng::matrix<std::complex<_Tp>, A>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 5: ‘template<class T, class A>  requires  Allocator<A> const feng::matrix<Type, Alloc> feng::operator-(const matrix<Type, Alloc>&, const T&)’
+      .work/probes/../../matrix.hpp:5534:5:
+       5534 |     operator-( const matrix< T, A >& lhs, const T& rhs )
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   deduced conflicting types for parameter ‘const T’ (‘int’ and ‘long unsigned int’)
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 6: ‘template<class T, class A>  requires  Allocator<A> const feng::matrix<Type, Alloc> feng::operator-(const T&, const matrix<Type, Alloc>&)’
+      .work/probes/../../matrix.hpp:5545:5:
+       5545 |     operator-( const T& lhs, const matrix< T, A >& rhs )
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const feng::matrix<Type, Alloc>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+In file included from /usr/include/c++/16/bits/stl_algobase.h:66,
+                 from /usr/include/c++/16/algorithm:62,
+                 from .work/probes/../../matrix.hpp:6:
+    • candidate 7: ‘template<class _IteratorL, class _IteratorR> constexpr decltype ((__y.base() - __x.base())) std::operator-(const reverse_iterator<_IteratorL>&, const reverse_iterator<_IteratorR>&)’
+      /usr/include/c++/16/bits/stl_iterator.h:620:5:
+        620 |     operator-(const reverse_iterator<_IteratorL>& __x,
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::reverse_iterator<_IteratorL>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 8: ‘template<class _IteratorL, class _IteratorR> constexpr decltype ((__x.base() - __y.base())) std::operator-(const move_iterator<_IteratorL>&, const move_iterator<_IteratorR>&)’
+      /usr/include/c++/16/bits/stl_iterator.h:1798:5:
+       1798 |     operator-(const move_iterator<_IteratorL>& __x,
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::move_iterator<_IteratorL>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+In file included from .work/probes/../../matrix.hpp:9:
+    • candidate 9: ‘template<class _Tp> constexpr std::complex<_Tp> std::operator-(const complex<_Tp>&, const complex<_Tp>&)’
+      /usr/include/c++/16/complex:404:5:
+        404 |     operator-(const complex<_Tp>& __x, const complex<_Tp>& __y)
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::complex<_Tp>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 10: ‘template<class _Tp> constexpr std::complex<_Tp> std::operator-(const complex<_Tp>&, const _Tp&)’
+      /usr/include/c++/16/complex:413:5:
+        413 |     operator-(const complex<_Tp>& __x, const _Tp& __y)
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::complex<_Tp>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 11: ‘template<class _Tp> constexpr std::complex<_Tp> std::operator-(const _Tp&, const complex<_Tp>&)’
+      /usr/include/c++/16/complex:422:5:
+        422 |     operator-(const _Tp& __x, const complex<_Tp>& __y)
+            |     ^~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const std::complex<_Tp>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 12: ‘template<class _Tp> constexpr std::complex<_Tp> std::operator-(const complex<_Tp>&)’
+      /usr/include/c++/16/complex:499:5:
+        499 |     operator-(const complex<_Tp>& __x)
+            |     ^~~~~~~~
+      • candidate expects 1 argument, 2 provided
+In file included from /usr/include/c++/16/valarray:607,
+                 from .work/probes/../../matrix.hpp:39:
+    • candidate 13: ‘template<class _Dom1, class _Dom2> std::_Expr<std::__detail::_BinClos<std::__minus, std::_Expr, std::_Expr, _Dom1, _Dom2>, typename std::__fun<std::__minus, typename _Dom1::value_type>::result_type> std::operator-(const _Expr<_Dom1, typename _Dom1::value_type>&, const _Expr<_Dom2, typename _Dom2::value_type>&)’
+      /usr/include/c++/16/bits/valarray_after.h:408:5:
+        408 |     _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+            |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::_Expr<_Dom1, typename _Dom1::value_type>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 14: ‘template<class _Dom> std::_Expr<std::__detail::_BinClos<std::__minus, std::_Expr, std::_Constant, _Dom, typename _Dom::value_type>, typename std::__fun<std::__minus, typename _Dom1::value_type>::result_type> std::operator-(const _Expr<_Dom1, typename _Dom1::value_type>&, const typename _Dom::value_type&)’
+      /usr/include/c++/16/bits/valarray_after.h:408:5:
+        408 |     _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+            |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::_Expr<_Dom1, typename _Dom1::value_type>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 15: ‘template<class _Dom> std::_Expr<std::__detail::_BinClos<std::__minus, std::_Constant, std::_Expr, typename _Dom::value_type, _Dom>, typename std::__fun<std::__minus, typename _Dom1::value_type>::result_type> std::operator-(const typename _Dom::value_type&, const _Expr<_Dom1, typename _Dom1::value_type>&)’
+      /usr/include/c++/16/bits/valarray_after.h:408:5:
+        408 |     _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+            |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const std::_Expr<_Dom1, typename _Dom1::value_type>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 16: ‘template<class _Dom> std::_Expr<std::__detail::_BinClos<std::__minus, std::_Expr, std::_ValArray, _Dom, typename _Dom::value_type>, typename std::__fun<std::__minus, typename _Dom1::value_type>::result_type> std::operator-(const _Expr<_Dom1, typename _Dom1::value_type>&, const valarray<typename _Dom::value_type>&)’
+      /usr/include/c++/16/bits/valarray_after.h:408:5:
+        408 |     _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+            |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::_Expr<_Dom1, typename _Dom1::value_type>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 17: ‘template<class _Dom> std::_Expr<std::__detail::_BinClos<std::__minus, std::_ValArray, std::_Expr, typename _Dom::value_type, _Dom>, typename std::__fun<std::__minus, typename _Dom1::value_type>::result_type> std::operator-(const valarray<typename _Dom::value_type>&, const _Expr<_Dom1, typename _Dom1::value_type>&)’
+      /usr/include/c++/16/bits/valarray_after.h:408:5:
+        408 |     _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+            |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const std::_Expr<_Dom1, typename _Dom1::value_type>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 18: ‘template<class _Tp> std::_Expr<std::__detail::_BinClos<std::__minus, std::_ValArray, std::_ValArray, _Tp, _Tp>, typename std::__fun<std::__minus, _Tp>::result_type> std::operator-(const valarray<_Tp>&, const valarray<_Tp>&)’
+      /usr/include/c++/16/valarray:1199:1:
+       1199 | _DEFINE_BINARY_OPERATOR(-, __minus)
+            | ^~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::valarray<_Tp>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 19: ‘template<class _Tp> std::_Expr<std::__detail::_BinClos<std::__minus, std::_ValArray, std::_Constant, _Tp, _Tp>, typename std::__fun<std::__minus, _Tp>::result_type> std::operator-(const valarray<_Tp>&, const typename valarray<_Tp>::value_type&)’
+      /usr/include/c++/16/valarray:1199:1:
+       1199 | _DEFINE_BINARY_OPERATOR(-, __minus)
+            | ^~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   ‘const feng::matrix<int>’ is not derived from ‘const std::valarray<_Tp>’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+    • candidate 20: ‘template<class _Tp> std::_Expr<std::__detail::_BinClos<std::__minus, std::_Constant, std::_ValArray, _Tp, _Tp>, typename std::__fun<std::__minus, _Tp>::result_type> std::operator-(const typename valarray<_Tp>::value_type&, const valarray<_Tp>&)’
+      /usr/include/c++/16/valarray:1199:1:
+       1199 | _DEFINE_BINARY_OPERATOR(-, __minus)
+            | ^~~~~~~~~~~~~~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        •   mismatched types ‘const std::valarray<_Tp>’ and ‘long unsigned int’
+          .work/probes/../../matrix.hpp:7783:28:
+           7783 |         return mean( pow( m-mean(m), 2.0 ) );
+                |                           ~^~~~~~~~
+exit=1
+
+--- p0b: pre-fix standard_deviation(matrix<int>) compile check ---
+In file included from .work/probes/S4_p0b_stddev_int.cc:8:
+.work/probes/../../matrix.hpp: In instantiation of ‘auto feng::standard_deviation(const Mat&) [with Mat = matrix<int>]’:
+.work/probes/S4_p0b_stddev_int.cc:17:44:   required from here
+   17 |     auto const s = feng::standard_deviation( mi );
+      |                    ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+.work/probes/../../matrix.hpp:7791:38: error: no match for ‘operator-’ (operand types are ‘const feng::matrix<int>’ and ‘long unsigned int’)
+ 7791 |         return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+      |                                     ~^~~~~~~~~~
+  • there are 20 candidates
+    • candidate 1: ‘const feng::crtp_prefix_minus<Matrix, Type, Alloc>::zen_type feng::crtp_prefix_minus<Matrix, Type, Alloc>::operator-() const [with Matrix = feng::matrix<int>; Type = int; Alloc = std::allocator<int>; zen_type = feng::matrix<int>]’
+      .work/probes/../../matrix.hpp:2892:24:
+       2892 |         const zen_type operator-() const noexcept
+            |                        ^~~~~~~~
+      • candidate expects 0 arguments, 1 provided
+    • candidate 2: ‘template<class T1, class A1, class T2, class A2>  requires (Allocator<A1>) && (Allocator<A2>) const feng::matrix<Type, Alloc> feng::operator-(const matrix<Type, Alloc>&, const matrix<T2, A2>&)’
+compile_exit=2
+=== S4 pre-flight p0 (pre-fix values/types), re-run after restructuring ===
+mean(matrix<int>)                int=0 float=0 double=0 ulong=1
+int 1x2 {1,2}: mean=1 (unsigned long = truncated, review expected 1.5)
+int 2x2 {1,2;1,2}: mean=1
+mean(matrix<float>)              int=0 float=1 double=0 ulong=0
+variance(matrix<float>)          int=0 float=1 double=0 ulong=0
+standard_deviation(matrix<float>) int=0 float=1 double=0 ulong=0
+float 1x2 {1,2}: mean=1.5 variance=0.25 std=0.707107
+mean(matrix<double>)             int=0 float=0 double=1 ulong=0
+variance(matrix<double>)         int=0 float=0 double=1 ulong=0
+standard_deviation(matrix<double>) int=0 float=0 double=1 ulong=0
+double 1x2 {1,2}: mean=1.5 variance=0.25 std=0.707107
+cholesky pre-fix [[1,2],[2,1]] -> a[0][0]=1 a[0][1]=0 a[1][1]=-nan (NaN expected)
+cholesky pre-fix [[4,2],[2,3]] -> a[0][0]=2 a[0][1]=0 a[1][1]=1.41421 (valid factor, no failure channel)
+PASS S4_p0 (pre-fix values recorded)
+exit=0
+
+--- p1: conv 1x1 same (debug, pre-fix abort expected) ---
+[Assertion Failure]: 'rb > 1' in File: .work/probes/../../matrix.hpp in Line: 6755 For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has 1
+/bin/bash: line 1: 2785831 Aborted                    (core dumped) .work/probe_s4_p1
+exit=134
+
+--- p2: rref square (debug, pre-fix abort expected) ---
+[Assertion Failure]: 'row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination"' in File: .work/probes/../../matrix.hpp in Line: 6486
+/bin/bash: line 1: 2785865 Aborted                    (core dumped) .work/probe_s4_p2
+exit=134
+
+--- p3: rref 3x2 row>col (NDEBUG+ASan, pre-fix release behavior) ---
+=================================================================
+==2785894==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x7b9e691e1e80 at pc 0x55ea737428ad bp 0x7ffd06d1de70 sp 0x7ffd06d1de60
+READ of size 8 at 0x7b9e691e1e80 thread T0
+    #0 0x55ea737428ac in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&) (/workspace/github.repo/matrix/.work/probe_s4_p3+0x328ac) (BuildId: ee29024eb3788866d056b221e989c484a7f37114)
+    #1 0x55ea7373c7d9 in main (/workspace/github.repo/matrix/.work/probe_s4_p3+0x2c7d9) (BuildId: ee29024eb3788866d056b221e989c484a7f37114)
+    #2 0x7f5e6a027780  (/usr/lib/libc.so.6+0x27780) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #3 0x7f5e6a0278b8 in __libc_start_main (/usr/lib/libc.so.6+0x278b8) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #4 0x55ea737143e4 in _start (/workspace/github.repo/matrix/.work/probe_s4_p3+0x43e4) (BuildId: ee29024eb3788866d056b221e989c484a7f37114)
+
+0x7b9e691e1e80 is located 0 bytes after 48-byte region [0x7b9e691e1e50,0x7b9e691e1e80)
+allocated by thread T0 here:
+    #0 0x7f5e6a92d2a1 in operator new(unsigned long) (/usr/lib/libasan.so.8+0x12d2a1) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
+exit=141
+
+--- p0d: complex value_type behavior (post-T1, design-claim verification) ---
+mean(complex<double> 1x2): compiles OK, returns complex (legacy path)
+variance(complex<double>): compile error (1 error) — pre-fix already ill-formed (operator- takes real T); legacy preserved as designed
+
+=== T5: deterministic check E10_E13 (contract command, verbatim) ===
+PASS
+deterministic_exit=0
+
+=== T5: post-fix ASan rerun of p3 (pre-existing OOB, must match pre-fix in substance) ===
+==2914870==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x7c2f483e1e80 at pc 0x55d5ac0ae58e bp 0x7ffded7d69c0 sp 0x7ffded7d69b0
+READ of size 8 at 0x7c2f483e1e80 thread T0
+    #0 0x55d5ac0ae58d in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&) .work/probes/../../matrix.hpp:6510
+    #3 0x55d5ac0ae2a8 in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&) .work/probes/../../matrix.hpp:6501
+SUMMARY: AddressSanitizer: heap-buffer-overflow .work/probes/../../matrix.hpp:6510 in std::optional<feng::matrix<double, std::allocator<double> > > feng::gauss_jordan_elimination<feng::matrix<double, std::allocator<double> > >(feng::matrix<double, std::allocator<double> > const&)
+asan_exit=0

@@ -1,0 +1,47 @@
+=================================================================
+==302349==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x7ca9b0fe01a0 at pc 0x55e5e4dac10a bp 0x7fffc3b9abb0 sp 0x7fffc3b9aba0
+READ of size 8 at 0x7ca9b0fe01a0 thread T0
+    #0 0x55e5e4dac109 in feng::matrix<double, std::allocator<double> > const feng::flipdim<double, std::allocator<double> >(feng::matrix<double, std::allocator<double> > const&, unsigned long) (/workspace/github.repo/matrix/.work/probe_s1+0x32109) (BuildId: 2dda3fdb7bc28c0cc9802f1c69c03c918eca7751)
+    #1 0x55e5e4d84dda in main (/workspace/github.repo/matrix/.work/probe_s1+0xadda) (BuildId: 2dda3fdb7bc28c0cc9802f1c69c03c918eca7751)
+    #2 0x7fe9b1e27780  (/usr/lib/libc.so.6+0x27780) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #3 0x7fe9b1e278b8 in __libc_start_main (/usr/lib/libc.so.6+0x278b8) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #4 0x55e5e4d7e364 in _start (/workspace/github.repo/matrix/.work/probe_s1+0x4364) (BuildId: 2dda3fdb7bc28c0cc9802f1c69c03c918eca7751)
+
+0x7ca9b0fe01a0 is located 40 bytes after 120-byte region [0x7ca9b0fe0100,0x7ca9b0fe0178)
+allocated by thread T0 here:
+    #0 0x7fe9b272d2a1 in operator new(unsigned long) (/usr/lib/libasan.so.8+0x12d2a1) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
+    #1 0x55e5e4dabc53 in feng::matrix<double, std::allocator<double> > const feng::flipdim<double, std::allocator<double> >(feng::matrix<double, std::allocator<double> > const&, unsigned long) (/workspace/github.repo/matrix/.work/probe_s1+0x31c53) (BuildId: 2dda3fdb7bc28c0cc9802f1c69c03c918eca7751)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/workspace/github.repo/matrix/.work/probe_s1+0x32109) (BuildId: 2dda3fdb7bc28c0cc9802f1c69c03c918eca7751) in feng::matrix<double, std::allocator<double> > const feng::flipdim<double, std::allocator<double> >(feng::matrix<double, std::allocator<double> > const&, unsigned long)
+Shadow bytes around the buggy address:
+  0x7ca9b0fdff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7ca9b0fdff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x7ca9b0fe0000: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00
+  0x7ca9b0fe0080: 00 00 00 00 00 00 00 fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 fa
+=>0x7ca9b0fe0180: fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0380: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7ca9b0fe0400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==302349==ABORTING

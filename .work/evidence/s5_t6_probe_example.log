@@ -1,0 +1,6 @@
+=== T6: verbatim E14_E15 probe ===
+PASS
+exit: 0
+
+=== T6: make example (post-fix) ===
+make example exit: 0

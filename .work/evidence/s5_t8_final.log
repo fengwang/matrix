@@ -1,0 +1,6 @@
+=== T8 final full checks ===
+g++ -o ./test_test ./test.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto
+All tests passed (49217191 assertions in 74 test cases)
+
+PASS
+probe exit: 0

@@ -1,0 +1,4 @@
+46c46
+< mean absolute error for lu solver is 1.56978007661495e-10
+---
+> mean absolute error for lu solver is 1.77455237701432e-10

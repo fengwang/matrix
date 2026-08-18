@@ -1,0 +1,10 @@
+g++ -c -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL  -o ./test.o tests/test.cc
+In file included from tests/test.cc:1:
+tests/../matrix.hpp: In instantiation of ‘feng::crtp_shrink_to_size<Matrix, Type, Alloc>::zen_type& feng::crtp_shrink_to_size<Matrix, Type, Alloc>::shrink_to_size(size_type, size_type) [with Matrix = feng::matrix<double>; Type = double; Alloc = std::allocator<double>; zen_type = feng::matrix<double>; size_type = long unsigned int]’:
+tests/./cases/shrink_to_size.hpp:11:25:   required from here
+   11 |         m.shrink_to_size( 5, 3 );
+      |         ~~~~~~~~~~~~~~~~^~~~~~~~
+tests/../matrix.hpp:3529:29: warning: unused variable ‘the_cols_to_copy’ [-Wunused-variable]
+ 3529 |             size_type const the_cols_to_copy = std::min( zen.col(), new_col );
+      |                             ^~~~~~~~~~~~~~~~
+g++ -o ./test_test ./test.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto

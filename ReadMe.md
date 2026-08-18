@@ -44,6 +44,9 @@ A modern, C++20-native, single-file header-only dense 2D matrix library.
      - [matrix convolution](#matrix-convolution)
      - [make_view](#make-view-function)
      - [lu_decomposition](#lu-decomposition)
+     - [fft -- fast Fourier transform](#fft----fast-fourier-transform)
+     - [statistics -- mean, variance, standard deviation](#statistics----mean-variance-standard-deviation)
+     - [retired aliases (S6)](#retired-aliases-s6)
      - [guass_jordan_elimination](#gauss-jordan-elimination)
      - [singular_value_decomposition](#singular-value-decomposition)
      - [pooling](#pooling)
@@ -776,6 +779,8 @@ generated output is
 1069.00941294551	:	1069.0094129455
 ```
 
+Since session 3, `det` is computed through LU decomposition **with partial pivoting**: the determinant is `±` the product of the diagonal of `U`. A zero pivot yields an **exact `0`** for singular matrices (previously `NaN` via the Schur-complement path). Near-singular matrices yield tiny nonzero values — no epsilon is added by design.
+
 -------------
 
 #### operator divide-equal
@@ -1061,6 +1066,8 @@ feng::matrix<double> mat;
 mat.load_npy( "./images/64.npy");
 ```
 
+`load_npy` returns `false` without modifying the matrix when the file is truncated, malformed, or its stored type does not match the matrix's: the dtype in the file must match the matrix's type exactly (a float32 file, descr `<f4`, loads into `matrix<float>`; a float64 file, descr `<f8`, loads into `matrix<double>` — a float32 file is **not** loaded into `matrix<double>`), only little-endian dtypes are accepted, and the shape must be a two positive-integer pair. Files using the real NPY v2 layout (8-byte header-length field) are rejected: this library's v2 convention uses a 4-byte header-length field.
+
 
 #### save load bmp
 
@@ -1274,7 +1281,7 @@ m.save_as_bmp("images/0001_multiply_equal.bmp");
 #### operator prefix
 
 ```cpp
-auto const& m = feng::random<double>( 127, 127 );
+auto const& m = feng::rand<double>( 127, 127 );
 auto const& pp = +m;
 auto const& pm = -m;
 auto const& shoule_be_zero = pp + pm;
@@ -1494,6 +1501,9 @@ edge_full.save_as_bmp( "./images/0001_conv_full.bmp", "gray" );
 
 ![convolution full](./images/0001_conv_full.bmp)
 
+Notes (session 4):
+- The `same` mode precondition is `rb >= 1 && cb >= 1` (previously a valid 1×1 kernel was rejected); a 1×1 kernel is pure scaling.
+- For 2-D kernels the library correlates with the kernel's **bottom-right element anchored** (`f(r,c) = sum A[r-rb+1+i][c-cb+1+j] * K[i][j]`). For 1-D kernels this coincides with the centered (NumPy) convention.
 
 
 
@@ -1671,6 +1681,8 @@ When using `1` ranks, the reconstructed image lookes like:
 
 ![svd_4](./images/0003_singular_value_decomposition_1.bmp)
 
+Notes (session 3): the 1-argument `svd( m )` returns the tuple `( u, w, v )` — the order is load-bearing (example 0021 depends on it). The SVD core is numerically validated for tall (`row >= col`) and square matrices; wide (`row < col`) matrices are a documented unvalidated gap (R-20) — outputs for `row < col` inputs are not validated.
+
 #### pooling
 
 We are able to pooling an image with function `pooling( matrix, dim_row, dim_col, option )`, where `option` can be either of `mean`, `max`, or `min`, if no option provided, then `mean` is applied.
@@ -1767,6 +1779,8 @@ after applying Gauss Jordan elimination, the matrix is reduced to a form of
 
 
 ![gauss_jordan_elimination_1](./images/0001_gauss_jordan_elimination.bmp)
+
+Notes (session 4): `rref` / `gauss_jordan_elimination` now accept **square** systems (the old precondition `row < col` rejected valid square inputs). Wide inputs (`row > col`) remain unsupported — a pre-existing out-of-bounds access is tracked as E19; do not call them with `row > col`.
 
 
 #### lu decomposition
@@ -1884,6 +1898,44 @@ And we can also evaluate the solver's accuracy with the mean absolute value erro
  ```
 
 
+Notes (sessions 3–4): `lu_decomposition` now performs **partial pivoting**; the pivoted 5-argument form `lu_decomposition( A, L, U, sign, perm )` additionally returns the sign and the permutation vector, and the 3-argument and 1-argument (tuple) forms build on it. `cholesky_decomposition( m, a )` returns `bool` — `true` when the decomposition succeeds (positive-definite input), `false` otherwise.
+
+
+#### fft -- fast Fourier transform
+
+The library provides `feng::fft`, `feng::ifft`, `feng::fftshift`, and `feng::ifftshift` for 2-D matrices, following the NumPy naming and normalization conventions (`np.fft.fft2` / `ifft2` / `fftshift`):
+
+```cpp
+auto const& m = feng::rand<double>( 128, 128 );
+auto const& X = feng::fft( m );      // forward 2-D DFT (unnormalized)
+auto const& x = feng::ifft( X );     // inverse, normalized: ifft(fft(x)) == x
+auto const& S = feng::fftshift( X ); // zero-frequency component moved to the center
+```
+
+- `fft` applies the unnormalized 2-D DFT (kernel `exp(-2*pi*I*(k*r + l*c)/n)`); `ifft` applies the conjugate kernel and multiplies the result by `1/(row*col)`, applied exactly once, so the round-trip `ifft( fft( x ) ) == x` holds.
+- When both dimensions are powers of two a separable radix-2 FFT (rows, then columns) is used; otherwise a naive DFT fallback is used (same mathematical definition, `O(n^4)` cost).
+- `fftshift` / `ifftshift` move the zero-frequency component to the center by a circular roll by `(n+1)/2` per axis (NumPy convention; for even `n` this is the classic half-swap). Note: in this library `fftshift( x ) = shift( fft( x ) )` and `ifftshift( x ) = shift( ifft( x ) )` — the fused transform+shift design, an intentional deviation from NumPy's `fftshift` (a pure reindexing that performs no transform).
+
+
+#### statistics -- mean, variance, standard deviation
+
+`feng::mean`, `feng::variance`, and `feng::standard_deviation` return `double` for real value types (integers are promoted; `float` accumulates in `double`). For complex matrices `mean` returns a complex value; `variance` / `standard_deviation` are unavailable for complex matrices (they do not compile) — by design, not a defect.
+
+
+#### retired aliases (S6)
+
+Duplicate alias names are retired; use the canonical names:
+
+| retired name | canonical replacement |
+|---|---|
+| `feng::random` | `feng::rand` |
+| `feng::random_like` | `feng::rand_like` |
+| `feng::pinverse` | `feng::pinv` |
+| `feng::svd_inverse` | `feng::pinv` |
+| `feng::det( m )` (free function) | `m.det()` (member) |
+
+`feng::pinv` computes the Moore-Penrose pseudoinverse through the SVD core; a singular value sigma is inverted iff `|sigma| > 1e-10` (inherited threshold, unchanged).
+
 
 ## License
 
@@ -1918,6 +1970,14 @@ Simple execute `make` or `make test` or `make example` at the root folder.
 
 ## Notes and references
 
+
+### Assertions, `better_assert`, and `NDEBUG`
+
+`better_assert` is debug-only enforcement. Its runtime check is gated by the `debug_mode` constant (matrix.hpp), which is `0` when `NDEBUG` is defined and `1` otherwise; in debug builds (the Makefile's default: `-Ofast`, no `-DNDEBUG`) a failed assertion prints a message to `std::cerr` and aborts (core dump). Release builds that define `NDEBUG` skip every `better_assert` check silently.
+
+Hard runtime checks at I/O and external boundaries are **not** subject to `NDEBUG`: `load_npy` (S2) and `save_png` (S5) fail silently instead of throwing or aborting on unreadable input / unwritable output. Decomposition-domain guards added in S4 (`rref`, `rref_2d`, `cholesky_decomposition`) are ordinary control flow, not assertions.
+
+Rule of thumb: API preconditions → `better_assert` (debug-only). I/O and external-data boundaries → hard, silent, NDEBUG-independent checks.
 
 
 ## Design

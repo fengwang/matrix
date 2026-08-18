@@ -1,0 +1,27 @@
+=== AV-1: blast radius (whole session vs S4 closeout) ===
+docs/session_5/brainstorming.md
+docs/session_5/design.md
+docs/session_5/execution_contract.md
+docs/session_5/interview.md
+docs/session_5/plan.md
+docs/session_5/proposal.md
+docs/session_5/specs/core_count_guard.md
+docs/session_5/specs/ndebug_policy.md
+docs/session_5/specs/rand_engine.md
+docs/session_5/specs/rand_regression_tests.md
+docs/session_5/specs/save_png_boundary.md
+docs/session_5/tasks.md
+matrix.hpp
+tests/cases/rand.hpp
+tests/test.cc
+.work/evidence/s5_baseline_test.log
+.work/evidence/s5_prefix.log
+.work/probes/S5_p0_preflight.cc
+.work/probes/S5_p1_tsan.cc
+.work/probes/S5_p2_save_png.cc
+
+=== AV-2: contract deterministic greps ===
+mt19937: 1
+5337:        std::mt19937 engine{ effective_seed }; // per-call local engine: no global state, thread-safe by construction
+literal grep srand|std::rand: 1 (known false positive: std::random_access_iterator_tag, logged Q6.1)
+151:            typedef std::random_access_iterator_tag	iterator_category;

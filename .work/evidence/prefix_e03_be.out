@@ -1,0 +1,2 @@
+FAIL e03_be: big-endian '>f8' into matrix<double> -> ok=1
+FAIL: 1 case(s) not as expected

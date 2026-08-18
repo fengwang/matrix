@@ -1149,7 +1149,9 @@ namespace feng
             typedef typename std::iterator_traits<Iterator>::value_type value_type;
             typedef typename std::invoke_result<Function, value_type, value_type>::type result_type;
 
-            unsigned int const total_cores = std::thread::hardware_concurrency();
+            unsigned int total_cores = std::thread::hardware_concurrency();
+            if ( total_cores < 1 )
+                total_cores = 1;
             unsigned long const total_elements = std::distance( begin, end );
 
             // case of small size, reduce inplace
@@ -2052,35 +2054,34 @@ namespace feng
         typedef typename type_proxy_type::size_type size_type;
         typedef typename type_proxy_type::value_type value_type;
         typedef typename type_proxy_type::range_type range_type;
-        value_type det() const noexcept
+        value_type det() const
         {
             zen_type const& zen = static_cast< zen_type const& >( *this );
-            better_assert( zen.row()==zen.col(), " matrix::det(), the row and matrix are supposed to be same, but now row is ", zen.row(), " and col is ", zen.col() );
+            better_assert( zen.row()==zen.col(), " matrix::det(), the row and col are supposed to be the same, but now row is ", zen.row(), " and col is ", zen.col() );
 
             if ( 0 == zen.size() )
             {
                 return value_type{};
             }
 
-            if ( 1 == zen.size() )
+            // Pivoted LU product: det = sign * prod(U_ii). Single code path for all
+            // sizes (1x1 degenerates to the lone pivot). An exact zero pivot yields
+            // exactly 0 (P7: no epsilon threshold); the lu_decomposition failure
+            // signal (inf/nan from a zero pivot in an off-last column) also yields 0.
+            // Note: noexcept dropped — the body allocates (L, U, perm, working copy).
+            zen_type L, U;
+            int sign{ 1 };
+            std::vector< std::uint_least64_t > perm;
+            if ( 0 != lu_decomposition( zen, L, U, sign, perm ) )
+                return value_type{};
+            value_type d = value_type( sign );
+            for ( size_type i = 0; i < zen.row(); ++i )
             {
-                return *( zen.begin() );
+                if ( 0 == U[i][i] )
+                    return value_type{};
+                d *= U[i][i];
             }
-
-            if ( 4 == zen.size() )
-            {
-                return zen[0][0] * zen[1][1] - zen[1][0] * zen[0][1];
-            }
-
-            size_type const n = zen.row();
-            size_type const m = n >> 1;
-            zen_type const P( zen, range_type( 0, m ), range_type( 0, m ) );
-            zen_type const Q( zen, range_type( 0, m ), range_type( m, n ) );
-            zen_type const R( zen, range_type( m, n ), range_type( 0, m ) );
-            zen_type const S( zen, range_type( m, n ), range_type( m, n ) );
-            zen_type const& tmp = S - ( R * ( P.inverse() ) * Q );
-
-            return P.det() * tmp.det();
+            return d;
         }
     };
     template < typename Matrix, typename Type, Allocator Alloc >
@@ -2509,58 +2510,144 @@ namespace feng
         {
             zen_type& zen = static_cast< zen_type& >( *this );
             std::ifstream ifs( file_name, std::ios::binary );
-            better_assert( ifs, "matrix::load_npy -- failed to open file ", file_name );
 
             if ( !ifs )
                 return false;
 
-            std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
-
-            //get version
-            std::size_t const version = *(reinterpret_cast< std::uint8_t* >( buffer.data()+6 ));
-
-            //get header length and header
-            std::uint32_t header_length;
-            std::string header;
-            if ( version == 1 ) //version 1 using 2 bytes
+            try
             {
-                std::uint32_t const _l0 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 8 ));
-                std::uint32_t const _l1 = *(reinterpret_cast<std::uint8_t*>( buffer.data() + 9 ));
-                header_length = (_l1 << 8) + _l0;
-                header = std::string{ buffer.data() + 10, buffer.data() + 10 + header_length };
+                std::vector< char > buffer{ ( std::istreambuf_iterator< char >( ifs ) ), ( std::istreambuf_iterator< char >() ) };
+
+                // R-V1: minimum size and NPY magic, checked before any byte is dereferenced
+                if ( buffer.size() < 12 )
+                    return false;
+                constexpr std::uint8_t const magic[ 6 ] = { 0x93, 'N', 'U', 'M', 'P', 'Y' };
+                for ( int i = 0 ; i < 6 ; ++i )
+                    if ( static_cast< std::uint8_t >( buffer[ i ] ) != magic[ i ] )
+                        return false;
+
+                // R-V2: version in {1, 2}; v1: 2-byte LE header length, data prefix 10;
+                // v2 (library convention): 4-byte LE header length, data prefix 12
+                std::uint8_t const version = static_cast< std::uint8_t >( buffer[ 6 ] );
+                if ( version != 1 && version != 2 )
+                    return false;
+                std::size_t const data_prefix = ( version == 1 ) ? 10 : 12;
+
+                // R-V3: header_length from the version-appropriate bytes, non-wrapping bound
+                std::size_t header_length = static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 8 ] ) )
+                    | ( static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 9 ] ) ) << 8 );
+                if ( version == 2 )
+                    header_length |= static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 10 ] ) ) << 16;
+                if ( version == 2 )
+                    header_length |= static_cast< std::size_t >( static_cast< std::uint8_t >( buffer[ 11 ] ) ) << 24;
+                if ( header_length > buffer.size() - data_prefix )
+                    return false;
+
+                // R-V4: the NPY header is a python dict literal
+                std::string const header{ buffer.data() + data_prefix, header_length };
+                if ( header.empty() || header[ 0 ] != '{' )
+                    return false;
+
+                // R-V5: dtype must be the canonical little-endian descriptor of value_type
+                char const* expected_dtype = nullptr;
+                if constexpr ( std::is_same_v< value_type, std::uint8_t > )
+                    expected_dtype = "|u1";
+                else if constexpr ( std::is_same_v< value_type, std::int8_t > )
+                    expected_dtype = "|i1";
+                else if constexpr ( std::is_same_v< value_type, std::int16_t > )
+                    expected_dtype = "<i2";
+                else if constexpr ( std::is_same_v< value_type, std::uint16_t > )
+                    expected_dtype = "<u2";
+                else if constexpr ( std::is_same_v< value_type, std::int32_t > )
+                    expected_dtype = "<i4";
+                else if constexpr ( std::is_same_v< value_type, std::uint32_t > )
+                    expected_dtype = "<u4";
+                else if constexpr ( std::is_same_v< value_type, std::int64_t > )
+                    expected_dtype = "<i8";
+                else if constexpr ( std::is_same_v< value_type, std::uint64_t > )
+                    expected_dtype = "<u8";
+                else if constexpr ( std::is_same_v< value_type, float > )
+                    expected_dtype = "<f4";
+                else if constexpr ( std::is_same_v< value_type, double > )
+                    expected_dtype = "<f8";
+                if ( expected_dtype == nullptr )
+                    return false;
+                std::size_t const descr_pos = header.find( "'descr': '" );
+                if ( descr_pos == std::string::npos )
+                    return false;
+                std::size_t const descr_end = header.find( "'", descr_pos + 10 );
+                if ( descr_end == std::string::npos )
+                    return false;
+                if ( header.substr( descr_pos + 10, descr_end - descr_pos - 10 ) != expected_dtype )
+                    return false;
+
+                // R-V6: shape token, every lookup npos-guarded
+                std::size_t const shape_pos = header.find( "'shape': (" );
+                if ( shape_pos == std::string::npos )
+                    return false;
+                std::size_t const row_pos = shape_pos + 10; //start of row
+                std::size_t const row_pos_end = header.find( ",", row_pos ); //end of row
+                if ( row_pos_end == std::string::npos )
+                    return false;
+                std::size_t const col_pos_end = header.find( ")", row_pos_end ); //end of col
+                if ( col_pos_end == std::string::npos )
+                    return false;
+
+                // R-V7: digit-bounded parse (no sign, no overflow, no trailing junk), non-zero dims
+                auto parse_dim = []( std::string const& s, std::size_t& out ) -> bool
+                {
+                    std::size_t i = 0;
+                    while ( i < s.size() && ( s[ i ] == ' ' || s[ i ] == '\t' ) )
+                        ++i;
+                    if ( i == s.size() )
+                        return false;
+                    std::size_t v = 0;
+                    for ( ; i < s.size() ; ++i )
+                    {
+                        char const c = s[ i ];
+                        if ( c < '0' || c > '9' )
+                            return false;
+                        std::size_t const d = static_cast< std::size_t >( c - '0' );
+                        if ( v > ( std::numeric_limits< std::size_t >::max() - d ) / 10 )
+                            return false;
+                        v = v * 10 + d;
+                    }
+                    out = v;
+                    return true;
+                };
+                std::size_t row = 0;
+                std::size_t col = 0;
+                if ( !parse_dim( header.substr( row_pos, row_pos_end - row_pos ), row ) )
+                    return false;
+                if ( !parse_dim( header.substr( row_pos_end + 1, col_pos_end - row_pos_end - 1 ), col ) )
+                    return false;
+                if ( row == 0 || col == 0 )
+                    return false;
+
+                // R-V8: overflow-checked payload bound (inclusive: the payload may end at the file tail)
+                if ( row > std::numeric_limits< std::size_t >::max() / col )
+                    return false;
+                std::size_t const elements = row * col;
+                if ( elements > std::numeric_limits< std::size_t >::max() / sizeof( value_type ) )
+                    return false;
+                std::size_t const payload = elements * sizeof( value_type );
+                std::size_t const data_offset = data_prefix + header_length;
+                if ( payload > buffer.size() - data_offset )
+                    return false;
+
+                // R-V9: resize only after every check above passed
+                bool const row_major = ( header.find( "T" ) != std::string::npos ) ? false : true;
+                zen.resize( row, col );
+                if ( !row_major )
+                    zen.reshape( col, row );
+
+                //copy binary value (byte-level: payload is exactly row*col*sizeof(value_type) bytes)
+                std::copy_n( reinterpret_cast< std::uint8_t* >( buffer.data() + data_offset ), payload, reinterpret_cast< std::uint8_t* >( zen.data() ) );
             }
-            else //version 2/3 using 4 bytes
+            catch ( ... )
             {
-                std::uint32_t const _l0 = *(reinterpret_cast<unsigned char*>( buffer.data() + 8 ));
-                std::uint32_t const _l1 = *(reinterpret_cast<unsigned char*>( buffer.data() + 9 ));
-                std::uint32_t const _l2 = *(reinterpret_cast<unsigned char*>( buffer.data() + 10 ));
-                std::uint32_t const _l3 = *(reinterpret_cast<unsigned char*>( buffer.data() + 11 ));
-                header_length = (_l3 << 24) + (_l2 << 16) + (_l1 << 8) + _l0;
-                header = std::string{ buffer.data() + 12, buffer.data() + 12 + header_length };
+                return false;
             }
-
-            // fortran format or not
-            bool const row_major = ( header.find("T") != std::string::npos ) ? false : true;
-
-            //extract row and column
-            std::size_t const shape_pos = header.find("'shape': (");
-            std::size_t const row_pos = shape_pos + 10; //start of row
-            std::size_t const row_pos_end = header.find( ",", row_pos ); //end of row
-            std::string const row_string = header.substr( row_pos, row_pos_end - row_pos );
-            std::size_t const row = std::stoul( row_string );
-            std::size_t const col_pos = row_pos_end + 1; //start of col
-            std::size_t const col_pos_end = header.find( ")", col_pos ); //end of col
-            std::string const col_string = header.substr( col_pos, col_pos_end - col_pos );
-            std::size_t const col = std::stoul( col_string );
-
-            //resize matrix
-            zen.resize( row, col );
-            if (!row_major)
-                zen.reshape( col, row );
-
-            //copy binary value
-            std::size_t const data_offset = (version==1) ? (10 + header_length) : (12 +header_length);
-            std::copy_n( reinterpret_cast<value_type*>(buffer.data()+data_offset), row*col, zen.data() );
 
             return true;
         }
@@ -3098,9 +3185,11 @@ namespace feng
             constexpr unsigned t[] = { 0, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c, 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c };
             unsigned a = 1, b = 0, c, p = w * ( alpha ? 4 : 3 ) + 1, x, y, i;
             FILE* fp = fopen( file_name, "wb" );
+            if ( ! fp )
+                return;
 
             for ( i = 0; i < 8; i++ )
-                fputc( ( "\x89PNG\r\n\32\n" )[i], fp );;
+                fputc( ( "\x89PNG\r\n\32\n" )[i], fp );
 
             {
                 {
@@ -3529,7 +3618,7 @@ namespace feng
             size_type const the_cols_to_copy = std::min( zen.col(), new_col );
 
             for ( size_type r = 0; r != the_rows_to_copy; ++r )
-                std::copy( zen.row_begin( r ), zen.row_begin( r ) + the_rows_to_copy, other.row_begin( r ) );
+                std::copy( zen.row_begin( r ), zen.row_begin( r ) + the_cols_to_copy, other.row_begin( r ) );
 
             zen.swap( other );
             return zen;
@@ -4034,6 +4123,8 @@ namespace feng
                     };
 
                     std::uint_least64_t parallel_size = std::thread::hardware_concurrency();
+                    if ( parallel_size < 1 )
+                        parallel_size = 1;
 
                     //direct reduce
                     if ( parallel_size<= 1 || mat.size() < 32 )
@@ -4060,6 +4151,20 @@ namespace feng
             {
                 return reduce_impl_private::reduce_impl( mat )( func, init );
             };
+        }
+
+        // SVD-based pseudoinverse core (A2: was the body of the retired SVD-alias
+        // free function; moved here as-is — threshold, argument order, and return
+        // expression unchanged). Exposed only through feng::pinv.
+        template < typename T, Allocator A>
+        matrix<T,A> const pinv_core( matrix<T,A> const& a )
+        {
+            matrix<T, A> u;
+            matrix<T, A> w;
+            matrix<T, A> v;
+            singular_value_decomposition( a, u, w, v );
+            for_each( w.begin(), w.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
+            return v * w * u.transpose();
         }
 
     }
@@ -4316,11 +4421,6 @@ namespace feng
         return conj( m.transpose() );
     }
     template < typename T, Allocator A>
-    T const det( const matrix< T, A >& m )
-    {
-        return m.det();
-    }
-    template < typename T, Allocator A>
     matrix< T, A > const diag( const matrix< T, A >& m, const std::ptrdiff_t offset = 0 )
     {
         const std::uint_least64_t dim = std::min( m.row(), m.col() ) + ( offset > 0 ? offset : -offset );
@@ -4476,7 +4576,7 @@ namespace feng
 
             while ( index_right > index_left )
             {
-                std::swap_ranges( ans.col_begin( index_left ), ans.col_end( index_left ), ans.row_begin( index_right ) );
+                std::swap_ranges( ans.col_begin( index_left ), ans.col_end( index_left ), ans.col_begin( index_right ) );
                 --index_right;
                 ++index_left;
             }
@@ -4490,12 +4590,12 @@ namespace feng
     template < typename T, Allocator A>
     matrix< T, A > const fliplr( const matrix< T, A >& m )
     {
-        return flipdim( m, 1 );
+        return flipdim( m, 2 );
     }
     template < typename T, Allocator A>
     matrix< T, A > const flipud( const matrix< T, A >& m )
     {
-        return flipdim( m, 2 );
+        return flipdim( m, 1 );
     }
     template < typename T,
                typename A    = std::allocator< typename std::remove_const< typename std::remove_reference< T >::result_type >::result_type >>
@@ -5212,42 +5312,29 @@ namespace feng
         return singular_value_decomposition( a );
     }
 
-    template < typename T, Allocator A>
-    matrix<T,A> const svd_inverse( matrix<T, A> const& a )
+    // A2: the retired SVD/pinv alias free functions are gone — the SVD core lives
+    // as-is in matrix_details::pinv_core; pinv is the canonical name.
+    template < typename T, typename A = std::allocator< T > >
+    matrix< T, A > const pinv( matrix< T, A > const& m )
     {
-        matrix<T, A> u;
-        matrix<T, A> w;
-        matrix<T, A> v;
-        singular_value_decomposition( a, u, v, w );
-        matrix_details::for_each( v.begin(), v.end(), []( auto & val ) { if ( std::abs( val ) > 1.0e-10 ) val = 1.0 / val; });
-        return w * v.transpose() * u.transpose();
-    }
-    template < typename Matrix >
-    Matrix const pinverse( const Matrix& m )
-    {
-        Matrix u, w, v;
-        singular_value_decomposition( m, u, w, v );
-        return v * w * u.transpose();
-    }
-    template < typename Matrix >
-    Matrix const pinv( const Matrix& m )
-    {
-        return pinverse( m );
+        return matrix_details::pinv_core< T, A >( m );
     }
 
-    //generating a matrix uniformly in (0, 1)
+    //generating a matrix uniformly in [0, 1)
     template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 ) noexcept
+    matrix< T, A > const rand( const std::uint_least64_t r, const std::uint_least64_t c, unsigned int seed = 0 )
     {
         matrix< T, A > ans{ r, c };
-        if ( 0 == seed )
-            std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
-        else
-            std::srand( seed );
-
-        auto const& generator = []() noexcept
+        // seed 0 keeps the documented time-based mix (time + &ans address salt, low entropy; the
+        // residual same-call-site/same-second correlation is inherent to this seed — documented, not a violation)
+        unsigned int const effective_seed = ( 0 == seed )
+            ? static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) )
+            : seed;
+        std::mt19937 engine{ effective_seed }; // per-call local engine: no global state, thread-safe by construction
+        std::uniform_real_distribution< T > distribution{ 0.0, 1.0 };
+        auto const& generator = [ & ]()
         {
-            return ( static_cast<T>( std::rand() ) + 1 ) / ( static_cast<T>( RAND_MAX ) + 2 ); // make sure in open bounds range (0, 1)
+            return static_cast< T >( distribution( engine ) ); // in [0, 1)
         };
         std::generate( ans.begin(), ans.end(), generator );
         return ans;
@@ -5258,31 +5345,17 @@ namespace feng
         return rand< T, A >( n, n );
     }
 
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( std::integral auto r, std::integral auto c )
-    {
-        return rand< T, A >( r, c );
-    }
-    template < typename T = double, typename A = std::allocator< T > >
-    matrix< T, A > const random( const std::integral auto n )
-    {
-        return rand< T, A >( n );
-    }
     template < typename T, Allocator A>
-    matrix< T, A > const rand_like( matrix<T, A> const& mat ) noexcept
+    matrix< T, A > const rand_like( matrix<T, A> const& mat )
     {
-        auto const[row, col] = mat.shape();
-        return random<T, A>( row, col );
-    }
-    template < typename T, Allocator A>
-    matrix< T, A > const random_like( matrix<T, A> const& mat ) noexcept
-    {
-        return rand_like<T,A>(mat);
+        auto const[ row, col ] = mat.shape();
+        return rand< T, A >( row, col );
     }
     template < typename T, Allocator A> //pytorch style
-    matrix< T, A > const randn_like( matrix<T, A> const& mat ) noexcept
+    matrix< T, A > const randn_like( matrix< T, A> const& mat )
     {
-        return rand_like<T,A>(mat);
+        auto const[ row, col ] = mat.shape();
+        return rand< T, A >( row, col );
     }
     template < typename T, Allocator A>
     const matrix< T, A >
@@ -5564,7 +5637,14 @@ namespace feng
             return lhs;
 
         if ( n & 1 )
-            return lhs ^ ( n - 1 ) * lhs;
+        {
+            // Odd power: (lhs^(n>>1))^2 * lhs. Pre-fix this branch read
+            // "lhs ^ ( n - 1 ) * lhs" — "( n - 1 ) * lhs" is ill-formed (integer times
+            // matrix), which made the entire function fail to instantiate for ANY call
+            // site (n is a runtime value, not a template parameter).
+            auto const half = lhs ^ ( n >> 1 );
+            return half * half * lhs;
+        }
 
         auto const& lhs_2 = lhs ^ ( n >> 1 );
         return lhs_2 * lhs_2;
@@ -5673,7 +5753,7 @@ namespace feng
         return biconjugate_gradient_stablized_method( A, x, b, max_loops, eps );
     }
     template < typename Matrix1, typename Matrix2 >
-    void cholesky_decomposition( const Matrix1& m, Matrix2& a )
+    bool cholesky_decomposition( const Matrix1& m, Matrix2& a )
     {
         typedef typename Matrix1::value_type value_type;
         better_assert( m.row() == m.col() );
@@ -5684,11 +5764,24 @@ namespace feng
             for ( std::uint_least64_t j = i; j < n; ++j )
             {
                 const value_type sum = a[i][j] - std::inner_product( a.row_begin( i ), a.row_begin( i ) + i, a.row_begin( j ), value_type( 0 ) );
-                a[j][i]              = ( i == j ) ? std::sqrt( sum ) : ( sum / a[i][i] );
+                if ( i == j )
+                {
+                    // positive-definiteness guard: the diagonal step must be strictly
+                    // positive, else the sqrt below is of a non-positive (real) value and
+                    // the factor silently contains NaN. complex has no ordering — legacy
+                    // path (no in-repo complex callers).
+                    if constexpr ( ! ComplexMatrix< Matrix1 > )
+                        if ( sum <= value_type( 0 ) )
+                            return false;
+                    a[i][i] = std::sqrt( sum );
+                }
+                else
+                    a[j][i] = sum / a[i][i];
             }
 
         for ( std::uint_least64_t i = 1; i < n; ++i )
             std::fill( a.upper_diag_begin( i ), a.upper_diag_end( i ), value_type() );
+        return true;
     }
     template < typename T1, Allocator A1, typename T2, Allocator A2, typename T3, Allocator A3 >
     int conjugate_gradient_squared( const matrix< T1, A1 >& A,
@@ -6307,6 +6400,117 @@ namespace feng
         {
             typedef std::complex< T > result_type;
         };
+
+        // Arithmetic base of a (possibly complex) element type.
+        template < typename T >
+        struct base_real
+        {
+            typedef T type;
+        };
+        template < typename T >
+        struct base_real< std::complex< T >>
+        {
+            typedef T type;
+        };
+
+        // True only for powers of two; n = 0 -> false (empty inputs are guarded at the callers).
+        bool is_power_of_two( std::uint_least64_t n )
+        {
+            return n != 0 && ( n & ( n - 1 ) ) == 0;
+        }
+
+        // Twiddle table w[k] = exp(+- 2*pi*i*k/n), k = 0..n/2-1 (n a power of two, >= 2).
+        // The direction is encoded in the table itself, so the kernel never takes a flag.
+        template < typename T >
+        std::vector< std::complex< T > > twiddle_table( std::uint_least64_t n, bool inverse )
+        {
+            double const pi = 3.1415926535897932384626433;
+            std::vector< std::complex< T > > w( n / 2 );
+            for ( std::uint_least64_t k = 0; k != n / 2; ++k )
+            {
+                double const theta = ( inverse ? 1.0 : -1.0 ) * pi * 2.0 * double( k ) / double( n );
+                w[k] = std::complex< T >( std::complex< double >( std::cos( theta ), std::sin( theta ) ) );
+            }
+            return w;
+        }
+
+        // In-place iterative DIT radix-2 on buf[start + i*stride], i < n (n a power of two).
+        // Only the buffer is mutated; the input matrix is never written.
+        template < typename T >
+        void radix2_fft_1d( std::vector< std::complex< T > >& buf, std::uint_least64_t start, std::uint_least64_t stride, std::uint_least64_t n, std::vector< std::complex< T > > const& w )
+        {
+            if ( n < 2 )
+                return;
+            std::uint_least64_t m = 0;
+            while ( ( std::uint_least64_t( 1 ) << m ) < n )
+                ++m;
+
+            // Bit-reversal permutation.
+            for ( std::uint_least64_t i = 0; i != n; ++i )
+            {
+                std::uint_least64_t rev = 0;
+                for ( std::uint_least64_t b = 0; b != m; ++b )
+                    if ( ( ( i >> b ) & 1 ) != 0 )
+                        rev |= std::uint_least64_t( 1 ) << ( m - 1 - b );
+                if ( rev > i )
+                    std::swap( buf[ start + i * stride ], buf[ start + rev * stride ] );
+            }
+
+            for ( std::uint_least64_t len = 2; len <= n; len <<= 1 )
+            {
+                std::uint_least64_t const half     = len >> 1;
+                std::uint_least64_t const w_stride = n / len;
+                for ( std::uint_least64_t b = 0; b != n; b += len )
+                    for ( std::uint_least64_t k = 0; k != half; ++k )
+                    {
+                        std::complex< T > const u = buf[ start + ( b + k ) * stride ];
+                        std::complex< T > const v = buf[ start + ( b + k + half ) * stride ] * w[ k * w_stride ];
+                        buf[ start + ( b + k ) * stride ]         = u + v;
+                        buf[ start + ( b + k + half ) * stride ]  = u - v;
+                    }
+            }
+        }
+
+        // O(n^4) reference transform: the pre-fix loop structure with the data index
+        // corrected to x[r_][c_] (the pre-fix x[r][c] read the OUTPUT indices and
+        // computed R*C*x[0][0] at (0,0) and zero elsewhere -- not a DFT;
+        // docs/session_6/failure_arbiter.md F1, pre-fix baseline in
+        // .work/evidence/s6_prefix_probe.log). Kept as the fallback path and frozen
+        // after S6 as the differential oracle's provenance (R-18).
+        template < Matrix Mat >
+        matrix< typename add_complex< typename Mat::value_type >::result_type > naive_dft( Mat const& x, bool inverse )
+        {
+            typedef typename add_complex< typename Mat::value_type >::result_type complex_type;
+            auto make_omege = [ & inverse ]( auto k, auto n, auto N )
+            {
+                double const pi    = 3.1415926535897932384626433;
+                double const theta = ( inverse ? 1.0 : -1.0 ) * pi * 2.0 * double( k ) * double( n ) / static_cast< double >( N );
+                return complex_type{ std::cos( theta ), std::sin( theta ) };
+            };
+            std::uint_least64_t const R = x.row();
+            std::uint_least64_t const C = x.col();
+            matrix< complex_type > X( R, C );
+
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                {
+                    complex_type X_rc{ 0.0, 0.0 };
+
+                    for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
+                    {
+                        complex_type tmp{ 0.0, 0.0 };
+
+                        for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
+                            tmp += x[ r_ ][ c_ ] * make_omege( c, c_, C );
+
+                        X_rc += tmp * make_omege( r, r_, R );
+                    }
+
+                    X[r][c] = X_rc;
+                }
+
+            return X;
+        }
     }
 
     template < Matrix Mat >
@@ -6314,54 +6518,76 @@ namespace feng
     {
         typedef typename Mat::value_type value_type;
         typedef typename fft_private::add_complex< value_type >::result_type complex_type;
-        matrix< complex_type > X( x.row(), x.col() );
-        auto make_omege = []( auto k, auto n, auto N )
+
+        std::uint_least64_t const R = x.row();
+        std::uint_least64_t const C = x.col();
+        matrix< complex_type > X( R, C );
+        if ( R == 0 || C == 0 )
+            return X;
+
+        // Whole-matrix selection: both dims power-of-two -> separable in-place
+        // radix-2 (rows, then columns); otherwise the O(n^4) corrected naive DFT.
+        if ( fft_private::is_power_of_two( R ) && fft_private::is_power_of_two( C ) )
         {
-            double const pi    = 3.1415926535897932384626433;
-            double const theta = -pi * 2.0 * k * n / static_cast< double >( N );
-            return complex_type{ std::cos( theta ), std::sin( theta ) };
-        };
-        std::uint_least64_t const R = X.row();
-        std::uint_least64_t const C = X.col();
+            typedef typename fft_private::base_real< value_type >::type base;
+            auto const w_r = fft_private::twiddle_table< base >( R, false );
+            auto const w_c = fft_private::twiddle_table< base >( C, false );
 
-        for ( std::uint_least64_t r = 0; r != R; ++r )
-            for ( std::uint_least64_t c = 0; c != C; ++c )
+            std::vector< complex_type > row_buf( C );
+            for ( std::uint_least64_t r = 0; r != R; ++r )
             {
-                complex_type X_rc{ 0.0, 0.0 };
-
-                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
-                {
-                    complex_type tmp{ 0.0, 0.0 };
-
-                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
-                        tmp += x[r][c] * make_omege( c, c_, C );
-
-                    X_rc += tmp * make_omege( r, r_, R );
-                }
-
-                X[r][c] = X_rc;
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    row_buf[c] = complex_type( x[r][c] );
+                fft_private::radix2_fft_1d( row_buf, 0, 1, C, w_c );
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    X[r][c] = row_buf[c];
             }
 
+            std::vector< complex_type > col_buf( R );
+            for ( std::uint_least64_t c = 0; c != C; ++c )
+            {
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    col_buf[r] = X[r][c];
+                fft_private::radix2_fft_1d( col_buf, 0, 1, R, w_r );
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    X[r][c] = col_buf[r];
+            }
+        }
+        else
+            return fft_private::naive_dft( x, false );
+
         return X;
+    }
+
+    namespace fftshift_private
+    {
+        // NumPy fftshift/ifftshift circular roll per axis: new[i] = old[(i - s) mod n],
+        // s = (n+1)/2. For even n, s = n/2 and the roll reproduces the historical
+        // swap-of-halves remap bit-for-bit; for odd n the swap produced
+        // (3,4,2,0,1) at n=5 where NumPy rolls to (2,3,4,0,1) (C13). A fresh
+        // matrix is returned; the input is never mutated.
+        template < typename Mat >
+        Mat shift_roll( Mat const& X )
+        {
+            std::uint_least64_t const R = X.row();
+            std::uint_least64_t const C = X.col();
+            Mat Y( R, C );
+            std::uint_least64_t const sr = ( R + 1 ) / 2;
+            std::uint_least64_t const sc = ( C + 1 ) / 2;
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    Y[r][c] = X[( r + R - sr ) % R][( c + C - sc ) % C ];
+            return Y;
+        }
     }
 
     template < Matrix Mat >
     auto fftshift( Mat const& x )
     {
-        auto X                          = fft( x );
-        std::uint_least64_t const R           = X.row();
-        std::uint_least64_t const C           = X.col();
-        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
-
-        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
-            std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
-
-        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
-
-        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
-            std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
-
-        return X;
+        // Fused design kept (documented intentional deviation from NumPy's pure
+        // reindexing): fftshift(x) = shift(fft(x)).
+        auto const X = fft( x );
+        return fftshift_private::shift_roll( X );
     }
 
     template < Matrix Mat >
@@ -6393,7 +6619,7 @@ namespace feng
     std::optional<Mat> gauss_jordan_elimination( Mat const& m ) noexcept
     {
         auto const& [row, col] = m.shape();
-        better_assert( row < col && "matrix row must be less than colum to execut a Gauss-Jordan Elimination" );
+        better_assert( row > 0 && col > 0 && "matrix must have at least one row and one column to execute a Gauss-Jordan Elimination" );
 
         auto a = m;
 
@@ -6429,79 +6655,78 @@ namespace feng
         return gauss_jordan_elimination( m );
     }
 
-    namespace ifft_private
-    {
-        template < typename T >
-        struct add_complex
-        {
-            typedef std::complex< T > result_type;
-        };
-        template < typename T >
-        struct add_complex< std::complex< T >>
-        {
-            typedef std::complex< T > result_type;
-        };
-    }
     template < typename T, Allocator A >
-    auto ifft( matrix<T, A> const& x )
+    auto ifft( matrix< T, A > const& x )
     {
-        typedef typename ifft_private::add_complex< T >::result_type complex_type;
-        matrix< complex_type > X( x.row(), x.col() );
-        auto make_omege = []( auto k, auto n, auto N )
-        {
-            double const pi    = 3.1415926535897932384626433;
-            double const theta = pi * 2.0 * k * n / static_cast< double >( N );
-            return complex_type{ std::cos( theta ), std::sin( theta ) };
-        };
-        std::uint_least64_t const R = X.row();
-        std::uint_least64_t const C = X.col();
+        // Conjugate-kernel transform (inverse twiddles) plus the single 1/(R*C)
+        // normalization applied exactly once (NumPy ifft2 convention). R-19:
+        // no asserts; 0x0 returns an empty matrix (pre-fix guard preserved).
+        typedef typename fft_private::add_complex< T >::result_type complex_type;
 
-        for ( std::uint_least64_t r = 0; r != R; ++r )
+        std::uint_least64_t const R = x.row();
+        std::uint_least64_t const C = x.col();
+        matrix< complex_type > X( R, C );
+        if ( R == 0 || C == 0 )
+            return X;
+
+        if ( fft_private::is_power_of_two( R ) && fft_private::is_power_of_two( C ) )
+        {
+            typedef typename fft_private::base_real< T >::type base;
+            auto const w_r = fft_private::twiddle_table< base >( R, true );
+            auto const w_c = fft_private::twiddle_table< base >( C, true );
+
+            std::vector< complex_type > row_buf( C );
+            for ( std::uint_least64_t r = 0; r != R; ++r )
+            {
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    row_buf[c] = complex_type( x[r][c] );
+                fft_private::radix2_fft_1d( row_buf, 0, 1, C, w_c );
+                for ( std::uint_least64_t c = 0; c != C; ++c )
+                    X[r][c] = row_buf[c];
+            }
+
+            std::vector< complex_type > col_buf( R );
             for ( std::uint_least64_t c = 0; c != C; ++c )
             {
-                complex_type X_rc{ 0.0, 0.0 };
-
-                for ( std::uint_least64_t r_ = 0; r_ != R; ++r_ )
-                {
-                    complex_type tmp{ 0.0, 0.0 };
-
-                    for ( std::uint_least64_t c_ = 0; c_ != C; ++c_ )
-                        tmp += x[r][c] * make_omege( c, c_, C );
-
-                    X_rc += tmp * make_omege( r, r_, R );
-                }
-
-                X[r][c] = X_rc;
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    col_buf[r] = X[r][c];
+                fft_private::radix2_fft_1d( col_buf, 0, 1, R, w_r );
+                for ( std::uint_least64_t r = 0; r != R; ++r )
+                    X[r][c] = col_buf[r];
             }
+        }
+        else
+            X = fft_private::naive_dft( x, true );
+
+        // The one and only normalization (P1; applied after either path).
+        double const scale = 1.0 / static_cast< double >( R ) / static_cast< double >( C );
+        for ( std::uint_least64_t r = 0; r != R; ++r )
+            for ( std::uint_least64_t c = 0; c != C; ++c )
+                X[r][c] *= complex_type( scale, 0.0 );
 
         return X;
     }
     template < Matrix Mat >
     auto ifftshift( Mat const& x )
     {
-        auto X                          = ifft( x );
-        std::uint_least64_t const R           = X.row();
-        std::uint_least64_t const C           = X.col();
-        std::uint_least64_t const row_starter = ( R >> 1 ) + ( R & 1 );
-
-        for ( std::uint_least64_t index = 0; row_starter + index < R; ++index )
-            std::swap_ranges( X.row_begin( index ), X.row_end( index ), X.row_begin( row_starter + index ) );
-
-        std::uint_least64_t const col_starter = ( C >> 1 ) + ( C & 1 );
-
-        for ( std::uint_least64_t index = 0; col_starter + index < C; ++index )
-            std::swap_ranges( X.col_begin( index ), X.col_end( index ), X.col_begin( col_starter + index ) );
-
-        return X;
+        // Fused design kept (documented intentional deviation from NumPy's pure
+        // reindexing): ifftshift(x) = shift(ifft(x)).
+        auto const X = ifft( x );
+        return fftshift_private::shift_roll( X );
     }
 
     template< Matrix Mat >
-    int lu_decomposition( Mat const& A, Mat& L, Mat& U )
+    int lu_decomposition( Mat const& A, Mat& L, Mat& U, int& sign, std::vector< std::uint_least64_t >& perm )
     {
         typedef typename Mat::value_type value_type;
         better_assert( A.row() == A.col() && "Square Matrix Requred!" );
 
         const std::uint_least64_t n = A.row();
+
+        // Working copy of A: partial pivoting reorders rows, and later steps read the
+        // not-yet-processed entries of the source, so the source rows must be swappable.
+        Mat M{ A };
+
         L.resize( n, n );
         std::fill( L.begin(), L.end(), value_type{0} );
         std::fill( L.diag_begin(), L.diag_end(), value_type( 1 ) );
@@ -6509,16 +6734,38 @@ namespace feng
         U.resize( n, n );
         std::fill( U.begin(), U.end(), value_type{0} );
 
+        perm.resize( n );
+        for ( std::uint_least64_t i = 0; i < n; ++i )
+            perm[i] = i;
+        sign = 1;
+
         for ( std::uint_least64_t j = 0; j < n; ++j )
         {
+            // Partial pivoting: largest-magnitude entry of column j among rows j..n-1.
+            std::uint_least64_t p = j;
+            for ( std::uint_least64_t i = j + 1; i < n; ++i )
+                if ( std::abs( M[i][j] ) > std::abs( M[p][j] ) )
+                    p = i;
+
+            if ( p != j )
+            {
+                // Rows 0..j-1 of M are still needed unswapped (their entries right of
+                // column j feed later U columns), so only rows j and p are exchanged.
+                std::swap_ranges( M.row_begin( j ), M.row_end( j ), M.row_begin( p ) );
+                for ( std::uint_least64_t k = 0; k < j; ++k )
+                    std::swap( L[j][k], L[p][k] );
+                std::swap( perm[j], perm[p] );
+                sign = -sign;
+            }
+
             for ( std::uint_least64_t i = 0; i < j + 1; ++i )
             {
-                U[i][j] = A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() );
+                U[i][j] = M[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + i, U.col_begin( j ), value_type() );
             }
 
             for ( std::uint_least64_t i = j + 1; i < n; ++i )
             {
-                L[i][j] = ( A[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j];
+                L[i][j] = ( M[i][j] - std::inner_product( L.row_begin( i ), L.row_begin( i ) + j, U.col_begin( j ), value_type() ) ) / U[j][j];
 
                 if ( std::isinf( L[i][j] ) || std::isnan( L[i][j] ) )
                     return 1;
@@ -6526,6 +6773,14 @@ namespace feng
         }
 
         return 0;
+    }
+
+    template< Matrix Mat >
+    int lu_decomposition( Mat const& A, Mat& L, Mat& U )
+    {
+        int sign{ 1 };
+        std::vector< std::uint_least64_t > perm;
+        return lu_decomposition( A, L, U, sign, perm );
     }
 
     template< Matrix Mat >
@@ -6545,13 +6800,23 @@ namespace feng
         better_assert( A.row() == b.row() );
         better_assert( b.col() == 1 );
         matrix_type L, U;
+        int sign{ 1 };
+        std::vector< std::uint_least64_t > perm;
 
-        if ( lu_decomposition( A, L, U ) )
+        if ( lu_decomposition( A, L, U, sign, perm ) != 0 )
             return 1;
+
+        // Apply the pivot permutation to b (P b): perm[i] is the original row index of
+        // permuted row i, so (P b)[i] = b[perm[i]].
+        matrix_type Pb;
+        Pb.resize( b.row(), b.col() );
+        for ( std::uint_least64_t i = 0; i < b.row(); ++i )
+            for ( std::uint_least64_t j = 0; j < b.col(); ++j )
+                Pb[i][j] = b[ perm[i] ][ j ];
 
         matrix_type Y;
 
-        if ( forward_substitution( L, Y, b ) )
+        if ( forward_substitution( L, Y, Pb ) )
             return 1;
 
         if ( backward_substitution( U, x, Y ) )
@@ -6617,8 +6882,8 @@ namespace feng
 
         if ( mode == std::string{"same"} )
         {
-            better_assert( rb > 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
-            better_assert( rb > 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
+            better_assert( rb >= 1, " For a convolution in 'same' mode, the row of the second matrix is at least 1, but now has ", rb );
+            better_assert( cb >= 1, " For a convolution in 'same' mode, the column of the second matrix is at least 1, but now has ", cb );
             return { default_conv, { (rb-1)>>1, ra + ((rb-1)>>1) }, { (cb-1)>>1, ca + ((cb-1)>>1) } };
         }
 
@@ -7639,21 +7904,62 @@ namespace feng
     template< Matrix Mat >
     auto mean( Mat const& m )
     {
-        return sum( m ) / m.size();
+        if constexpr ( ComplexMatrix< Mat > )
+            return sum( m ) / m.size();
+        else
+        {
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return sum( m ) / m.size();
+            else
+            {
+                // integer/float matrices: promote before dividing. `sum / size` on an integer
+                // sum is unsigned integer division (truncating; negative sums wrap), and the
+                // variance/std expressions below need a double mean (operator-(matrix<T>, T)
+                // would otherwise truncate it). double matrices stay copy-free.
+                auto const d = m.template astype< double >();
+                return sum( d ) / d.size();
+            }
+        }
     }
 
     template< Matrix Mat >
     auto variance( Mat const& m )
     {
-        return mean( pow( m-mean(m), 2.0 ) );
+        if constexpr ( ComplexMatrix< Mat > )
+            return mean( pow( m-mean( m ), 2.0 ) );
+        else
+        {
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return mean( pow( m-mean( m ), 2.0 ) );
+            else
+            {
+                auto const d = m.template astype< double >();
+                return mean( pow( d - mean( d ), 2.0 ) );
+            }
+        }
     }
 
     template< Matrix Mat >
     auto standard_deviation( Mat const& m )
     {
-        if ( m.size() <= 1 )
-            return typename Mat::value_type{};
-        return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+        if constexpr ( ComplexMatrix< Mat > )
+        {
+            if ( m.size() <= 1 )
+                return typename Mat::value_type{};
+            return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+        }
+        else
+        {
+            if ( m.size() <= 1 )
+                return double{};
+            if constexpr ( std::is_same_v< typename Mat::value_type, double > )
+                return std::sqrt( sum( pow( m-mean( m ), 2.0 ) ) / ( m.size() - 1 ) );
+            else
+            {
+                auto const d = m.template astype< double >();
+                return std::sqrt( sum( pow( d - mean( d ), 2.0 ) ) / ( d.size() - 1 ) );
+            }
+        }
     }
 
     ///

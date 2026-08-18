@@ -1,0 +1,10 @@
+=== T4 green (E15 red->green) ===
+guard grep: 1
+stray ;; remaining: 0
+save_as_png unwritable path returned 1, no crash
+PASS E15
+exit: 0
+g++ -o ./test_test ./test.o -Ofast   -pthread -lstdc++fs -Wl,--gc-sections -flto
+
+ matrix.hpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)

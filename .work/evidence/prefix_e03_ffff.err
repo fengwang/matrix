@@ -1,0 +1,49 @@
+=================================================================
+==3665901==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x7c0626be0f40 at pc 0x7fe628329a22 bp 0x7ffec7683ed0 sp 0x7ffec7683678
+READ of size 4294967295 at 0x7c0626be0f40 thread T0
+    #0 0x7fe628329a21 in memcpy (/usr/lib/libasan.so.8+0x129a21) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
+    #1 0x55e045f4a870 in feng::crtp_load_npy<feng::matrix<double, std::allocator<double> >, double, std::allocator<double> >::load_npy(char const*) (/workspace/github.repo/matrix/.work/probe_s2+0x47870) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04)
+    #2 0x55e045f14527 in run_load_case(char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, feng::matrix<double, std::allocator<double> >&) (/workspace/github.repo/matrix/.work/probe_s2+0x11527) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04)
+    #3 0x55e045f17d8f in main (/workspace/github.repo/matrix/.work/probe_s2+0x14d8f) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04)
+    #4 0x7fe627a27780  (/usr/lib/libc.so.6+0x27780) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #5 0x7fe627a278b8 in __libc_start_main (/usr/lib/libc.so.6+0x278b8) (BuildId: 503200d7fda94a5dc6058d7e0694e5d1dcb2e372)
+    #6 0x55e045f09524 in _start (/workspace/github.repo/matrix/.work/probe_s2+0x6524) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04)
+
+0x7c0626be0f40 is located 0 bytes after 16-byte region [0x7c0626be0f30,0x7c0626be0f40)
+allocated by thread T0 here:
+    #0 0x7fe62832d2a1 in operator new(unsigned long) (/usr/lib/libasan.so.8+0x12d2a1) (BuildId: b8a4241051a1621937fdc46e867ba7ecb56d96ea)
+    #1 0x55e045f49665 in void std::vector<char, std::allocator<char> >::_M_range_initialize<std::istreambuf_iterator<char, std::char_traits<char> > >(std::istreambuf_iterator<char, std::char_traits<char> >, std::istreambuf_iterator<char, std::char_traits<char> >, std::input_iterator_tag) (/workspace/github.repo/matrix/.work/probe_s2+0x46665) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/workspace/github.repo/matrix/.work/probe_s2+0x47870) (BuildId: d65328cd33b9239d930f98236f0cb64ccd4afe04) in feng::crtp_load_npy<feng::matrix<double, std::allocator<double> >, double, std::allocator<double> >::load_npy(char const*)
+Shadow bytes around the buggy address:
+  0x7c0626be0c80: fa fa 06 fa fa fa 00 04 fa fa 00 04 fa fa 00 04
+  0x7c0626be0d00: fa fa 00 04 fa fa 00 04 fa fa 00 07 fa fa 00 04
+  0x7c0626be0d80: fa fa 00 04 fa fa 00 04 fa fa 00 04 fa fa 00 04
+  0x7c0626be0e00: fa fa 00 00 fa fa 06 fa fa fa 00 00 fa fa 06 fa
+  0x7c0626be0e80: fa fa 00 00 fa fa fd fa fa fa fd fa fa fa fd fa
+=>0x7c0626be0f00: fa fa fd fa fa fa 00 00[fa]fa fa fa fa fa fa fa
+  0x7c0626be0f80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7c0626be1000: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7c0626be1080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7c0626be1100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x7c0626be1180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3665901==ABORTING

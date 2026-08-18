@@ -1,0 +1,8 @@
+/bin/bash: line 1: 3667257 Aborted                    (core dumped) ./test_test "$p" > /tmp/red.log 2>&1
+== load_npy rejects an unopenable* :: exit=134 ::   SIGABRT - Abort (abnormal termination) signal assertions: 2 | 1 passed | 1 failed 
+== load_npy rejects a truncated header* :: exit=1 :: tests/./cases/load_npy.hpp:115: FAILED: assertions: 2 | 1 passed | 1 failed 
+/bin/bash: line 1: 3667277 Aborted                    (core dumped) ./test_test "$p" > /tmp/red.log 2>&1
+== load_npy rejects a missing* :: exit=134 ::   SIGABRT - Abort (abnormal termination) signal assertions: 2 | 1 passed | 1 failed 
+/bin/bash: line 1: 3667297 Segmentation fault         (core dumped) ./test_test "$p" > /tmp/red.log 2>&1
+== load_npy rejects an overflowing* :: exit=139 :: tests/./cases/load_npy.hpp:160: FAILED: assertions: 2 | 1 passed | 1 failed 
+== load_npy rejects a foreign* :: exit=1 :: tests/./cases/load_npy.hpp:206: FAILED: assertions: 2 | 1 passed | 1 failed 

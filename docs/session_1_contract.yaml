@@ -1,0 +1,72 @@
+session_contract:
+  id: S1
+  objective: "Eliminate the two Critical heap-corruption bugs (C1 shrink_to_size wrong column count, C2 flipdim dim==2 column-vs-row swap) with the review's smallest-safe-fixes and pin both with content-asserting regression tests + ASan probes."
+  risk_level: high
+  routing: branch_and_compare
+  in_scope:
+    - "C1: crtp_shrink_to_size (anchor ~3508): std::copy at ~3531-3532 must copy the_cols_to_copy, not the_rows_to_copy"
+    - "C2: flipdim dim==2 branch (anchor ~4453): swap_ranges third argument at ~4479 must be ans.col_begin( index_right )"
+    - "New tests: tests/cases/shrink_to_size.hpp, tests/cases/flip.hpp (content assertions; non-square both directions; registered in tests/test.cc)"
+    - "Eval probes E01/E02 in .work/probes/, ASan variant clean, registered live in docs/eval_seed_cases.md"
+  out_of_scope:
+    - "C3 fliplr/flipud alias swap (S3; anchors 4491-4499 untouched)"
+    - "Any other finding; any refactor (A1 CRTP untouched); ReadMe.md; examples/**; Makefile"
+    - "Signature or semantics changes to shrink_to_size/flipdim beyond the documented contract"
+  blast_radius:
+    allowed_files:
+      - matrix.hpp
+      - tests/test.cc
+      - tests/cases/shrink_to_size.hpp
+      - tests/cases/flip.hpp
+      - .work/
+      - docs/eval_seed_cases.md
+      - docs/risk_register.md
+      - "docs/session_1/**"
+    forbidden_files:
+      - ReadMe.md
+      - Makefile
+      - examples/**
+      - docs/prd.md
+      - docs/project_contract.md
+  invariants:
+    - "make test full suite green after the change"
+    - "shrink_to_size: grow zero-pads, shrink truncates, per the in-code documented comment (~3515-3517)"
+    - "flipdim(m,1) behavior unchanged (dim==1 branch untouched)"
+    - "No new public API; no signature changes; diff limited to the two buggy lines + tests"
+  acceptance_criteria:
+    - "E01: {5,5,1.0}.shrink_to_size(5,3) -> 5x3, first 3 cols preserved, rest zero; {1,1,7}.shrink_to_size(4,4) zero-pads"
+    - "E02: flipdim({3,5,1..15}, 2) equals hand-written left-right flip; flipdim(m,1) equals up-down flip"
+    - "ASan probes (review reproductions: 5x5->5x3, 3x10->5x2, 3x5 flipdim) run with -DNDEBUG -fsanitize=address: no report, exit 0"
+    - "New tests fail if either original bug line is restored (verifier check: tests catch the bug)"
+  deterministic_checks:
+    - "make test"
+    - "g++ -std=c++20 -DNDEBUG -DPARALLEL -fsanitize=address -O1 -o .work/probe_s1 .work/probes/E01_E02.cc && .work/probe_s1  # prints PASS"
+    - "git diff --name-only HEAD | grep -vE '^(matrix.hpp|tests/test.cc|tests/cases/(shrink_to_size|flip)\\.hpp|\\.work/|docs/(eval_seed_cases|risk_register)\\.md)$'  # empty"
+    - "grep -n 'the_cols_to_copy' matrix.hpp  # fix line present at ~3532"
+  review_axes:
+    - correctness
+    - security
+    - tests
+    - architecture
+    - performance
+    - readability
+  adversarial_cases:
+    - "Grow-only (1x1 -> 4x4) and shrink-only (10x10 -> 1x1) extremes; zero-size edge if representable"
+    - "Non-square both directions (3x10, 10x3) through both shrink and flipdim"
+    - "flipdim on 1xN and Nx1 (row/col length equal -> swap trivially safe? verify)"
+    - "Would the new tests still pass if the original buggy lines were restored? (must be NO)"
+  failure_modes_to_watch:
+    - "Fixing the copy count while leaving a row_offset error (test with ragged values, not 1.0 fills)"
+    - "ASan probe compiled WITHOUT -DNDEBUG: better_assert aborts first, masking real OOB behavior"
+    - "Tests asserting shape-only (the T1 anti-pattern)"
+    - "Accidental edit of the flipdim dim==1 branch or the fliplr/flipud aliases (S3 territory)"
+  done_condition: "All acceptance_criteria pass with cited output; git audit clean; sharded review + adversarial verifier PASS; branch_and_compare independent test-writer concurs; human decision gate (user) signed off in the handoff."
+  handoff_requirements:
+    - ".work/handoff_session_1.md from docs/templates/handoff.md: state snapshot incl. compiler version, checks run / checks not run"
+    - "Decision log: pre-fix ASan probe output vs review claims; any contract refinement"
+    - "Eval seeds E01/E02 marked live; probes committed under .work/probes/"
+    - "Doc deltas: expected none (fixes restore documented behavior) — state so explicitly"
+    - "Warning for S3: flipdim dim==1 and fliplr/flipud (4491-4499) untouched and adjacent to changed code"
+  eval_seed_candidates:
+    - E01
+    - E02

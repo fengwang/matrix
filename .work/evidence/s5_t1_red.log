@@ -1,0 +1,10 @@
+=== T1 red (pre-fix engine) retry ===
+g++ -c -std=c++20 -Wall -Wextra -fmax-errors=1 -Ofast -flto=auto  -funroll-all-loops -pipe -march=native -DPARALLEL  -o ./test.o tests/test.cc
+In file included from tests/test.cc:59:
+tests/./cases/rand.hpp: In function ‘void ____C_A_T_C_H____T_E_S_T____118()’:
+tests/./cases/rand.hpp:61:20: error: static assertion failed
+   61 |     static_assert( !noexcept( feng::rand< double >( 1, 1, 7 ) ) );
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated due to -fmax-errors=1.
+make: *** [Makefile:26: test] Error 1
+exit: 2

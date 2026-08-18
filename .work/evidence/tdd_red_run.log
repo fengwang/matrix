@@ -1,0 +1,21 @@
+[Assertion Failure]: 'ifs' in File: tests/../matrix.hpp in Line: 2512matrix::load_npy -- failed to open file tmp/s2_neg_missing.npy
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_test is a Catch v2.0.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+load_npy rejects an unopenable or truncated (3-byte) file
+-------------------------------------------------------------------------------
+tests/./cases/load_npy.hpp:71
+...............................................................................
+
+tests/./cases/load_npy.hpp:71: FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGABRT - Abort (abnormal termination) signal
+
+===============================================================================
+test cases:  2 |  1 passed | 1 failed
+assertions: 26 | 25 passed | 1 failed
+
