@@ -13,7 +13,7 @@ what will change, what will not, and what evidence proves it.
 | 2 | `matrix.hpp` | 5355, 5361, 5366 (`rand_like`/`random_like`/`randn_like`) | `noexcept` dropped (same-defect extension, interview Q3) |
 | 3 | `matrix.hpp` | 1152–1153 (`reduce`) | `const` dropped from `total_cores` + `if ( total_cores < 1 ) total_cores = 1;` |
 | 4 | `matrix.hpp` | 4121–4122 (`reduce_impl_private`) | `if ( parallel_size < 1 ) parallel_size = 1;` (behavior-neutral clamp; 4121 was already short-circuit-safe — discrepancy logged) |
-| 5 | `matrix.hpp` | 3183–3184 (`save_png`) | `if ( ! fp ) return;` after the `fopen` (silent no-op, `noexcept` kept) |
+| 5 | `matrix.hpp` | 3187–3189 (`save_png`) | `if ( ! fp ) return;` after the `fopen` (silent no-op, `noexcept` kept) |
 | 6 | `matrix.hpp` | 3190 | stray `;;` → `;` (R3-slice) |
 | 7 | `tests/test.cc` | 59 (include block) | +1 line: `#include "./cases/rand.hpp"` (after `proj.hpp`) |
 | 8 | `tests/cases/rand.hpp` | new | E14 case (design §5): determinism, seed inequality, [0,1) double+float, type pins, noexcept pin; int/complex-T compile impact documented in comments |

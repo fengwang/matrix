@@ -133,22 +133,27 @@ contract.
 
 ## 3. `save-png-boundary` (S2-finding / R3-slice)
 
-### The guard (3181–3184)
+### The guard (3183–3187)
 
 Before:
 ```cpp
         inline static void save_png( std::uint8_t* img,  unsigned w, unsigned h, int alpha, char const* const file_name ) noexcept
         {
-            FILE* const fp = fopen( file_name, "wb+" );
+            ...
+            FILE* fp = fopen( file_name, "wb" );
 ```
 After:
 ```cpp
         inline static void save_png( std::uint8_t* img,  unsigned w, unsigned h, int alpha, char const* const file_name ) noexcept
         {
-            FILE* const fp = fopen( file_name, "wb+" );
+            ...
+            FILE* fp = fopen( file_name, "wb" );
             if ( ! fp )
                 return;
 ```
+(Pre-flight note: the session plan quoted this line as `FILE* const fp = fopen( file_name,
+"wb+" )` — the actual source at HEAD is `FILE* fp = fopen( file_name, "wb" )`; the source
+is authoritative and the guard applies identically. Logged as a plan-citation discrepancy.)
 Silent no-op on open failure (R-05 note; matches the `load_npy` S2 precedent — I/O
 boundaries fail hard-but-silently, no throw, no stderr). The member `save_as_png`
 (call site 3469) still returns `true`; the failed open is documented as silent.
