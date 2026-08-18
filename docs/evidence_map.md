@@ -69,3 +69,21 @@ Every major recommendation in `docs/prd.md` and the session plans is mapped belo
 - A3's "hostile to ADL" harm is latent (no observed miscompile in-repo).
 - C11's concurrency hazard is latent (no in-repo concurrent `rand` calls found).
 - Research-doc claims about the *standard* `std::tensor` design — authoritative about the proposal, not about this library.
+
+## 5. Session 6 closeout (2026-08-17, project-closing)
+
+All S1–S6 findings are now **fixed or explicitly deferred**; S6 closed the last open ones.
+
+| Finding | Status | Evidence |
+|---|---|---|
+| P1 (fast `fft`/`ifft`, `ifft` normalization) | **Fixed.** Whole-matrix radix-2 fast path (separable 1-D, corrected naive kept as non-power-of-2 fallback AND as the frozen differential oracle); `ifft` gains exactly one `1/(R·C)` — round-trip `ifft(fft(x)) == x` and `ifft(x)·(R·C) == ref_inv(x)` pinned. C-08 closed as planned (code won; the pre-fix loops were a correct O(n⁴) DFT). | `docs/session_6/` (failure_arbiter F1–F2); suite 75 cases green (49,217,641 assertions); benchmark 8626×/27116×/>48140× at 128/256/512 (`.work/evidence/s6_bench_prefix.log`) |
+| C13 (`fftshift`/`ifftshift` odd dims) | **Fixed.** Circular roll by `(n+1)/2` per axis (`fftshift_private::shift_roll`); even-n bit-identical to the old swap (regression pin green), odd-n pinned to NumPy: 3×1 ⇒ `(1,2,0)`, 5×1 ⇒ `(2,3,4,0,1)`. Fused transform+shift design **kept** (documented intentional deviation — C-01/C-09 closed). | E16_E17 probe PASS (`-O1`); in-suite pins n=3/4/5 + even-dim 6×8 permutation; `.work/evidence/s6_t3_suite.log` |
+| A2 (alias retirement) | **Fixed.** `random`/`random_like`/`pinverse`/`svd_inverse`/free `det(m)` deleted; SVD core moved as-is to `matrix_details::pinv_core` behind canonical `pinv`; `rand_like`/`randn_like` call `rand` directly; `tests/cases/pinv.hpp` canonicalized; `examples/cases/0013_prefix.hpp` uses `rand`. Grep gate: retired-name count 0 in `matrix.hpp` (`random` = `#include <random>` only). | E18 negative probe fails to compile naming all five retired identifiers; E18 positive probe bit-identical pre/post retirement (`.work/evidence/s6_e18_negative.log`) |
+| A3 (`feng::elem` hygiene) | **Verified unsupported — no code change** (C-10 closed as planned). Re-run pre-flight: `grep -c 'feng::elem\|namespace elem' matrix.hpp` = 0; no qualified `feng::elem` calls. Policy note: keep elementwise free functions in `feng` (single-namespace header); do not introduce a `feng::elem` sub-namespace without a real ADL incident. | `.work/evidence/s6_a3_grep.log`; handoff §A3 |
+| R1 (SVD arg order) | Fixed in S3; `svd_inverse` name retired in S6 (canonical `pinv`). | pinv case (threshold scenario) green |
+
+### Eval probes — live (S6)
+
+- **E16** — FFT round-trip + normalization: 8×8 delta at (0,0) ⇒ all-ones `fft` (1e-9); `‖ifft(fft(x)) − x‖∞ < 1e-9` on the fixed 8×8 input. **Live** in `.work/probes/E16_E17.cc` (E16 part) and in `tests/cases/fft.hpp`; build `g++ -std=c++20 -DPARALLEL -O1 -o .work/probe_s6 .work/probes/E16_E17.cc && .work/probe_s6` → prints `E16_E17 PASS`.
+- **E17** — `fftshift`/`ifftshift` shift pins: hand-pinned 3×1 `(1,2,0)` and 4×1 `(2,3,0,1)` values (NumPy roll `(n+1)/2`; fused `fft`/`ifft` + roll design). **Live** in the same probe + in-suite.
+- **E18** — alias-retirement compile probe (negative): uses `random`/`random_like`/`pinverse`/`svd_inverse`/free `det`; must fail to compile naming a retired identifier after A2; positive twin (`rand`/`rand_like`/`randn_like`/`pinv`/member `det`) must compile and run. **Live** in `.work/probes/E18_negative.cc` / `E18_positive.cc`.
