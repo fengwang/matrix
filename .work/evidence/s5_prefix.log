@@ -1,0 +1,89 @@
+=== S5 pre-flight evidence (pre-fix) Tue Aug 18 10:27:30 AM CEST 2026
+
+--- grep: srand(/std::rand( call sites ---
+5327:            std::srand( static_cast< unsigned int >( static_cast< std::uint_least64_t >( std::time( nullptr ) ) + reinterpret_cast< std::uint_least64_t >( &ans ) ) );
+5329:            std::srand( seed );
+5333:            return ( static_cast<T>( std::rand() ) + 1 ) / ( static_cast<T>( RAND_MAX ) + 2 ); // make sure in open bounds range (0, 1)
+count: 3
+
+--- grep: guard texts (pre-fix) ---
+total_cores < 1 : 0
+total_cores <= 1: 1
+parallel_size < 1: 0
+hardware_concurrency sites: 3
+
+--- P0: seed-0 correlation + explicit determinism ---
+.work/probes/S5_p0_preflight.cc: In function ‘int main()’:
+.work/probes/S5_p0_preflight.cc:25:53: error: expected primary-expression before ‘long’
+   25 |     std::printf( "time before seed-0 pair: %lld\n", long long( std::time( nullptr ) ) );
+      |                                                     ^~~~
+.work/probes/S5_p0_preflight.cc:28:53: error: expected primary-expression before ‘long’
+   28 |     std::printf( "time after  seed-0 pair: %lld\n", long long( std::time( nullptr ) ) );
+      |                                                     ^~~~
+exit: 1
+--- P0: seed-0 correlation + explicit determinism (pre-fix) ---
+time before seed-0 pair: 1787041680
+time after  seed-0 pair: 1787041680
+seed-0 pair identical (correlation): 0
+explicit seed 7 == 7: 1
+seed 7 != 8: 1
+rand(2,5,7):
+0.48690413940376409 0.86797741201334755 0.59259119416000727 0.21470984061494944 0.01022653933138282 0.51481856195497389 0.99594825227002226 0.031932302735777428 0.60156527925209824 0.055344847005165718 
+rand(1,4,1) [examples use seed 1]:
+0.84018771683788496 0.39438292691745658 0.7830992234949492 0.7984400331981294 
+exit: 0
+
+--- P2: save_as_png unwritable (pre-fix) ---
+/bin/bash: line 1: 2138471 Segmentation fault         (core dumped) .work/evidence/seed_S5_p2
+exit: 139
+--- P0 (refined): same-site seed-0 correlation (pre-fix) ---
+time before seed-0 loop: 1787041719
+time after  seed-0 loop: 1787041719
+same-site seed-0 pairs: identical 0 / distinct 100 (of 100)
+explicit seed 7 == 7: 1
+seed 7 != 8: 1
+rand(2,5,7):
+0.48690413940376409 0.86797741201334755 0.59259119416000727 0.21470984061494944 0.01022653933138282 0.51481856195497389 0.99594825227002226 0.031932302735777428 0.60156527925209824 0.055344847005165718 
+rand(1,4,1) [examples use seed 1]:
+0.84018771683788496 0.39438292691745658 0.7830992234949492 0.7984400331981294 
+exit: 0
+
+--- P1: TSan pre-fix (concurrent rand) ---
+T SAN CLEAN (no race reported before this line)
+exit: 0
+--- P0b: -O0 (no inlining) same-site seed-0 correlation ---
+time before seed-0 loop: 1787041768
+time after  seed-0 loop: 1787041768
+same-site seed-0 pairs: identical 0 / distinct 100 (of 100)
+explicit seed 7 == 7: 1
+
+--- P0 (final form): same-site repetition + explicit determinism (pre-fix) ---
+time before seed-0 loop: 1787041997
+time after  seed-0 loop: 1787041997
+same-site seed-0 first-element distinct values over 100 calls: 1 (correlation confirmed if <= 2)
+cross-site (different &ans salts) equal: 0
+explicit seed 7 == 7: 1
+seed 7 != 8: 1
+rand(2,5,7):
+0.48690413940376409 0.86797741201334755 0.59259119416000727 0.21470984061494944 0.01022653933138282 0.51481856195497389 0.99594825227002226 0.031932302735777428 0.60156527925209824 0.055344847005165718 
+rand(1,4,1) [examples use seed 1]:
+0.84018771683788496 0.39438292691745658 0.7830992234949492 0.7984400331981294 
+exit: 0
+
+--- ltrace srand args (pre-fix, -O0) ---
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+ltrace_probe->srand(3067854750)                  = <void>
+ltrace_probe->srand(3067854782)                  = <void>
+i=0 x00=0.189023 y00=0.658161
+i=1 x00=0.189023 y00=0.658161
+i=2 x00=0.189023 y00=0.658161
+i=3 x00=0.189023 y00=0.658161
