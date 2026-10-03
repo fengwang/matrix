@@ -1,7 +1,7 @@
 #include "../matrix.hpp"
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include "./catch.hpp"
 
 #include "./cases/abs.hpp"
 #include "./cases/acosh.hpp"
