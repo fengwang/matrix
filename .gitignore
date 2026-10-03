@@ -9,3 +9,4 @@ images/mandelbrot_4/*
 images/mandelbrot_5/*
 images/julia_set/*
 tmp/*
+tools/__pycache__/
