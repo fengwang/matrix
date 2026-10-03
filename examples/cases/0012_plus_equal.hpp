@@ -1,8 +1,8 @@
 void _0000_plus_equal()
 {
     feng::matrix<double> image;
-    image.load_txt( "images/Lenna.txt" );
-    image.save_as_bmp("images/0000_plus_equal.bmp", "gray");
+    (void)image.load_txt( "images/Lenna.txt" );
+    (void)image.save_as_bmp("images/0000_plus_equal.bmp", "gray");
 
     double const mn = *std::min_element( image.begin(), image.end() );
     double const mx = *std::max_element( image.begin(), image.end() );
@@ -10,6 +10,6 @@ void _0000_plus_equal()
 
     auto const& noise = feng::rand<double>( image.row(), image.col(), 1 ); //setting random seed to 1
     image += 0.1*noise;
-    image.save_as_bmp("images/0001_plus_equal.bmp", "gray");
+    (void)image.save_as_bmp("images/0001_plus_equal.bmp", "gray");
 }
 

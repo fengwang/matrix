@@ -2,18 +2,18 @@ void _0000_singular_value_decomposition()
 {
     // load
     feng::matrix<double> m;
-    m.load_txt( "./images/Teacher.txt" );
+    (void)m.load_txt( "./images/Teacher.txt" );
     // normalize
     auto const mx = *std::max_element( m.begin(), m.end() );
     auto const mn = *std::min_element( m.begin(), m.end() );
     m = ( m - mn ) / ( mx - mn + 1.0e-10 );
     // take a snapshot
-    m.save_as_bmp( "./images/0000_singular_value_decomposition.bmp", "gray" );
+    (void)m.save_as_bmp( "./images/0000_singular_value_decomposition.bmp", "gray" );
     // adding noise
     auto const[r, c] = m.shape();
     m += feng::rand<double>( r, c, 2 );
     // record noisy matrix
-    m.save_as_bmp( "./images/0001_singular_value_decomposition.bmp", "gray" );
+    (void)m.save_as_bmp( "./images/0001_singular_value_decomposition.bmp", "gray" );
     // execute svd
     auto const& svd = feng::singular_value_decomposition( m );
     // check svd result
@@ -24,7 +24,7 @@ void _0000_singular_value_decomposition()
         // try to reconstruct matrix using  u * v * w'
         auto const& m_ = u * v * (w.transpose());
         // record reconstructed matrix
-        m_.save_as_bmp( "./images/0002_singular_value_decomposition.bmp", "gray" );
+        (void)m_.save_as_bmp( "./images/0002_singular_value_decomposition.bmp", "gray" );
 
         auto dm = std::min( r, c );
         auto factor = 2UL;
@@ -38,7 +38,7 @@ void _0000_singular_value_decomposition()
 
             auto const& new_m = new_u * new_v * new_w.transpose();
 
-            new_m.save_as_bmp( "./images/0003_singular_value_decomposition_"+std::to_string(new_dm)+".bmp", "gray" );
+            (void)new_m.save_as_bmp( "./images/0003_singular_value_decomposition_"+std::to_string(new_dm)+".bmp", "gray" );
 
             factor *= 2UL;
         }
@@ -53,18 +53,18 @@ void _0001_singular_value_decomposition()
 {
     // load
     feng::matrix<double> m;
-    m.load_txt( "./images/frame_1.txt" );
+    (void)m.load_txt( "./images/frame_1.txt" );
     // normalize
     auto const mx = *std::max_element( m.begin(), m.end() );
     auto const mn = *std::min_element( m.begin(), m.end() );
     m = ( m - mn ) / ( mx - mn + 1.0e-10 );
     // take a snapshot
-    m.save_as_bmp( "./images/1_0000_singular_value_decomposition.bmp", "gray" );
+    (void)m.save_as_bmp( "./images/1_0000_singular_value_decomposition.bmp", "gray" );
     // adding noise
     auto const[r, c] = m.shape();
     m += feng::rand<double>( r, c, 2 );
     // record noisy matrix
-    m.save_as_bmp( "./images/1_0001_singular_value_decomposition.bmp", "gray" );
+    (void)m.save_as_bmp( "./images/1_0001_singular_value_decomposition.bmp", "gray" );
     // execute svd
     auto const& svd = feng::singular_value_decomposition( m );
     // check svd result
@@ -75,7 +75,7 @@ void _0001_singular_value_decomposition()
         // try to reconstruct matrix using  u * v * w'
         auto const& m_ = u * v * (w.transpose());
         // record reconstructed matrix
-        m_.save_as_bmp( "./images/1_0002_singular_value_decomposition.bmp", "gray" );
+        (void)m_.save_as_bmp( "./images/1_0002_singular_value_decomposition.bmp", "gray" );
 
         auto dm = std::min( r, c );
         auto factor = 2UL;
@@ -89,7 +89,7 @@ void _0001_singular_value_decomposition()
 
             auto const& new_m = new_u * new_v * new_w.transpose();
 
-            new_m.save_as_bmp( "./images/1_0003_singular_value_decomposition_"+std::to_string(new_dm)+".bmp", "gray" );
+            (void)new_m.save_as_bmp( "./images/1_0003_singular_value_decomposition_"+std::to_string(new_dm)+".bmp", "gray" );
 
             factor *= 2UL;
         }

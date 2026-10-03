@@ -1,4 +1,4 @@
-#ifdef OPENCV
+#ifdef FENG_MATRIX_OPENCV
 TEST_CASE( "From OPENCV", "[from_opencv]" )
 {
 

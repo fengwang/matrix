@@ -1,0 +1,136 @@
+# S8 oracle fixtures, written by tests/fixtures/s8/make_fixtures.py; do not edit by hand.
+# python 3.14.7, numpy 2.5.3, scipy 1.18.1
+# <case> <op> <tol> <files...>
+conv_full_f8_7x9_1x1 conv_full 2e-14 conv_f8_7x9_1x1_A.npy conv_f8_7x9_1x1_B.npy conv_full_f8_7x9_1x1_C.npy
+conv_same_f8_7x9_1x1 conv_same 2e-14 conv_f8_7x9_1x1_A.npy conv_f8_7x9_1x1_B.npy conv_same_f8_7x9_1x1_C.npy
+conv_valid_f8_7x9_1x1 conv_valid 2e-14 conv_f8_7x9_1x1_A.npy conv_f8_7x9_1x1_B.npy conv_valid_f8_7x9_1x1_C.npy
+conv_full_f8_7x9_3x5 conv_full 2.1e-13 conv_f8_7x9_3x5_A.npy conv_f8_7x9_3x5_B.npy conv_full_f8_7x9_3x5_C.npy
+conv_same_f8_7x9_3x5 conv_same 2.1e-13 conv_f8_7x9_3x5_A.npy conv_f8_7x9_3x5_B.npy conv_same_f8_7x9_3x5_C.npy
+conv_valid_f8_7x9_3x5 conv_valid 2.1e-13 conv_f8_7x9_3x5_A.npy conv_f8_7x9_3x5_B.npy conv_valid_f8_7x9_3x5_C.npy
+conv_full_f8_7x9_2x4 conv_full 1.1e-13 conv_f8_7x9_2x4_A.npy conv_f8_7x9_2x4_B.npy conv_full_f8_7x9_2x4_C.npy
+conv_same_f8_7x9_2x4 conv_same 1.1e-13 conv_f8_7x9_2x4_A.npy conv_f8_7x9_2x4_B.npy conv_same_f8_7x9_2x4_C.npy
+conv_valid_f8_7x9_2x4 conv_valid 1.1e-13 conv_f8_7x9_2x4_A.npy conv_f8_7x9_2x4_B.npy conv_valid_f8_7x9_2x4_C.npy
+conv_full_f8_7x9_4x3 conv_full 1.5e-13 conv_f8_7x9_4x3_A.npy conv_f8_7x9_4x3_B.npy conv_full_f8_7x9_4x3_C.npy
+conv_same_f8_7x9_4x3 conv_same 1.5e-13 conv_f8_7x9_4x3_A.npy conv_f8_7x9_4x3_B.npy conv_same_f8_7x9_4x3_C.npy
+conv_valid_f8_7x9_4x3 conv_valid 1.5e-13 conv_f8_7x9_4x3_A.npy conv_f8_7x9_4x3_B.npy conv_valid_f8_7x9_4x3_C.npy
+conv_full_f8_7x9_3x12 conv_full 6.5e-13 conv_f8_7x9_3x12_A.npy conv_f8_7x9_3x12_B.npy conv_full_f8_7x9_3x12_C.npy
+conv_same_f8_7x9_3x12 conv_same 6.5e-13 conv_f8_7x9_3x12_A.npy conv_f8_7x9_3x12_B.npy conv_same_f8_7x9_3x12_C.npy
+conv_full_f8_7x9_10x11 conv_full 1.6e-12 conv_f8_7x9_10x11_A.npy conv_f8_7x9_10x11_B.npy conv_full_f8_7x9_10x11_C.npy
+conv_same_f8_7x9_10x11 conv_same 1.6e-12 conv_f8_7x9_10x11_A.npy conv_f8_7x9_10x11_B.npy conv_same_f8_7x9_10x11_C.npy
+conv_valid_f8_7x9_10x11 conv_valid 1.6e-12 conv_f8_7x9_10x11_A.npy conv_f8_7x9_10x11_B.npy conv_valid_f8_7x9_10x11_C.npy
+conv_full_f8_1x6_1x3 conv_full 4e-15 conv_f8_1x6_1x3_A.npy conv_f8_1x6_1x3_B.npy conv_full_f8_1x6_1x3_C.npy
+conv_same_f8_1x6_1x3 conv_same 4e-15 conv_f8_1x6_1x3_A.npy conv_f8_1x6_1x3_B.npy conv_same_f8_1x6_1x3_C.npy
+conv_valid_f8_1x6_1x3 conv_valid 4e-15 conv_f8_1x6_1x3_A.npy conv_f8_1x6_1x3_B.npy conv_valid_f8_1x6_1x3_C.npy
+conv_full_f8_5x1_2x1 conv_full 2.3e-15 conv_f8_5x1_2x1_A.npy conv_f8_5x1_2x1_B.npy conv_full_f8_5x1_2x1_C.npy
+conv_same_f8_5x1_2x1 conv_same 2.3e-15 conv_f8_5x1_2x1_A.npy conv_f8_5x1_2x1_B.npy conv_same_f8_5x1_2x1_C.npy
+conv_valid_f8_5x1_2x1 conv_valid 2.3e-15 conv_f8_5x1_2x1_A.npy conv_f8_5x1_2x1_B.npy conv_valid_f8_5x1_2x1_C.npy
+conv_full_i4_6x8_1x1 conv_full 0.0 conv_i4_6x8_1x1_A.npy conv_i4_6x8_1x1_B.npy conv_full_i4_6x8_1x1_C.npy
+conv_same_i4_6x8_1x1 conv_same 0.0 conv_i4_6x8_1x1_A.npy conv_i4_6x8_1x1_B.npy conv_same_i4_6x8_1x1_C.npy
+conv_valid_i4_6x8_1x1 conv_valid 0.0 conv_i4_6x8_1x1_A.npy conv_i4_6x8_1x1_B.npy conv_valid_i4_6x8_1x1_C.npy
+conv_full_i4_6x8_3x5 conv_full 0.0 conv_i4_6x8_3x5_A.npy conv_i4_6x8_3x5_B.npy conv_full_i4_6x8_3x5_C.npy
+conv_same_i4_6x8_3x5 conv_same 0.0 conv_i4_6x8_3x5_A.npy conv_i4_6x8_3x5_B.npy conv_same_i4_6x8_3x5_C.npy
+conv_valid_i4_6x8_3x5 conv_valid 0.0 conv_i4_6x8_3x5_A.npy conv_i4_6x8_3x5_B.npy conv_valid_i4_6x8_3x5_C.npy
+conv_full_i4_6x8_2x4 conv_full 0.0 conv_i4_6x8_2x4_A.npy conv_i4_6x8_2x4_B.npy conv_full_i4_6x8_2x4_C.npy
+conv_same_i4_6x8_2x4 conv_same 0.0 conv_i4_6x8_2x4_A.npy conv_i4_6x8_2x4_B.npy conv_same_i4_6x8_2x4_C.npy
+conv_valid_i4_6x8_2x4 conv_valid 0.0 conv_i4_6x8_2x4_A.npy conv_i4_6x8_2x4_B.npy conv_valid_i4_6x8_2x4_C.npy
+conv_full_i4_6x8_9x10 conv_full 0.0 conv_i4_6x8_9x10_A.npy conv_i4_6x8_9x10_B.npy conv_full_i4_6x8_9x10_C.npy
+conv_same_i4_6x8_9x10 conv_same 0.0 conv_i4_6x8_9x10_A.npy conv_i4_6x8_9x10_B.npy conv_same_i4_6x8_9x10_C.npy
+conv_valid_i4_6x8_9x10 conv_valid 0.0 conv_i4_6x8_9x10_A.npy conv_i4_6x8_9x10_B.npy conv_valid_i4_6x8_9x10_C.npy
+fft2_f8_1x1 fft2 3.7e-15 fourier_f8_1x1_A.npy fft2_f8_1x1_C.npy
+ifft2_f8_1x1 ifft2 3.7e-15 fourier_f8_1x1_A.npy ifft2_f8_1x1_C.npy
+fft2_f8_1x2 fft2 3.1e-15 fourier_f8_1x2_A.npy fft2_f8_1x2_C.npy
+ifft2_f8_1x2 ifft2 1.6e-15 fourier_f8_1x2_A.npy ifft2_f8_1x2_C.npy
+fft2_f8_1x7 fft2 5.3e-14 fourier_f8_1x7_A.npy fft2_f8_1x7_C.npy
+ifft2_f8_1x7 ifft2 7.6e-15 fourier_f8_1x7_A.npy ifft2_f8_1x7_C.npy
+fft2_f8_1x16 fft2 1.8e-13 fourier_f8_1x16_A.npy fft2_f8_1x16_C.npy
+ifft2_f8_1x16 ifft2 1.1e-14 fourier_f8_1x16_A.npy ifft2_f8_1x16_C.npy
+fft2_f8_3x5 fft2 1.5e-13 fourier_f8_3x5_A.npy fft2_f8_3x5_C.npy
+ifft2_f8_3x5 ifft2 1e-14 fourier_f8_3x5_A.npy ifft2_f8_3x5_C.npy
+fft2_f8_4x6 fft2 2.9e-13 fourier_f8_4x6_A.npy fft2_f8_4x6_C.npy
+ifft2_f8_4x6 ifft2 1.2e-14 fourier_f8_4x6_A.npy ifft2_f8_4x6_C.npy
+fft2_f8_7x11 fft2 1.1e-12 fourier_f8_7x11_A.npy fft2_f8_7x11_C.npy
+ifft2_f8_7x11 ifft2 1.4e-14 fourier_f8_7x11_A.npy ifft2_f8_7x11_C.npy
+fft2_f8_13x1 fft2 1.5e-13 fourier_f8_13x1_A.npy fft2_f8_13x1_C.npy
+ifft2_f8_13x1 ifft2 1.2e-14 fourier_f8_13x1_A.npy ifft2_f8_13x1_C.npy
+fft2_f8_31x17 fft2 1.1e-11 fourier_f8_31x17_A.npy fft2_f8_31x17_C.npy
+ifft2_f8_31x17 ifft2 2e-14 fourier_f8_31x17_A.npy ifft2_f8_31x17_C.npy
+fft2_f8_8x8 fft2 9.4e-13 fourier_f8_8x8_A.npy fft2_f8_8x8_C.npy
+ifft2_f8_8x8 ifft2 1.5e-14 fourier_f8_8x8_A.npy ifft2_f8_8x8_C.npy
+fft2_f8_16x32 fft2 9.5e-12 fourier_f8_16x32_A.npy fft2_f8_16x32_C.npy
+ifft2_f8_16x32 ifft2 1.9e-14 fourier_f8_16x32_A.npy ifft2_f8_16x32_C.npy
+fft2_f8_64x64 fft2 1e-10 fourier_f8_64x64_A.npy fft2_f8_64x64_C.npy
+ifft2_f8_64x64 ifft2 2.4e-14 fourier_f8_64x64_A.npy ifft2_f8_64x64_C.npy
+fft2_c16_1x1 fft2 9.7e-16 fourier_c16_1x1_A.npy fft2_c16_1x1_C.npy
+ifft2_c16_1x1 ifft2 9.7e-16 fourier_c16_1x1_A.npy ifft2_c16_1x1_C.npy
+fft2_c16_1x7 fft2 7e-14 fourier_c16_1x7_A.npy fft2_c16_1x7_C.npy
+ifft2_c16_1x7 ifft2 1e-14 fourier_c16_1x7_A.npy ifft2_c16_1x7_C.npy
+fft2_c16_3x5 fft2 1.9e-13 fourier_c16_3x5_A.npy fft2_c16_3x5_C.npy
+ifft2_c16_3x5 ifft2 1.3e-14 fourier_c16_3x5_A.npy ifft2_c16_3x5_C.npy
+fft2_c16_4x6 fft2 3.8e-13 fourier_c16_4x6_A.npy fft2_c16_4x6_C.npy
+ifft2_c16_4x6 ifft2 1.6e-14 fourier_c16_4x6_A.npy ifft2_c16_4x6_C.npy
+fft2_c16_7x11 fft2 1.9e-12 fourier_c16_7x11_A.npy fft2_c16_7x11_C.npy
+ifft2_c16_7x11 ifft2 2.5e-14 fourier_c16_7x11_A.npy ifft2_c16_7x11_C.npy
+fft2_c16_8x8 fft2 1.2e-12 fourier_c16_8x8_A.npy fft2_c16_8x8_C.npy
+ifft2_c16_8x8 ifft2 1.9e-14 fourier_c16_8x8_A.npy ifft2_c16_8x8_C.npy
+fft2_c16_31x17 fft2 1.6e-11 fourier_c16_31x17_A.npy fft2_c16_31x17_C.npy
+ifft2_c16_31x17 ifft2 3.1e-14 fourier_c16_31x17_A.npy ifft2_c16_31x17_C.npy
+fft2_f4_1x2 fft2 3.5e-06 fourier_f4_1x2_A.npy fft2_f4_1x2_C.npy
+ifft2_f4_1x2 ifft2 1.8e-06 fourier_f4_1x2_A.npy ifft2_f4_1x2_C.npy
+fft2_f4_1x16 fft2 7.6e-05 fourier_f4_1x16_A.npy fft2_f4_1x16_C.npy
+ifft2_f4_1x16 ifft2 4.8e-06 fourier_f4_1x16_A.npy ifft2_f4_1x16_C.npy
+fft2_f4_3x5 fft2 7.7e-05 fourier_f4_3x5_A.npy fft2_f4_3x5_C.npy
+ifft2_f4_3x5 ifft2 5.1e-06 fourier_f4_3x5_A.npy ifft2_f4_3x5_C.npy
+fft2_f4_7x11 fft2 0.00065 fourier_f4_7x11_A.npy fft2_f4_7x11_C.npy
+ifft2_f4_7x11 ifft2 8.4e-06 fourier_f4_7x11_A.npy ifft2_f4_7x11_C.npy
+fft2_f4_13x1 fft2 5e-05 fourier_f4_13x1_A.npy fft2_f4_13x1_C.npy
+ifft2_f4_13x1 ifft2 3.9e-06 fourier_f4_13x1_A.npy ifft2_f4_13x1_C.npy
+fft2_f4_16x32 fft2 0.0053 fourier_f4_16x32_A.npy fft2_f4_16x32_C.npy
+ifft2_f4_16x32 ifft2 1e-05 fourier_f4_16x32_A.npy ifft2_f4_16x32_C.npy
+fft2_c8_3x5 fft2 0.00011 fourier_c8_3x5_A.npy fft2_c8_3x5_C.npy
+ifft2_c8_3x5 ifft2 7.2e-06 fourier_c8_3x5_A.npy ifft2_c8_3x5_C.npy
+fft2_c8_8x8 fft2 0.00065 fourier_c8_8x8_A.npy fft2_c8_8x8_C.npy
+ifft2_c8_8x8 ifft2 1e-05 fourier_c8_8x8_A.npy ifft2_c8_8x8_C.npy
+fft2_i4_1x7 fft2 5.4e-13 fourier_i4_1x7_A.npy fft2_i4_1x7_C.npy
+ifft2_i4_1x7 ifft2 7.7e-14 fourier_i4_1x7_A.npy ifft2_i4_1x7_C.npy
+fft2_i4_4x6 fft2 2.4e-12 fourier_i4_4x6_A.npy fft2_i4_4x6_C.npy
+ifft2_i4_4x6 ifft2 1e-13 fourier_i4_4x6_A.npy ifft2_i4_4x6_C.npy
+fft2_i4_7x11 fft2 1e-11 fourier_i4_7x11_A.npy fft2_i4_7x11_C.npy
+ifft2_i4_7x11 ifft2 1.4e-13 fourier_i4_7x11_A.npy ifft2_i4_7x11_C.npy
+fft2_i4_8x8 fft2 7.7e-12 fourier_i4_8x8_A.npy fft2_i4_8x8_C.npy
+ifft2_i4_8x8 ifft2 1.2e-13 fourier_i4_8x8_A.npy ifft2_i4_8x8_C.npy
+fftshift_f8_1x1 fftshift 0.0 shift_f8_1x1_A.npy fftshift_f8_1x1_C.npy
+ifftshift_f8_1x1 ifftshift 0.0 shift_f8_1x1_A.npy ifftshift_f8_1x1_C.npy
+fftshift_f8_1x4 fftshift 0.0 shift_f8_1x4_A.npy fftshift_f8_1x4_C.npy
+ifftshift_f8_1x4 ifftshift 0.0 shift_f8_1x4_A.npy ifftshift_f8_1x4_C.npy
+fftshift_f8_3x5 fftshift 0.0 shift_f8_3x5_A.npy fftshift_f8_3x5_C.npy
+ifftshift_f8_3x5 ifftshift 0.0 shift_f8_3x5_A.npy ifftshift_f8_3x5_C.npy
+fftshift_f8_4x6 fftshift 0.0 shift_f8_4x6_A.npy fftshift_f8_4x6_C.npy
+ifftshift_f8_4x6 ifftshift 0.0 shift_f8_4x6_A.npy ifftshift_f8_4x6_C.npy
+fftshift_f8_5x5 fftshift 0.0 shift_f8_5x5_A.npy fftshift_f8_5x5_C.npy
+ifftshift_f8_5x5 ifftshift 0.0 shift_f8_5x5_A.npy ifftshift_f8_5x5_C.npy
+fftshift_f8_6x1 fftshift 0.0 shift_f8_6x1_A.npy fftshift_f8_6x1_C.npy
+ifftshift_f8_6x1 ifftshift 0.0 shift_f8_6x1_A.npy ifftshift_f8_6x1_C.npy
+fftshift_i4_1x1 fftshift 0.0 shift_i4_1x1_A.npy fftshift_i4_1x1_C.npy
+ifftshift_i4_1x1 ifftshift 0.0 shift_i4_1x1_A.npy ifftshift_i4_1x1_C.npy
+fftshift_i4_1x4 fftshift 0.0 shift_i4_1x4_A.npy fftshift_i4_1x4_C.npy
+ifftshift_i4_1x4 ifftshift 0.0 shift_i4_1x4_A.npy ifftshift_i4_1x4_C.npy
+fftshift_i4_3x5 fftshift 0.0 shift_i4_3x5_A.npy fftshift_i4_3x5_C.npy
+ifftshift_i4_3x5 ifftshift 0.0 shift_i4_3x5_A.npy ifftshift_i4_3x5_C.npy
+fftshift_i4_4x6 fftshift 0.0 shift_i4_4x6_A.npy fftshift_i4_4x6_C.npy
+ifftshift_i4_4x6 ifftshift 0.0 shift_i4_4x6_A.npy ifftshift_i4_4x6_C.npy
+fftshift_i4_5x5 fftshift 0.0 shift_i4_5x5_A.npy fftshift_i4_5x5_C.npy
+ifftshift_i4_5x5 ifftshift 0.0 shift_i4_5x5_A.npy ifftshift_i4_5x5_C.npy
+fftshift_i4_6x1 fftshift 0.0 shift_i4_6x1_A.npy fftshift_i4_6x1_C.npy
+ifftshift_i4_6x1 ifftshift 0.0 shift_i4_6x1_A.npy ifftshift_i4_6x1_C.npy
+fftshift_c16_1x1 fftshift 0.0 shift_c16_1x1_A.npy fftshift_c16_1x1_C.npy
+ifftshift_c16_1x1 ifftshift 0.0 shift_c16_1x1_A.npy ifftshift_c16_1x1_C.npy
+fftshift_c16_1x4 fftshift 0.0 shift_c16_1x4_A.npy fftshift_c16_1x4_C.npy
+ifftshift_c16_1x4 ifftshift 0.0 shift_c16_1x4_A.npy ifftshift_c16_1x4_C.npy
+fftshift_c16_3x5 fftshift 0.0 shift_c16_3x5_A.npy fftshift_c16_3x5_C.npy
+ifftshift_c16_3x5 ifftshift 0.0 shift_c16_3x5_A.npy ifftshift_c16_3x5_C.npy
+fftshift_c16_4x6 fftshift 0.0 shift_c16_4x6_A.npy fftshift_c16_4x6_C.npy
+ifftshift_c16_4x6 ifftshift 0.0 shift_c16_4x6_A.npy ifftshift_c16_4x6_C.npy
+fftshift_c16_5x5 fftshift 0.0 shift_c16_5x5_A.npy fftshift_c16_5x5_C.npy
+ifftshift_c16_5x5 ifftshift 0.0 shift_c16_5x5_A.npy ifftshift_c16_5x5_C.npy
+fftshift_c16_6x1 fftshift 0.0 shift_c16_6x1_A.npy fftshift_c16_6x1_C.npy
+ifftshift_c16_6x1 ifftshift 0.0 shift_c16_6x1_A.npy ifftshift_c16_6x1_C.npy

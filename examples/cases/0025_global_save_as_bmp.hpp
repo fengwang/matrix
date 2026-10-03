@@ -36,6 +36,6 @@ void _0000_global_save_as_bmp()
             blue[r][c] = BL( r, c );
         }
 
-    feng::save_as_bmp( "./images/0000_global_save_as_bmp.bmp", red, green, blue );
+    (void)feng::save_as_bmp( "./images/0000_global_save_as_bmp.bmp", red, green, blue );
 }
 

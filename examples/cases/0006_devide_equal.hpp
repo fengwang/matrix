@@ -5,6 +5,6 @@ void _0000_divide_equal()
     n /= 2.0;
     m /= n;
 
-    m.save_as_bmp( "images/0000_divide_equal.bmp" );
+    (void)m.save_as_bmp( "images/0000_divide_equal.bmp" );
 }
 

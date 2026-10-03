@@ -11,5 +11,5 @@ void _0000_access()
         int val = starter++ & 0x7;
         x = keys[val];
     }
-    m.save_as_bmp( "./images/0000_access.bmp" );
+    (void)m.save_as_bmp( "./images/0000_access.bmp" );
 }

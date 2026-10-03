@@ -1,38 +1,38 @@
 void _0000_save_with_colormap()
 {
     feng::matrix<double> m;
-    m.load_txt( "./images/Lenna.txt" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_default.bmp" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_parula.bmp", "parula" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_hotblue.bmp", "hotblue" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_bluehot.bmp", "bluehot" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_jet.bmp", "jet" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_obscure.bmp", "obscure" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
+    (void)m.load_txt( "./images/Lenna.txt" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_default.bmp" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_parula.bmp", "parula" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_hotblue.bmp", "hotblue" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_bluehot.bmp", "bluehot" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_jet.bmp", "jet" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_obscure.bmp", "obscure" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_gray.bmp", "gray" );
 
-    m.save_as_bmp( "./images/0000_save_with_colormap_hsv.bmp", "hsv" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_spring.bmp", "spring" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_summer.bmp", "summer" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_autumn.bmp", "autumn" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_winter.bmp", "winter" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_pink.bmp", "pink" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_hot.bmp", "hot" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_cool.bmp", "cool" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_bone.bmp", "bone" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_copper.bmp", "copper" );
-    m.save_as_bmp( "./images/0000_save_with_colormap_lines.bmp", "lines" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_hsv.bmp", "hsv" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_spring.bmp", "spring" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_summer.bmp", "summer" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_autumn.bmp", "autumn" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_winter.bmp", "winter" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_pink.bmp", "pink" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_hot.bmp", "hot" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_cool.bmp", "cool" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_bone.bmp", "bone" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_copper.bmp", "copper" );
+    (void)m.save_as_bmp( "./images/0000_save_with_colormap_lines.bmp", "lines" );
 
-    m.save_as_png( "./images/0000_save_with_colormap_default.png" );
-    m.save_as_png( "./images/0000_save_with_colormap_parula.png", "parula" );
+    (void)m.save_as_png( "./images/0000_save_with_colormap_default.png" );
+    (void)m.save_as_png( "./images/0000_save_with_colormap_parula.png", "parula" );
 }
 
 void _0001_save_with_colormap()
 {
     feng::matrix<double> m;
-    m.load_txt( "./images/star.txt" );
-    m.save_as_bmp( "./images/0001_star_hotblue.bmp", "hotblue" );
-    m.save_as_bmp( "./images/0001_star_bluehot.bmp", "bluehot" );
-    m.save_as_bmp( "./images/0001_star_hotgreen.bmp", "hotgreen" );
-    m.save_as_bmp( "./images/0001_star_greenhot.bmp", "greenhot" );
-    m.save_as_bmp( "./images/0001_star_tealhot.bmp", "tealhot" );
+    (void)m.load_txt( "./images/star.txt" );
+    (void)m.save_as_bmp( "./images/0001_star_hotblue.bmp", "hotblue" );
+    (void)m.save_as_bmp( "./images/0001_star_bluehot.bmp", "bluehot" );
+    (void)m.save_as_bmp( "./images/0001_star_hotgreen.bmp", "hotgreen" );
+    (void)m.save_as_bmp( "./images/0001_star_greenhot.bmp", "greenhot" );
+    (void)m.save_as_bmp( "./images/0001_star_tealhot.bmp", "tealhot" );
 }

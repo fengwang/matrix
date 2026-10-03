@@ -1,0 +1,33 @@
+# S7-R6 oracle fixtures, written by tests/fixtures/s7/make_fixtures.py; do not edit by hand.
+# python 3.14.7, numpy 2.5.3, scipy 1.18.1
+# <case> <op> <tol> <files...>
+lu_solve_f8_4x2 lu_solve 1.1e-13 lu_solve_f8_4x2_A.npy lu_solve_f8_4x2_B.npy lu_solve_f8_4x2_X.npy
+lu_solve_f8_8x3 lu_solve 1.6e-12 lu_solve_f8_8x3_A.npy lu_solve_f8_8x3_B.npy lu_solve_f8_8x3_X.npy
+lu_solve_c16_5x2 lu_solve 1.6e-13 lu_solve_c16_5x2_A.npy lu_solve_c16_5x2_B.npy lu_solve_c16_5x2_X.npy
+det_f8_4 det 5e-13 det_f8_4_A.npy det_f8_4_D.npy
+det_c16_6 det 1.2e-12 det_c16_6_A.npy det_c16_6_D.npy
+det_f8_3_singular det 4.5e-14 det_f8_3_singular_A.npy det_f8_3_singular_D.npy
+inv_f8_5 inv 1.4e-13 inv_f8_5_A.npy inv_f8_5_X.npy
+inv_f8_8 inv 7.6e-13 inv_f8_8_A.npy inv_f8_8_X.npy
+inv_c16_4 inv 1.3e-13 inv_c16_4_A.npy inv_c16_4_X.npy
+svdvals_f8_8x5 svdvals 6e-14 svdvals_f8_8x5_A.npy svdvals_f8_8x5_S.npy
+svdvals_f8_4x7 svdvals 5.2e-14 svdvals_f8_4x7_A.npy svdvals_f8_4x7_S.npy
+svdvals_f8_6x6_rank3 svdvals 4.5e-14 svdvals_f8_6x6_rank3_A.npy svdvals_f8_6x6_rank3_S.npy
+svdvals_c16_7x4 svdvals 5.2e-14 svdvals_c16_7x4_A.npy svdvals_c16_7x4_S.npy
+svdvals_c16_3x6 svdvals 4.5e-14 svdvals_c16_3x6_A.npy svdvals_c16_3x6_S.npy
+pinv_f8_6x4 pinv 4.6e-12 pinv_f8_6x4_A.npy pinv_f8_6x4_X.npy
+pinv_f8_3x5 pinv 2e-11 pinv_f8_3x5_A.npy pinv_f8_3x5_X.npy
+pinv_f8_5x5_rank3 pinv 9.9e-12 pinv_f8_5x5_rank3_A.npy pinv_f8_5x5_rank3_X.npy
+pinv_c16_5x3 pinv 5.2e-13 pinv_c16_5x3_A.npy pinv_c16_5x3_X.npy
+pinv_c16_4x6_rank2 pinv 5.9e-13 pinv_c16_4x6_rank2_A.npy pinv_c16_4x6_rank2_X.npy
+cholesky_f8_5 cholesky 1.5e-13 cholesky_f8_5_A.npy cholesky_f8_5_L.npy
+cholesky_f8_8 cholesky 2.5e-13 cholesky_f8_8_A.npy cholesky_f8_8_L.npy
+cholesky_c16_6 cholesky 2.2e-13 cholesky_c16_6_A.npy cholesky_c16_6_L.npy
+rref_f8_3x3 rref 1.3e-12 rref_f8_3x3_A.npy rref_f8_3x3_R.npy
+rref_f8_4x4_rank2 rref 1e-13 rref_f8_4x4_rank2_A.npy rref_f8_4x4_rank2_R.npy
+rref_f8_5x3_rank2 rref 1.7e-13 rref_f8_5x3_rank2_A.npy rref_f8_5x3_rank2_R.npy
+rref_f8_3x5 rref 4.2e-13 rref_f8_3x5_A.npy rref_f8_3x5_R.npy
+rref_c16_3x4_rank2 rref 3e-13 rref_c16_3x4_rank2_A.npy rref_c16_3x4_rank2_R.npy
+expm_f8_4 expm 5.9e-13 expm_f8_4_A.npy expm_f8_4_E.npy
+expm_f8_6_norm5 expm 7.3e-12 expm_f8_6_norm5_A.npy expm_f8_6_norm5_E.npy
+expm_c16_4 expm 7e-13 expm_c16_4_A.npy expm_c16_4_E.npy
