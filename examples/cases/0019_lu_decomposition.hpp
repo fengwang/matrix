@@ -2,8 +2,8 @@ void _0000_lu_decomposition()
 {
     // initial matrix
     feng::matrix<double> m;
-    m.load_txt( "./images/Lenna.txt" );
-    m.save_as_bmp( "./images/0000_lu_decomposition.bmp", "gray" );
+    (void)m.load_txt( "./images/Lenna.txt" );
+    (void)m.save_as_bmp( "./images/0000_lu_decomposition.bmp", "gray" );
 
     // adding noise
     double mn = *std::min_element( m.begin(), m.end() );
@@ -11,18 +11,18 @@ void _0000_lu_decomposition()
     m = (m-mn) / (mx - mn + 1.0e-10);
     auto const& [row, col] = m.shape();
     m += feng::rand<double>( row, col, 1 ); // set random seed to 1
-    m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
+    (void)m.save_as_bmp( "./images/0001_lu_decomposition.bmp", "gray" );
 
     // lu decomposition
     auto const& lu = feng::lu_decomposition( m );
     if (lu)
     {
         auto const& [l, u] = lu.value();
-        l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet" );
-        u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet" );
+        (void)l.save_as_bmp( "./images/0002_lu_decomposition.bmp", "jet" );
+        (void)u.save_as_bmp( "./images/0003_lu_decomposition.bmp", "jet" );
 
         auto const& reconstructed = l * u;
-        reconstructed.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
+        (void)reconstructed.save_as_bmp( "./images/0004_lu_decomposition.bmp", "gray" );
     }
     else
     {

@@ -1,0 +1,8 @@
+# bench/kept.txt: the kept S10 optimizations judged by `tools/check.sh bench compare` (S10-R3, D-008).
+# One line per optimization: `<opt-id> <workload>...`, workload names as printed by `bench --list`. Each listed
+# workload must be at least 10% faster (median) than the baseline. `#` starts a comment; blank lines are ignored.
+gemm-blocked gemm/8 gemm/16 gemm/17 gemm/18 gemm/32 gemm/64 gemm/128 gemm/256 gemm/512 gemm/1024 gemm/tall gemm/wide gemv/8 gemv/16 gemv/32 gemv/64 gemv/128 gemv/256 gemv/512 gemv/1024
+# par-thresholds (S10-T7): work-based default worker counts in FENG_MATRIX_PARALLEL builds (matrix_details::work_workers).
+par-thresholds par/add/4x4 par/add/32x32 par/add/100x100 par/add/1000x1000 par/map/100x100 par/map/1000x1000 par/sum/32x32 par/sum/100x100 par/sum/1000x1000 par/gemm/8 par/gemm/16 par/gemm/17 par/gemm/18 par/gemm/32 par/gemm/64 par/gemv/8 par/gemv/32 par/gemv/64 par/gemv/1024
+# fft-plans (S10-T8): one plan per length per fft2 call, reused across rows and columns (matrix_details::fft_plan).
+fft-plans fft/128 fft/256 fft/125 fft/250

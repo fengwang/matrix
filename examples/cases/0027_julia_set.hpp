@@ -59,7 +59,7 @@ void _0000_julia_set()
 {
     auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, std::complex<double>{-0.4, 0.6} );
     mat.apply( [](auto& x){ x = std::log(1.0+x); } );
-    mat.save_as_bmp( "./images/0000_julia_set.bmp", "tealhot" );
+    (void)mat.save_as_bmp( "./images/0000_julia_set.bmp", "tealhot" );
 }
 
 void _0001_julia_set()
@@ -76,7 +76,7 @@ void _0001_julia_set()
             //std::string file_name = std::string{"./images/julia_set/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             //std::string file_name = std::string{"./images/julia_set_2/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             std::string file_name = std::string{"./images/julia_set_3/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
-            mat.save_as_bmp( file_name, "bluehot" );
+            (void)mat.save_as_bmp( file_name, "bluehot" );
         }
 }
 
@@ -91,7 +91,7 @@ void _0002_julia_set()
             std::complex<double> zc{ double(r)/n*1.8-0.9, double(c)/n*1.8-0.9 };
             auto&&  mat = make_julia_set( std::complex<double>{-1.5, -1.0}, std::complex<double>{1.5, 1.0}, zc, 1024, 1024, 4 );
             std::string file_name = std::string{"./images/julia_set_4/0001_julia_set_"} + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
-            mat.save_as_bmp( file_name, "tealhot" );
+            (void)mat.save_as_bmp( file_name, "tealhot" );
         }
 }
 

@@ -27,7 +27,7 @@ auto make_mandelbrot( std::complex<double> const& lower_left, std::complex<doubl
 void _0000_mandelbrot()
 {
     auto const& mat = make_mandelbrot( std::complex<double>{-2.25, -1.5}, std::complex<double>{0.75, 1.5} );
-    mat.save_as_bmp( "./images/0000_mandelbrot.bmp", "gray" );
+    (void)mat.save_as_bmp( "./images/0000_mandelbrot.bmp", "gray" );
 }
 
 void _0001_mandelbrot()
@@ -35,7 +35,7 @@ void _0001_mandelbrot()
     unsigned long const dims = 1024;
     unsigned long const iterations = 1024;
     auto&& mat = make_mandelbrot( std::complex<double>{-2.0, -1.25}, std::complex<double>{0.5, 1.25}, dims, iterations );
-    mat.save_as_bmp( "./images/0001_mandelbrot.bmp", "bluehot" );
+    (void)mat.save_as_bmp( "./images/0001_mandelbrot.bmp", "bluehot" );
     mat /= static_cast<double>( iterations );
     //std::cout << "Var(mandelbrot) = " << feng::variance( mat );
 }
@@ -68,7 +68,7 @@ void _0002_mandelbrot()
             std::string const file_name = std::string{ "./images/mandelbrot_5/0002_mandel_brot_" } + std::to_string(r) + std::string{"-"} + std::to_string(c) + std::string{".bmp"};
             //mat.save_as_bmp( file_name, "bluehot" );
             //mat.save_as_bmp( file_name, "gray" );
-            mat.save_as_bmp( file_name, "tealhot" );
+            (void)mat.save_as_bmp( file_name, "tealhot" );
 
         }
 }
